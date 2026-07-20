@@ -7,4 +7,5 @@
 #include <libpkgsource/backend.h>
 #include <libpkgsource/error.h>
 #include <libpkgsource/model.h>
+#include <libpkgsource/pkgfile_backend.h>
 #include <libpkgsource/snapshot.h>

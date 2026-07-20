@@ -13,14 +13,37 @@ project(
     'b_ndebug=if-release',
   ],
 )
+
 library_kind = get_option('default_library')
 if library_kind == 'both'
   error('libpkgsource requires separate shared and static builds')
 endif
+
 want_static = get_option('link_mode') == 'static'
 if (library_kind == 'static') != want_static
   error('default_library and link_mode must both select shared or static')
 endif
+
 libcrypto_dep = dependency('libcrypto', required: true, static: want_static)
 pkgconf = import('pkgconfig')
+
+pkgfile_worker_install_path = join_paths(
+  get_option('prefix'),
+  get_option('libexecdir'),
+  'pkgsource-pkgfile-worker',
+)
+
+pkgfile_worker = configure_file(
+  input: 'src/pkgsource-pkgfile-worker.in',
+  output: 'pkgsource-pkgfile-worker',
+  copy: true,
+  install: true,
+  install_dir: get_option('libexecdir'),
+  install_mode: 'rwxr-xr-x',
+)
+pkgfile_worker_build_path = join_paths(
+  meson.project_build_root(),
+  'pkgsource-pkgfile-worker',
+)
+
 subdir('src')
