@@ -1,0 +1,24 @@
+# SPDX-FileCopyrightText: 2026 Alexandr Savca
+# SPDX-License-Identifier: GPL-3.0-or-later
+name: ci
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        mode: [shared, static]
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev scdoc
+      - name: Configure
+        run: meson setup build -Ddefault_library=${{ matrix.mode }} -Dlink_mode=${{ matrix.mode }} -Dman_pages=enabled
+      - name: Compile
+        run: meson compile -C build
+      - name: Test
+        run: meson test -C build --print-errorlogs
