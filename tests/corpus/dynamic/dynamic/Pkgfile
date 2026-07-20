@@ -1,0 +1,6 @@
+# Description: Dynamic identity corpus package
+name=dynamic
+version="1.${SAFE_VALUE:-0}"
+release=1
+source=local.txt
+build() { :; }

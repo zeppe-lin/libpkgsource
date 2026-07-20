@@ -48,3 +48,4 @@ pkgfile_worker_build_path = join_paths(
 
 subdir('src')
 subdir('tools')
+subdir('tests')
