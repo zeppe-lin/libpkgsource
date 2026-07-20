@@ -43,30 +43,69 @@ void validate_metadata_value(const std::string& label, const std::string& value)
                 "control character in Pkgfile metadata field: " + label);
 }
 
-std::string basename_for_source(const std::string& declaration,
-                                source_input_kind kind) {
-  std::string value = declaration;
-  if (kind == source_input_kind::remote) {
-    const auto fragment = value.find('#');
-    if (fragment != std::string::npos) value.erase(fragment);
-    const auto query = value.find('?');
-    if (query != std::string::npos) value.erase(query);
-  }
-  while (!value.empty() && value.back() == '/') value.pop_back();
-  const auto slash = value.find_last_of('/');
-  std::string name = slash == std::string::npos ? value : value.substr(slash + 1);
-  if (name.empty() || name == "." || name == ".." ||
-      name.find('/') != std::string::npos || name.find('\0') != std::string::npos)
-    throw error(error_code::invalid_pkgfile,
-                "source declaration has no safe local name: " + declaration);
-  return name;
-}
-
 bool safe_relative(const std::filesystem::path& path) {
   if (path.empty() || path.is_absolute() || path != path.lexically_normal()) return false;
   for (const auto& component : path)
     if (component.empty() || component == "." || component == "..") return false;
   return true;
+}
+
+bool safe_local_name(const std::string& value) {
+  const std::filesystem::path path(value);
+  return safe_relative(path) && path.filename() == path;
+}
+
+std::string basename_for_remote(const std::string& locator,
+                                const std::string& declaration) {
+  std::string value = locator;
+  const auto fragment = value.find('#');
+  if (fragment != std::string::npos) value.erase(fragment);
+  const auto query = value.find('?');
+  if (query != std::string::npos) value.erase(query);
+  while (!value.empty() && value.back() == '/') value.pop_back();
+  const auto slash = value.find_last_of('/');
+  std::string name = slash == std::string::npos ? value : value.substr(slash + 1);
+  if (!safe_local_name(name))
+    throw error(error_code::invalid_pkgfile,
+                "source declaration has no safe local name: " + declaration);
+  return name;
+}
+
+struct normalized_declaration final {
+  source_input_kind kind;
+  std::string local_name;
+  std::optional<std::string> locator;
+  std::optional<std::filesystem::path> local_path;
+};
+
+normalized_declaration parse_source_declaration(const std::string& declaration) {
+  const auto scheme = declaration.find("://");
+  const auto separator = declaration.find("::");
+  const bool renamed_remote = scheme != std::string::npos &&
+                              separator != std::string::npos &&
+                              separator < scheme;
+
+  if (renamed_remote) {
+    const std::string local_name = declaration.substr(0, separator);
+    const std::string locator = declaration.substr(separator + 2);
+    if (!safe_local_name(local_name) || locator.empty() ||
+        locator.find("://") == std::string::npos)
+      throw error(error_code::invalid_pkgfile,
+                  "invalid renamed remote source declaration: " + declaration);
+    return {source_input_kind::remote, local_name, locator, std::nullopt};
+  }
+
+  if (scheme != std::string::npos)
+    return {source_input_kind::remote,
+            basename_for_remote(declaration, declaration),
+            declaration, std::nullopt};
+
+  const std::filesystem::path local_path(declaration);
+  if (!safe_relative(local_path))
+    throw error(error_code::unsafe_source_tree,
+                "unsafe recipe-local source path: " + declaration);
+  return {source_input_kind::recipe_local,
+          local_path.filename().string(), std::nullopt, local_path};
 }
 
 std::map<std::string, digest> read_md5_manifest(
@@ -227,32 +266,23 @@ std::vector<source_input> normalize_sources(
           return c == '\0' || std::iscntrl(c) != 0 || std::isspace(c) != 0;
         }))
       throw error(error_code::invalid_pkgfile, "empty or invalid source declaration");
-    const bool remote = declaration.find("://") != std::string::npos;
-    const auto kind = remote ? source_input_kind::remote : source_input_kind::recipe_local;
-    const std::string local_name = basename_for_source(declaration, kind);
-    if (!local_names.insert(local_name).second)
+    auto parsed = parse_source_declaration(declaration);
+    if (!local_names.insert(parsed.local_name).second)
       throw error(error_code::invalid_pkgfile,
-                  "duplicate recipe-local source name: " + local_name);
-    const auto checksum = manifest.find(local_name);
+                  "duplicate normalized source name: " + parsed.local_name);
+    const auto checksum = manifest.find(parsed.local_name);
     if (checksum == manifest.end())
       throw error(error_code::invalid_checksum,
-                  "missing .md5sum entry for " + local_name);
+                  "missing .md5sum entry for " + parsed.local_name);
     std::optional<captured_file> local_file;
-    std::optional<std::string> locator;
-    if (remote) {
-      locator = declaration;
-    } else {
-      const std::filesystem::path local_path(declaration);
-      if (!safe_relative(local_path))
-        throw error(error_code::unsafe_source_tree,
-                    "unsafe recipe-local source path: " + declaration);
-      local_file = make_captured_file(state, local_path);
-    }
+    if (parsed.local_path)
+      local_file = make_captured_file(state, *parsed.local_path);
     std::vector<digest> digests;
     digests.push_back(checksum->second);
     manifest.erase(checksum);
-    sources.emplace_back(declaration, kind, local_name, std::move(locator),
-                         std::move(digests), std::move(local_file));
+    sources.emplace_back(declaration, parsed.kind, parsed.local_name,
+                         std::move(parsed.locator), std::move(digests),
+                         std::move(local_file));
   }
   if (!manifest.empty())
     throw error(error_code::invalid_checksum,

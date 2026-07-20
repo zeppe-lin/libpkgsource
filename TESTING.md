@@ -17,6 +17,7 @@ Coverage includes:
   changes directory;
 * worker-descendant process-group cleanup;
 * `.md5sum` closure, duplicate, malformed, missing, and unrelated entries;
+* explicit `local-name::remote-locator` source normalization;
 * `.nostrip` POSIX ERE normalization;
 * lifecycle and README discovery;
 * `.footprint` and `.32bit` declaration capture;

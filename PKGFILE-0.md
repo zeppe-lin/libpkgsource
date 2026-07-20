@@ -120,17 +120,34 @@ set -- $source
 Field splitting and pathname expansion are therefore part of `pkgfile/0`.
 Each resulting word is one source declaration, in shell-produced order.
 
-A declaration containing `://` is normalized as a remote input.  Its local
-name is the final path component after removing a query and fragment.  Other
-declarations are recipe-local inputs and MUST be safe normalized relative
-paths.  Their local name is the basename.
+A remote declaration has either of these forms:
+
+```text
+remote-locator
+local-name::remote-locator
+```
+
+`remote-locator` MUST contain a URI scheme separator (`://`).  In the second
+form, the first `::` before that scheme separator is the legacy explicit local
+name delimiter.  `local-name` MUST be a safe basename.  It is the checksum and
+distfile identity; the suffix after `::` is the normalized remote locator.
+For example:
+
+```text
+run-one-1.18.tar.gz::https://example.invalid/archive/1.18.tar.gz
+```
+
+normalizes to local name `run-one-1.18.tar.gz` and locator
+`https://example.invalid/archive/1.18.tar.gz`.  Without an explicit local name,
+the local name is the locator's final path component after removing a query
+and fragment.
+
+Declarations without a remote locator are recipe-local inputs and MUST be safe
+normalized relative paths.  Their local name is the basename.
 
 Every local name MUST be non-empty and unique across the declaration list.
 Each recipe-local input MUST name a captured regular file.  libpkgsource does
 not download remote inputs and does not verify their contents.
-
-Version 0.1.0 does not define a source-renaming extension.  Declarations whose
-checksum identity cannot be derived by the rule above are unsupported.
 
 ## 7. .md5sum
 

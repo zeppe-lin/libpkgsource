@@ -79,7 +79,9 @@ to the worker diagnostic channel.
 
 The C++ side validates the protocol marker, exact field count, source count,
 identity values, entry-point marker, and directory/name invariant before
-constructing public objects.
+constructing public objects.  Source normalization recognizes the legacy
+`local-name::remote-locator` form; the explicit local name, rather than the
+locator basename, owns the checksum identity.
 
 No configuration file is sourced in this vertical slice.  Build-engine policy
 and pkgmk configuration do not belong to source inspection.

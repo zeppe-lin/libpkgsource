@@ -108,7 +108,11 @@ source_input::source_input(std::string d, source_input_kind k, std::string n, st
     if (!algorithms.insert(item.algorithm()).second)
       throw error(error_code::invalid_pkgfile, "duplicate source digest algorithm");
   if (kind_ == source_input_kind::remote) {
-    if (!locator_ || *locator_ != declaration_ || local_file_)
+    const bool plain = locator_ && *locator_ == declaration_;
+    const bool explicitly_named = locator_ &&
+        declaration_ == local_name_ + "::" + *locator_;
+    if (!locator_ || locator_->find("://") == std::string::npos ||
+        (!plain && !explicitly_named) || local_file_)
       throw error(error_code::invalid_pkgfile, "invalid remote source input");
   } else if (locator_ || !local_file_ ||
              local_file_->relative_path().filename().string() != local_name_) {

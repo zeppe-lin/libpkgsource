@@ -248,6 +248,45 @@ void test_checksum_errors() {
   expect_error(pkgsource::error_code::invalid_checksum, [&] { (void)inspect(dir); });
 }
 
+void test_explicit_remote_local_name() {
+  temporary_directory temp;
+  const auto dir = temp.path / "run-one";
+  fs::create_directories(dir);
+  write(dir / "Pkgfile",
+        "name=run-one\nversion=1.18\nrelease=1\n"
+        "source=\"$name-$version.tar.gz::https://github.com/dustinkirkland/"
+        "$name/archive/refs/tags/$version.tar.gz\n"
+        "f33be88dfab3f14c556794970cb5eda2a80dc045.patch\"\n"
+        "build() { :; }\n");
+  write(dir / "f33be88dfab3f14c556794970cb5eda2a80dc045.patch", "patch\n");
+  write(dir / ".md5sum",
+        "3026be5a7dc822ca393f4bc654af36e6  "
+        "f33be88dfab3f14c556794970cb5eda2a80dc045.patch\n"
+        "2615201658339fab693ecf05b72f057e  run-one-1.18.tar.gz\n");
+
+  const auto snapshot = inspect(dir);
+  const auto& sources = snapshot.build().sources();
+  if (sources.size() != 2)
+    throw std::runtime_error("renamed source count");
+  const auto& archive = sources[0];
+  if (archive.kind() != pkgsource::source_input_kind::remote ||
+      archive.local_name() != "run-one-1.18.tar.gz" ||
+      !archive.locator() ||
+      *archive.locator() !=
+          "https://github.com/dustinkirkland/run-one/archive/refs/tags/1.18.tar.gz" ||
+      archive.digests().size() != 1 ||
+      archive.digests()[0].hex() != "2615201658339fab693ecf05b72f057e")
+    throw std::runtime_error("renamed remote source normalization");
+
+  write(dir / "Pkgfile",
+        "name=run-one\nversion=1.18\nrelease=1\n"
+        "source='../run-one.tar.gz::https://example.invalid/run-one.tar.gz'\n"
+        "build() { :; }\n");
+  write(dir / ".md5sum",
+        "2615201658339fab693ecf05b72f057e  run-one.tar.gz\n");
+  expect_error(pkgsource::error_code::invalid_pkgfile, [&] { (void)inspect(dir); });
+}
+
 void test_duplicate_source_names() {
   temporary_directory temp;
   const auto dir = temp.path / "dup";
@@ -396,6 +435,7 @@ int main() {
     {"identity validation", test_missing_and_invalid_identity},
     {"metadata errors", test_metadata_errors},
     {"checksum errors", test_checksum_errors},
+    {"explicit remote local name", test_explicit_remote_local_name},
     {"duplicate source names", test_duplicate_source_names},
     {"nostrip error", test_nostrip_error},
     {"symlink and path escape", test_symlink_and_path_escape},

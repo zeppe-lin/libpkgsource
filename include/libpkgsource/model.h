@@ -154,8 +154,10 @@ private:
 
 /*! \brief Declared input to the build recipe.
  *
- * Remote inputs carry a locator and no captured local file.  Recipe-local
- * inputs carry a captured regular file and no remote locator.
+ * Remote inputs carry a locator and no captured local file.  Their declaration
+ * is either the locator itself or `local_name::locator` when pkgfile/0 supplies
+ * an explicit distfile name.  Recipe-local inputs carry a captured regular file
+ * and no remote locator.
  */
 class source_input final {
 public:

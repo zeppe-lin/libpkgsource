@@ -3,6 +3,11 @@
 
 # History
 
+## Unreleased
+
+* normalize the legacy `local-name::remote-locator` source form and bind its
+  checksum declaration to the explicit local name.
+
 ## 0.1.0
 
 Initial repository and first package-management architecture implementation.

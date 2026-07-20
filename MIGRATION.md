@@ -47,7 +47,8 @@ readers accepted ambiguously:
 * unsafe and external symlinks are rejected;
 * filesystem races are errors rather than silently mixed revisions;
 * no pkgmk configuration file is sourced;
-* no source-renaming extension is defined;
+* the legacy `local-name::remote-locator` form is normalized explicitly,
+  with `.md5sum` bound to `local-name`;
 * `.footprint` is captured but not parsed.
 
 Before replacing a production reader, run the reference client over each
