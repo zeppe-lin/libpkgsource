@@ -1,0 +1,4 @@
+/build*/
+/.linkage-matrix/
+compile_commands.json
+*.o
