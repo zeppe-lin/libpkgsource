@@ -3,10 +3,21 @@
 
 # History
 
-## Unreleased
+## 0.2.0
 
 * normalize the legacy `local-name::remote-locator` source form and bind its
-  checksum declaration to the explicit local name.
+  checksum declaration to the explicit local name;
+* add the optional `libpkgsource-plan` adapter without contaminating the core
+  source-inspection dependency closure;
+* project runtime dependencies, exact removal lifecycle bytes, and package
+  build architecture into complete planner candidate control;
+* issue domain-separated package-release and normalized candidate-control
+  identities while retaining the source snapshot as separate provenance; and
+* qualify the adapter against libpkgplan 0.2.0 and libpkgimage 0.3.0 in shared
+  and static configurations.
+
+The core library remains at SONAME 0.  The new planner adapter begins at
+SONAME 0 as its first released ABI.
 
 ## 0.1.0
 

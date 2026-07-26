@@ -52,6 +52,14 @@ if get_option('tests').enabled()
   )
   test('linkage-current-configuration', linkage_consumer)
 
+
+  release_metadata = find_program('check_release_metadata.sh')
+  test(
+    'release-metadata',
+    release_metadata,
+    args: [meson.project_source_root()],
+  )
+
   ci_contract = find_program('check_ci_contract.sh')
   test(
     'ci-contract',
