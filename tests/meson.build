@@ -9,6 +9,14 @@ if get_option('tests').enabled()
   )
   test('model', model_test)
 
+  profile_test = executable(
+    'profile-test',
+    'profile_test.cpp',
+    dependencies: libpkgsource_dep,
+    install: false,
+  )
+  test('profile', profile_test)
+
   public_headers = executable(
     'public-headers',
     'public_headers.cpp',

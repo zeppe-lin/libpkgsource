@@ -10,6 +10,7 @@ libpkgsource = library(
     'identity.cpp',
     'identity_support.cpp',
     'model.cpp',
+    'profile.cpp',
   ],
   include_directories: [public_inc, private_inc],
   dependencies: libcrypto_dep,
@@ -30,6 +31,7 @@ install_headers(
   '../include/libpkgsource/error.h',
   '../include/libpkgsource/identity.h',
   '../include/libpkgsource/model.h',
+  '../include/libpkgsource/profile.h',
   subdir: 'libpkgsource',
 )
 

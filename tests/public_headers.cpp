@@ -3,6 +3,7 @@
 #include <libpkgsource/error.h>
 #include <libpkgsource/identity.h>
 #include <libpkgsource/model.h>
+#include <libpkgsource/profile.h>
 #include <libpkgsource/libpkgsource.h>
 
 int main() { return 0; }
