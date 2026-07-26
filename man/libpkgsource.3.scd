@@ -11,7 +11,7 @@ libpkgsource - immutable package-source inspection library
 # DESCRIPTION
 
 *libpkgsource* inspects one package-source directory and returns a normalized,
-immutable *source_snapshot*(3). Version 0.2.0 implements only the *pkgfile/0*
+immutable *source_snapshot*(3). Version 0.2.1 implements only the *pkgfile/0*
 backend.
 
 The library owns source-format probing, package identity, descriptive metadata,

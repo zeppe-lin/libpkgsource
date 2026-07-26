@@ -6,7 +6,7 @@
 `libpkgsource` inspects one package-source directory and returns an immutable,
 normalized description of what that source declares.
 
-Version 0.2.0 implements one format only: `pkgfile/0`.  In this library,
+Version 0.2.1 implements one format only: `pkgfile/0`.  In this library,
 `pkgfile/0` means the complete legacy source-directory protocol, not only the
 `Pkgfile` shell program.  The inspected unit includes metadata comments,
 identity and source declarations, the `build()` entry point, `.md5sum`,

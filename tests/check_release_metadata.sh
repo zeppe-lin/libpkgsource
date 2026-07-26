@@ -11,10 +11,11 @@ require() {
     exit 1
   }
 }
-require "$root/meson.build" "  version: '0.2.0',"
+require "$root/meson.build" "  version: '0.2.1',"
 require "$root/src/meson.build" "  soversion: '0',"
 require "$root/adapter/meson.build" "  soversion: '0',"
 require "$root/adapter/meson.build" "'libpkgplan >= 0.2.0'"
-require "$root/HISTORY.md" '## 0.2.0'
-require "$root/README.md" 'Version 0.2.0'
-require "$root/man/libpkgsource.3.scd" 'Version 0.2.0'
+require "$root/HISTORY.md" '## 0.2.1'
+require "$root/README.md" 'Version 0.2.1'
+require "$root/man/libpkgsource.3.scd" 'Version 0.2.1'
+require "$root/src/meson.build" "'pkgfile_worker': pkgfile_worker_install_path"

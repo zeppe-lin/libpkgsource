@@ -3,6 +3,15 @@
 
 # History
 
+## 0.2.1
+
+* publish the private Pkgfile worker location through internal Meson and
+  installed pkg-config dependency metadata;
+* qualify the worker variable in build-tree and isolated installed shared/static
+  configurations; and
+* document the worker pathname as a dependency-owned runtime location rather
+  than a consumer convention.
+
 ## 0.2.0
 
 * normalize the legacy `local-name::remote-locator` source form and bind its
