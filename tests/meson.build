@@ -50,4 +50,11 @@ if get_option('tests').enabled()
     install: false,
   )
   test('public-headers', public_headers)
+
+  release_metadata = find_program('check_release_metadata.sh')
+  test(
+    'release-metadata',
+    release_metadata,
+    args: [meson.project_source_root()],
+  )
 endif

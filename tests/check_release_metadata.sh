@@ -13,5 +13,11 @@ require() {
 }
 require "$root/meson.build" "  version: '1.0.0',"
 require "$root/src/meson.build" "  soversion: '1',"
-require "$root/src/meson.build" "'../include/libpkgsource/identity.h'"
-require "$root/src/meson.build" "'../include/libpkgsource/model.h'"
+require "$root/adapter/meson.build" "  soversion: '1',"
+require "$root/adapter/meson.build" "'libpkgplan >= 0.2.0'"
+require "$root/HISTORY.md" '## 1.0.0'
+require "$root/README.md" 'Version 1 is intentionally incompatible'
+require "$root/man/libpkgsource.3.scd" 'Version 1 defines the'
+require "$root/src/meson.build" "'../include/libpkgsource/profile.h'"
+require "$root/src/meson.build" "'../include/libpkgsource/recipe.h'"
+require "$root/src/meson.build" "'../include/libpkgsource/snapshot.h'"

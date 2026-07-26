@@ -3,69 +3,61 @@
 
 # Testing
 
-The test suite is offline and uses the bundled `tests/corpus` directory plus
-per-test temporary trees and private workers.
+The suite is offline and model-driven.  It does not parse YAML, inspect package
+collections, execute recipe programs, or access installed state.
 
 Coverage includes:
 
-* model and package-identity invariants;
-* metadata header parsing and dependency compatibility mapping;
-* worker NUL framing and exact record cardinality;
-* explicit environment use, ambient-environment isolation, optional worker
-  identity, and unsafe-variable rejection;
-* source expansion from the captured root even when top-level Pkgfile code
-  changes directory;
-* worker-descendant process-group cleanup;
-* `.md5sum` closure, duplicate, malformed, missing, and unrelated entries;
-* explicit `local-name::remote-locator` source normalization;
-* `.nostrip` POSIX ERE normalization;
-* lifecycle and README discovery;
-* `.footprint` and `.32bit` declaration capture;
-* complete-directory and internal-symlink capture;
-* digest stability, directory-mode sensitivity, and snapshot-owned file
-  lifetime;
-* original-tree and captured-tree mutation detection;
-* path and symbolic-link escape rejection;
-* unsupported special-object rejection;
-* deterministic reference-tool output;
+* canonical package, profile, and architecture identity rejection;
+* package-release and raw program SHA-256 identity vectors;
+* independent build, run, check, and lifecycle requirement scopes;
+* exact package and profile requirement subjects;
+* action binding for lifecycle requirements;
+* deterministic profile sealing independent of declaration insertion order;
+* nested profile expansion and retained edge provenance;
+* unknown-profile, duplicate-definition, duplicate-member, and cycle rejection;
+* selected build-profile roots and complete transitive profile closure;
+* exact requirement origin aggregation across profile paths;
+* source input normalization, safe local paths, SHA-256-only content identity,
+  and duplicate local-name rejection;
+* separate build and target architecture requirements;
+* lifecycle program uniqueness and lifecycle-requirement/program closure;
+* recipe identity stability across non-semantic source order and provenance;
+* recipe identity change sensitivity to program and profile semantics;
+* source snapshot identity and syntax-provenance separation;
 * independent public-header compilation;
-* consumer linkage in the active configuration;
-* exact source-to-planner candidate projection;
-* release and candidate-control identity stability and change sensitivity;
-* exclusion of unrelated source bytes from candidate-control identity; and
+* native source-to-planner candidate projection;
+* exclusion of build, check, and lifecycle requirements from planner runtime
+  control;
+* exclusion of installation lifecycle programs from durable removal control;
+* target architecture projection; and
 * independent `libpkgsource-plan` public-header compilation.
 
-Run the normal suite:
+Run the core shared configuration:
 
 ```sh
-meson setup build \
+meson setup build-shared \
   -Ddefault_library=shared \
   -Dlink_mode=shared
-meson compile -C build
-meson test -C build --print-errorlogs
+meson compile -C build-shared
+meson test -C build-shared --print-errorlogs
 ```
 
-Run both supported linkage configurations:
+Run the optional adapter against an installed `libpkgplan`:
 
 ```sh
-tests/run-linkage-matrix.sh .
+PKG_CONFIG_PATH=/path/to/dependencies/lib/pkgconfig \
+meson setup build-plan \
+  -Ddefault_library=shared \
+  -Dlink_mode=shared \
+  -Dplanner_adapter=enabled
+meson compile -C build-plan
+meson test -C build-plan --print-errorlogs
 ```
 
-The CI workflow executes the same shared/static matrix.  `default_library=both`
-is intentionally not a test configuration because it is an invalid project
-configuration.
+Repeat with `default_library=static` and `link_mode=static` for the supported
+static closure.  `default_library=both` is deliberately invalid.
 
-No test downloads source archives or accesses a package collection over the
-network.
-
-The optional planner adapter is qualified against libpkgplan 0.2.0 and its
-libpkgimage 0.3.0 public dependency.  The core library remains linkable without
-either planning dependency.
-
-## Worker metadata qualification
-
-The internal Meson dependency variable must resolve to the exact configured
-build-tree worker and that file must be executable.  The shared/static linkage
-matrix also installs libpkgsource into isolated prefixes, reads
-`pkgfile_worker` through pkg-config, verifies the expected libexec path, and
-requires the installed worker to be executable.
+The release metadata test binds project version, SONAMEs, dependency floor,
+history heading, README version contract, and installed public headers.  It is
+part of the normal suite.

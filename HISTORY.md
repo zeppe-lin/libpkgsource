@@ -3,6 +3,35 @@
 
 # History
 
+## 1.0.0
+
+Native package-source authority reset.
+
+* remove the Pkgfile/0 backend, evaluated shell worker, metadata comments,
+  sidecars, MD5 declarations, captured legacy source tree, `.32bit` marker, and
+  all CRUX compatibility API;
+* replace `dependency_scope::build_and_run` with exact build, run, check, and
+  action-bound lifecycle scopes;
+* add exact package, profile, and architecture identity domains with strict
+  canonical spelling;
+* add authoritative sealed profile definitions with deterministic nested
+  expansion, cycle and duplicate rejection, semantic identities, and retained
+  declaration provenance;
+* add the parser-neutral native recipe declaration and immutable normalized
+  recipe/source snapshot authority;
+* distinguish package release, metadata, source inputs, build program,
+  requirement domains, lifecycle programs and requirements, architecture
+  requirements, selected build profiles, and profile closure;
+* define the exact `recipe.yml/1` input contract without embedding a YAML parser
+  or treating syntax as authority;
+* rebase `libpkgsource-plan` on exact run requirements, durable removal
+  lifecycle programs, and target architecture requirements without changing
+  `libpkgplan` 0.2; and
+* begin SONAME 1 for both `libpkgsource` and `libpkgsource-plan`.
+
+Migration from Pkgfile/0 and the historical package database remains outside the
+libraries and will be implemented by separate explicit import tools.
+
 ## 0.2.1
 
 * publish the private Pkgfile worker location through internal Meson and
@@ -25,9 +54,6 @@
 * qualify the adapter against libpkgplan 0.2.0 and libpkgimage 0.3.0 in shared
   and static configurations.
 
-The core library remains at SONAME 0.  The new planner adapter begins at
-SONAME 0 as its first released ABI.
-
 ## 0.1.0
 
 Initial repository and first package-management architecture implementation.
@@ -38,7 +64,6 @@ Initial repository and first package-management architecture implementation.
 * captured complete package directories into lifetime-owned private snapshots;
 * normalized metadata, compatibility dependencies, sources, MD5 declarations,
   recipe descriptor, lifecycle actions, README resources, strip exclusions,
-  footprint declaration, and `.32bit` mode;
-* added deterministic snapshot fingerprints and stable reference output;
-* added offline corpus, race and escape tests, shared/static build matrix,
+  footprint declaration, and `.32bit` mode; and
+* added deterministic snapshot fingerprints, corpus tests, build qualification,
   contract documents, and scdoc manual pages.
