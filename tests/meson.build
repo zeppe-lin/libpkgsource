@@ -43,6 +43,24 @@ if get_option('tests').enabled()
     test('plan-adapter-header', plan_adapter_header_test)
   endif
 
+  if libyaml_dep.found()
+    yaml_profiles_test = executable(
+      'yaml-profiles-test',
+      'yaml_profiles_test.cpp',
+      dependencies: libpkgsource_yaml_dep,
+      install: false,
+    )
+    test('yaml-profiles', yaml_profiles_test)
+
+    yaml_adapter_header_test = executable(
+      'yaml-adapter-header-test',
+      'yaml_adapter_header_test.cpp',
+      dependencies: libpkgsource_yaml_dep,
+      install: false,
+    )
+    test('yaml-adapter-header', yaml_adapter_header_test)
+  endif
+
   public_headers = executable(
     'public-headers',
     'public_headers.cpp',
