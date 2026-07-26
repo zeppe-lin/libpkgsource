@@ -16,6 +16,21 @@ if get_option('tests').enabled()
   )
   test('unit', unit_tests)
 
+  dependency_worker_path = libpkgsource_dep.get_variable(
+    internal: 'pkgfile_worker',
+    pkgconfig: 'pkgfile_worker',
+  )
+  worker_dependency_test = executable(
+    'worker-dependency-test',
+    'worker_dependency_test.cpp',
+    cpp_args: [
+      '-DTEST_DEPENDENCY_WORKER="' + dependency_worker_path + '"',
+      '-DTEST_BUILD_WORKER="' + pkgfile_worker_build_path + '"',
+    ],
+    install: false,
+  )
+  test('worker-dependency-metadata', worker_dependency_test)
+
   public_headers = executable(
     'public-headers',
     'public_headers.cpp',
@@ -57,6 +72,13 @@ if get_option('tests').enabled()
   test(
     'release-metadata',
     release_metadata,
+    args: [meson.project_source_root()],
+  )
+
+  worker_metadata_contract = find_program('check_worker_metadata.sh')
+  test(
+    'worker-metadata-contract',
+    worker_metadata_contract,
     args: [meson.project_source_root()],
   )
 
