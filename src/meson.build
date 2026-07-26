@@ -27,6 +27,9 @@ libpkgsource_dep = declare_dependency(
   link_with: libpkgsource,
   include_directories: public_inc,
   dependencies: libcrypto_dep,
+  variables: {
+    'pkgfile_worker': pkgfile_worker_build_path,
+  },
 )
 meson.override_dependency('libpkgsource', libpkgsource_dep)
 
@@ -47,4 +50,7 @@ pkgconf.generate(
   description: 'Immutable package-source inspection library',
   subdirs: '.',
   requires_private: ['libcrypto'],
+  variables: {
+    'pkgfile_worker': pkgfile_worker_install_path,
+  },
 )
