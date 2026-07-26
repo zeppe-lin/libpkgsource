@@ -39,3 +39,15 @@ expansion, source inputs, and build execution.
 
 Consumers must move atomically to the new SONAME and headers.  There is no
 supported source or binary compatibility bridge inside `libpkgsource`.
+
+
+## Native syntax transition
+
+Version 1.1 adds `libpkgsource-yaml`; it does not add Pkgfile compatibility.
+Migration tools may emit `profiles.yml/1` and `recipe.yml/1`, after which the
+strict adapter and native sealers validate the result.  Ambiguous historical
+semantics remain migration errors or explicit operator decisions.
+
+The YAML adapter accepts document bytes only.  Historical collection layout,
+`pkgman.conf`, directory naming, and source-tree precedence are not parser
+semantics and remain outside this repository.

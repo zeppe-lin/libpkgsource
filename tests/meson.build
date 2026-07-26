@@ -67,6 +67,17 @@ if get_option('tests').enabled()
       install: false,
     )
     test('yaml-adapter-header', yaml_adapter_header_test)
+
+    sh = find_program('sh')
+    test(
+      'yaml-adapter-metadata',
+      sh,
+      args: [
+        join_paths(meson.current_source_dir(),
+                   'yaml_adapter_metadata_test.sh'),
+        meson.project_build_root(),
+      ],
+    )
   endif
 
   public_headers = executable(

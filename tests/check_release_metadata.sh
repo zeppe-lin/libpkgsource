@@ -11,14 +11,14 @@ require() {
     exit 1
   }
 }
-require "$root/meson.build" "  version: '1.0.0',"
+require "$root/meson.build" "  version: '1.1.0',"
 require "$root/src/meson.build" "  soversion: '1',"
 require "$root/adapter/meson.build" "  soversion: '1',"
 require "$root/yaml/meson.build" "  soversion: '1',"
 require "$root/yaml/meson.build" "'libpkgsource = ' + meson.project_version()"
 require "$root/yaml/meson.build" "'yaml-0.1 >= 0.2.5'"
 require "$root/adapter/meson.build" "'libpkgplan >= 0.2.0'"
-require "$root/HISTORY.md" '## 1.0.0'
+require "$root/HISTORY.md" '## 1.1.0'
 require "$root/README.md" '`libpkgsource-yaml` is enabled'
 require "$root/PROFILES-YAML-1.md" '`zeppe-lin.profiles/1`'
 require "$root/RECIPE-YAML-1.md" '`zeppe-lin.recipe/1`'

@@ -15,7 +15,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev libarchive-dev scdoc
+        run: sudo apt-get update && sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev libarchive-dev libyaml-dev scdoc
       - name: Checkout exact planning dependencies
         run: |
           git clone https://github.com/zeppe-lin/libpkgimage.git ../libpkgimage
@@ -50,6 +50,7 @@ jobs:
             -Ddefault_library=${{ matrix.mode }} \
             -Dlink_mode=${{ matrix.mode }} \
             -Dplanner_adapter=enabled \
+            -Dyaml_adapter=enabled \
             -Dman_pages=enabled
       - name: Compile
         run: meson compile -C build

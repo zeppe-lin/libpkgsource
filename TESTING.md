@@ -40,7 +40,8 @@ Coverage includes:
 * exact `profiles.yml/1` declarations and deterministic profile sealing;
 * exact `recipe.yml/1` declarations and identity-equivalent reordered input;
 * syntax-versus-semantic error-domain separation;
-* independent `libpkgsource-yaml` public-header compilation.
+* independent `libpkgsource-yaml` public-header compilation; and
+* generated `libpkgsource-yaml.pc` dependency metadata.
 
 Run the core shared configuration:
 

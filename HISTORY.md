@@ -3,6 +3,26 @@
 
 # History
 
+## 1.1.0
+
+Native YAML syntax frontend.
+
+* add optional `libpkgsource-yaml.so.1` without adding a YAML dependency to the
+  semantic core;
+* define and parse strict `profiles.yml/1` documents into parser-neutral profile
+  declarations;
+* parse strict `recipe.yml/1` documents into the existing native recipe
+  declarations;
+* retain structured document, schema path, line, and column diagnostics while
+  excluding syntax provenance from semantic identity;
+* reject duplicate and unknown keys, multiple documents, directives, anchors,
+  aliases, merge keys, unsupported tags, scalar requirement shorthand, and
+  schema/type drift;
+* provide convenience functions that parse and invoke the existing profile and
+  source sealers without creating another authority model; and
+* keep collection discovery, document acquisition, profile aggregation, and
+  precedence outside the parser and core libraries.
+
 ## 1.0.0
 
 Native package-source authority reset.
