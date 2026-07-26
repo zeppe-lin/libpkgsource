@@ -61,3 +61,11 @@ network.
 The optional planner adapter is qualified against libpkgplan 0.2.0 and its
 libpkgimage 0.3.0 public dependency.  The core library remains linkable without
 either planning dependency.
+
+## Worker metadata qualification
+
+The internal Meson dependency variable must resolve to the exact configured
+build-tree worker and that file must be executable.  The shared/static linkage
+matrix also installs libpkgsource into isolated prefixes, reads
+`pkgfile_worker` through pkg-config, verifies the expected libexec path, and
+requires the installed worker to be executable.

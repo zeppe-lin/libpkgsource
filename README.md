@@ -75,6 +75,12 @@ build-shared/tools/pkgsource-inspect \
 Its output is a stable diagnostic JSON representation.  It is not a command
 API and is not a substitute for linking against the library.
 
+
+Meson consumers that need an explicit worker path for build-tree integration
+query the `pkgfile_worker` dependency variable.  Internal dependencies return
+the configured build-tree worker; installed pkg-config dependencies return the
+installed `<prefix>/<libexecdir>/pkgsource-pkgfile-worker` path.
+
 ## Security position
 
 A Pkgfile is executable shell.  The worker removes ambient environment and

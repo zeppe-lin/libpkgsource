@@ -154,3 +154,20 @@ release and normalized candidate control.  Candidate-control identity is compute
 from the normalized planner projection, not from unrelated README, recipe, or
 source-input bytes.  The complete source snapshot fingerprint remains available
 as separate provenance and is never relabelled as a planner identity.
+
+Build-system worker location contract
+-------------------------------------
+
+The private Pkgfile worker is owned by libpkgsource.  Its pathname is a runtime
+component location, not source-model data and not a consumer-owned convention.
+The `libpkgsource` Meson dependency therefore publishes one
+`pkgfile_worker` variable through both dependency forms:
+
+. an internal dependency returns the configured build-tree worker path; and
+. an installed pkg-config dependency returns the installed libexec path.
+
+A consumer that must instantiate `pkgfile_backend` explicitly for a build-tree
+test obtains the path with `dependency.get_variable()`.  It does not reach into
+the libpkgsource source tree, guess a sibling build directory, or substitute a
+different package worker protocol.  Ordinary installed consumers continue to
+use the default constructor and the library's compiled installed path.
