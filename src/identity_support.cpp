@@ -78,10 +78,19 @@ std::string identity_writer::finish()
 
 std::string sha256_hex(std::string_view material)
 {
-  identity_writer writer;
-  writer.text("libpkgsource/content/v1");
-  writer.text(material);
-  return writer.finish();
+  context_ptr context(EVP_MD_CTX_new(), EVP_MD_CTX_free);
+  if (!context || EVP_DigestInit_ex(context.get(), EVP_sha256(), nullptr) != 1)
+    throw error(error_code::identity_failed, "SHA-256 initialization failed");
+  update(context.get(), material.data(), material.size());
+  std::array<unsigned char, EVP_MAX_MD_SIZE> bytes{};
+  unsigned int size = 0;
+  if (EVP_DigestFinal_ex(context.get(), bytes.data(), &size) != 1 || size != 32)
+    throw error(error_code::identity_failed, "SHA-256 finalization failed");
+  std::ostringstream out;
+  out << std::hex << std::setfill('0');
+  for (unsigned int i = 0; i < size; ++i)
+    out << std::setw(2) << static_cast<unsigned int>(bytes[i]);
+  return out.str();
 }
 
 void require_sha256_hex(std::string_view value)

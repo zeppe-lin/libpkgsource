@@ -227,6 +227,9 @@ public:
   [[nodiscard]] const std::string& location() const noexcept;
   [[nodiscard]] const std::string& local_name() const noexcept;
   [[nodiscard]] const digest& content_digest() const noexcept;
+  friend bool operator==(const source_input& lhs, const source_input& rhs) noexcept;
+  friend bool operator!=(const source_input& lhs, const source_input& rhs) noexcept;
+  friend bool operator<(const source_input& lhs, const source_input& rhs) noexcept;
 private:
   source_input(source_input_kind kind, std::string location,
                std::string local_name, digest content_digest);
@@ -243,6 +246,9 @@ public:
   [[nodiscard]] program_language language() const noexcept;
   [[nodiscard]] const std::string& material() const noexcept;
   [[nodiscard]] const digest& content_digest() const noexcept;
+  friend bool operator==(const program& lhs, const program& rhs) noexcept;
+  friend bool operator!=(const program& lhs, const program& rhs) noexcept;
+  friend bool operator<(const program& lhs, const program& rhs) noexcept;
 private:
   program_language language_;
   std::string material_;
@@ -255,6 +261,9 @@ public:
   lifecycle_program(lifecycle_action action, program value);
   [[nodiscard]] lifecycle_action action() const noexcept;
   [[nodiscard]] const program& value() const noexcept;
+  friend bool operator==(const lifecycle_program& lhs, const lifecycle_program& rhs) noexcept;
+  friend bool operator!=(const lifecycle_program& lhs, const lifecycle_program& rhs) noexcept;
+  friend bool operator<(const lifecycle_program& lhs, const lifecycle_program& rhs) noexcept;
 private:
   lifecycle_action action_;
   program value_;

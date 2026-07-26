@@ -8,3 +8,5 @@
 #include <libpkgsource/identity.h>
 #include <libpkgsource/model.h>
 #include <libpkgsource/profile.h>
+#include <libpkgsource/recipe.h>
+#include <libpkgsource/snapshot.h>

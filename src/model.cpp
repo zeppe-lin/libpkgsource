@@ -432,6 +432,20 @@ source_input_kind source_input::kind() const noexcept { return kind_; }
 const std::string& source_input::location() const noexcept { return location_; }
 const std::string& source_input::local_name() const noexcept { return local_name_; }
 const digest& source_input::content_digest() const noexcept { return content_digest_; }
+bool operator==(const source_input& lhs, const source_input& rhs) noexcept
+{
+  return std::tie(lhs.kind_, lhs.location_, lhs.local_name_, lhs.content_digest_)
+      == std::tie(rhs.kind_, rhs.location_, rhs.local_name_, rhs.content_digest_);
+}
+bool operator!=(const source_input& lhs, const source_input& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const source_input& lhs, const source_input& rhs) noexcept
+{
+  return std::tie(lhs.local_name_, lhs.kind_, lhs.location_, lhs.content_digest_)
+       < std::tie(rhs.local_name_, rhs.kind_, rhs.location_, rhs.content_digest_);
+}
 
 program::program(program_language language, std::string material)
     : language_(language), material_(std::move(material)),
@@ -444,6 +458,20 @@ program::program(program_language language, std::string material)
 program_language program::language() const noexcept { return language_; }
 const std::string& program::material() const noexcept { return material_; }
 const digest& program::content_digest() const noexcept { return content_digest_; }
+bool operator==(const program& lhs, const program& rhs) noexcept
+{
+  return std::tie(lhs.language_, lhs.material_, lhs.content_digest_)
+      == std::tie(rhs.language_, rhs.material_, rhs.content_digest_);
+}
+bool operator!=(const program& lhs, const program& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const program& lhs, const program& rhs) noexcept
+{
+  return std::tie(lhs.language_, lhs.material_, lhs.content_digest_)
+       < std::tie(rhs.language_, rhs.material_, rhs.content_digest_);
+}
 
 lifecycle_program::lifecycle_program(lifecycle_action action, program value)
     : action_(action), value_(std::move(value))
@@ -451,6 +479,21 @@ lifecycle_program::lifecycle_program(lifecycle_action action, program value)
 }
 lifecycle_action lifecycle_program::action() const noexcept { return action_; }
 const program& lifecycle_program::value() const noexcept { return value_; }
+bool operator==(const lifecycle_program& lhs,
+                const lifecycle_program& rhs) noexcept
+{
+  return std::tie(lhs.action_, lhs.value_) == std::tie(rhs.action_, rhs.value_);
+}
+bool operator!=(const lifecycle_program& lhs,
+                const lifecycle_program& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const lifecycle_program& lhs,
+               const lifecycle_program& rhs) noexcept
+{
+  return std::tie(lhs.action_, lhs.value_) < std::tie(rhs.action_, rhs.value_);
+}
 
 architecture_requirements::architecture_requirements(
     std::vector<architecture_reference> build,

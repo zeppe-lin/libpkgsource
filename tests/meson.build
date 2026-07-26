@@ -17,6 +17,14 @@ if get_option('tests').enabled()
   )
   test('profile', profile_test)
 
+  recipe_test = executable(
+    'recipe-test',
+    'recipe_test.cpp',
+    dependencies: libpkgsource_dep,
+    install: false,
+  )
+  test('recipe', recipe_test)
+
   public_headers = executable(
     'public-headers',
     'public_headers.cpp',
