@@ -117,3 +117,40 @@ separates request errors, unsafe trees, source mutation, worker failure,
 malformed worker records, invalid Pkgfile semantics, metadata errors, checksum
 errors, sidecar errors, and filesystem failures.  Error strings are diagnostic;
 callers should branch on the code.
+
+## Planner projection adapter
+
+The core library remains independent of package planning.  An optional
+`libpkgsource-plan` adapter may translate one immutable `source_snapshot` into
+planner-owned incoming control without reopening the live collection.
+
+The adapter owns exactly this boundary:
+
+```text
+source snapshot
+  package identity
+  dependency declarations
+  removal lifecycle programs
+  build architecture
+        |
+        v
+libpkgplan candidate package fact
+```
+
+It does not inspect package archives, issue artifact identities, resolve
+runtime dependency closure, select path policy, observe the target filesystem,
+or create an install or upgrade request.
+
+The adapter must retain the source snapshot beside the projected planner fact.
+This prevents callers from pairing candidate control with a different or later
+source observation.  Runtime dependencies are projected from declarations whose
+scope includes runtime use.  Only pre-remove and post-remove lifecycle programs
+enter candidate control; installation lifecycle programs remain build/application
+inputs.  Lifecycle material is read from the sealed captured tree and retained
+as exact bytes with media type `text/x-shellscript`.
+
+The adapter issues domain-separated versioned SHA-256 identities for package
+release and normalized candidate control.  Candidate-control identity is computed
+from the normalized planner projection, not from unrelated README, recipe, or
+source-input bytes.  The complete source snapshot fingerprint remains available
+as separate provenance and is never relabelled as a planner identity.

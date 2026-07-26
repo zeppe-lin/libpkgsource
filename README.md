@@ -87,3 +87,11 @@ unprivileged identity.
 ## License
 
 GPL-3.0-or-later.  See `COPYING` and `COPYRIGHT`.
+
+## Optional planner adapter
+
+`libpkgsource-plan` is an optional composition library that projects one sealed
+source snapshot into a `libpkgplan` candidate package fact.  It keeps the source
+snapshot alive, preserves exact removal lifecycle bytes, and computes
+source-owned release and candidate-control identities.  The core
+`libpkgsource` library does not depend on `libpkgplan`.
