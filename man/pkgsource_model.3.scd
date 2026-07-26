@@ -2,7 +2,7 @@ pkgsource_model(3)
 
 # NAME
 
-pkgsource_model - normalized package-source value model
+pkgsource_model - native package-source declaration value model
 
 # SYNOPSIS
 
@@ -10,37 +10,21 @@ pkgsource_model - normalized package-source value model
 
 # DESCRIPTION
 
-The model consists of immutable classes with construction-time values and const
-accessors.
+Package, profile, and architecture references are strict canonical identities.
+Non-canonical spelling is rejected rather than treated as an alias.
 
-*package_identity* stores package name, version, and release.
+*requirement_scope* represents build, run, check, or one lifecycle action.
+*requirement_subject* represents an exact package or profile reference.  There
+is no combined build-and-run scope.
 
-*descriptive_metadata* stores optional description, URL, packager, and
-maintainer fields.
+*package_release*, *package_metadata*, *source_input*, *program*,
+*lifecycle_program*, and *architecture_requirements* provide the native values
+needed by later source sealing.
 
-*dependency* stores a name and typed scope. For *pkgfile/0*, the legacy
-*Depends on:* field maps to *build_and_run*. This is a compatibility mapping,
-not the final dependency taxonomy.
-
-*source_input* stores the evaluated declaration, remote or recipe-local kind,
-local name, optional remote locator, declared digests, and an optional captured
-local file.
-
-*recipe_descriptor* binds the *build* entry point to the captured Pkgfile.
-*lifecycle_action* maps legacy action filenames to typed phases and captured
-programs. *resource* describes README files. *strip_exclusion* contains a POSIX
-extended regular expression. *footprint_declaration* binds a captured legacy
-footprint without interpreting it as a package image.
-
-*build_description* aggregates the normalized model and the native or legacy
-32-bit architecture marker.
-
-# FILE REFERENCES
-
-*captured_file* stores a relative path, original mode, size, SHA-256 content
-digest, and shared ownership of the private snapshot tree. *native_path()* is
-valid while any copy of the captured file or parent snapshot remains alive.
+*declaration_provenance* retains the exact document, semantic path, line, and
+column that issued a declaration.  Provenance is diagnostic and does not become
+semantic identity.
 
 # SEE ALSO
 
-*libpkgsource*(3), *pkgsource_snapshot*(3)
+*libpkgsource*(3)

@@ -2,44 +2,34 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 public_inc = include_directories('../include')
 private_inc = include_directories('.')
-worker_define = '-DPKGSOURCE_PKGFILE_WORKER="' + pkgfile_worker_install_path + '"'
 
 libpkgsource = library(
   'pkgsource',
   [
     'error.cpp',
+    'identity.cpp',
+    'identity_support.cpp',
     'model.cpp',
-    'snapshot_model.cpp',
-    'snapshot.cpp',
-    'process.cpp',
-    'pkgfile_protocol.cpp',
-    'pkgfile_backend.cpp',
   ],
-  cpp_args: [worker_define],
   include_directories: [public_inc, private_inc],
   dependencies: libcrypto_dep,
   install: true,
   version: meson.project_version(),
-  soversion: '0',
+  soversion: '1',
 )
 
 libpkgsource_dep = declare_dependency(
   link_with: libpkgsource,
   include_directories: public_inc,
   dependencies: libcrypto_dep,
-  variables: {
-    'pkgfile_worker': pkgfile_worker_build_path,
-  },
 )
 meson.override_dependency('libpkgsource', libpkgsource_dep)
 
 install_headers(
   '../include/libpkgsource/libpkgsource.h',
   '../include/libpkgsource/error.h',
+  '../include/libpkgsource/identity.h',
   '../include/libpkgsource/model.h',
-  '../include/libpkgsource/snapshot.h',
-  '../include/libpkgsource/backend.h',
-  '../include/libpkgsource/pkgfile_backend.h',
   subdir: 'libpkgsource',
 )
 
@@ -47,10 +37,7 @@ pkgconf.generate(
   libpkgsource,
   name: 'libpkgsource',
   filebase: 'libpkgsource',
-  description: 'Immutable package-source inspection library',
+  description: 'Native sealed package-source model library',
   subdirs: '.',
   requires_private: ['libcrypto'],
-  variables: {
-    'pkgfile_worker': pkgfile_worker_install_path,
-  },
 )

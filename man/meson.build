@@ -6,10 +6,6 @@ if scdoc.found()
   foreach page : [
     ['libpkgsource.3.scd', 'libpkgsource.3'],
     ['pkgsource_model.3.scd', 'pkgsource_model.3'],
-    ['pkgsource_backend.3.scd', 'pkgsource_backend.3'],
-    ['pkgsource_pkgfile_backend.3.scd', 'pkgsource_pkgfile_backend.3'],
-    ['pkgsource_snapshot.3.scd', 'pkgsource_snapshot.3'],
-    ['pkgsource_plan_adapter.3.scd', 'pkgsource_plan_adapter.3'],
   ]
     custom_target(
       page[1],

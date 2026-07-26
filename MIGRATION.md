@@ -1,57 +1,41 @@
 <!-- SPDX-FileCopyrightText: 2026 Alexandr Savca -->
 <!-- SPDX-License-Identifier: GPL-3.0-or-later -->
 
-# Migration notes
+# Migration boundary
 
-No existing consumer is changed by version 0.1.0.  This repository is an
-independent implementation and does not integrate with pkgman or libpkgbuild.
+The native `libpkgsource` API is not a compatibility layer.
 
-## Future pkgman migration
+It will not implement:
 
-The eventual pkgman adapter should replace `Package::load()` and direct
-filename probing with one `source_snapshot` per selected package source.
-Collection walking, precedence, duplicate reporting, and shadowing remain
-pkgman responsibilities.  pkgman should consume typed metadata, dependencies,
-README resources, and lifecycle declarations from the snapshot and must not
-reparse the Pkgfile.
+* `Pkgfile/0` parsing or shell evaluation;
+* CRUX metadata-comment or sidecar semantics;
+* a `build_and_run` dependency scope;
+* pkgmk or pkgman behavioral emulation; or
+* inference of native package semantics from historical source files.
 
-The adapter must decide snapshot caching and invalidation at the collection
-layer.  The library fingerprint is suitable as a captured-content identity but
-does not decide collection freshness policy.
+Historical sources will be converted by a separate tool, provisionally named
+`Pkgfile-to-recipe.yml`.  That tool may contain compatibility policy and may
+require operator decisions when old declarations are ambiguous.  Its output is
+then validated as native input; migration behavior does not become part of the
+library ABI.
 
-## Future libpkgbuild migration
+The same rule applies downstream.  Historical package database import belongs
+to a separate `legacy-db-to-canonical-state` tool, fakeroot compatibility does
+not belong in `libpkgbuild`, and pkgmk/pkgman behavioral compatibility does not
+belong in `pkgctl`.
 
-The eventual build adapter should accept the snapshot's source inputs, declared
-MD5 values, recipe descriptor, strip exclusions, footprint declaration, and
-architecture mode.  Download, content verification, extraction, recipe
-execution, staged-image construction, normalization, and footprint comparison
-remain build-layer work.
+## Downstream transition
 
-The build adapter must execute from the captured root and bind the stored
-identity to execution.  It should not independently source the mutable original
-Pkgfile or rebuild source declarations from text.
+`libpkgsource-plan` is rebuilt with this repository because it is an explicit
+adapter over the public source model.  It must transition from the removed
+legacy dependency and captured-file APIs to exact native run requirements and
+inline sealed lifecycle programs.
 
-`PkgfileDefinitionLoader` and its worker can be retired only after that adapter
-covers the existing build engine's configuration and archive-policy inputs.
+`libpkgplan` needs no source change for the initial transition.  Its runtime
+dependency declarations, removal lifecycle declarations, and target-profile
+facts can receive the native projection.  It remains deliberately unaware of
+build requirements, check requirements, lifecycle requirements, profile
+expansion, source inputs, and build execution.
 
-## Compatibility cautions
-
-Version 0.1.0 intentionally narrows or formalizes behavior that older heuristic
-readers accepted ambiguously:
-
-* metadata labels are exact rather than prefix abbreviations;
-* duplicate metadata and dependency names are errors;
-* checksum manifests must exactly close over source local names;
-* binary-mode MD5 lines are unsupported;
-* sidecars must be regular files;
-* unsafe and external symlinks are rejected;
-* filesystem races are errors rather than silently mixed revisions;
-* no pkgmk configuration file is sourced;
-* the legacy `local-name::remote-locator` form is normalized explicitly,
-  with `.md5sum` bound to `local-name`;
-* `.footprint` is captured but not parsed.
-
-Before replacing a production reader, run the reference client over each
-collection and classify failures as source defects, required compatibility
-extensions, or intentionally rejected ambiguity.  Do not weaken the immutable
-snapshot invariant to accommodate mutable collection paths.
+Consumers must move atomically to the new SONAME and headers.  There is no
+supported source or binary compatibility bridge inside `libpkgsource`.

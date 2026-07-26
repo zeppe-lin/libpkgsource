@@ -2,278 +2,277 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /*! \file model.h
- *  \brief Immutable normalized package-source value model.
+ *  \brief Native parser-neutral package-source declarations and values.
  */
 #pragma once
 
 #include <cstdint>
-#include <filesystem>
-#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <vector>
 
+#include <libpkgsource/identity.h>
+
 namespace pkgsource {
-class captured_file;
-namespace detail {
-struct snapshot_state;
-captured_file make_captured_file(
-    const std::shared_ptr<const snapshot_state>&,
-    const std::filesystem::path&);
-}
 
-/*! \brief Source-directory protocol understood by a backend. */
-enum class source_format { pkgfile_v0 };
-/*! \brief Algorithm attached to a normalized digest declaration. */
-enum class digest_algorithm { md5, sha256 };
-/*! \brief Dependency applicability in the normalized model. */
-enum class dependency_scope { build_and_run };
-/*! \brief Origin of one declared build input. */
-enum class source_input_kind { remote, recipe_local };
-/*! \brief Callable recipe entry point declared by a source format. */
-enum class recipe_entry_point { build };
-/*! \brief Typed package lifecycle phase. */
-enum class lifecycle_phase { pre_install, post_install, pre_remove, post_remove };
-/*! \brief Kind of descriptive source resource. */
-enum class resource_kind { readme };
-/*! \brief Representation of a descriptive resource. */
-enum class resource_format { plain_text, markdown };
-/*! \brief Grammar used by a strip exclusion. */
-enum class strip_pattern_syntax { posix_extended_regular_expression };
-/*! \brief Representation of a captured footprint declaration. */
-enum class footprint_format { pkgfile_footprint_v0 };
-/*! \brief Architecture selection declared by the source protocol. */
-enum class build_architecture { native, legacy_32bit };
+/*! \brief Hash algorithm accepted for source content in recipe/1. */
+enum class digest_algorithm { sha256 };
+/*! \brief Requirement domain. */
+enum class requirement_scope_kind { build, run, check, lifecycle };
+/*! \brief Exact package lifecycle action. */
+enum class lifecycle_action {
+  pre_install,
+  post_install,
+  pre_remove,
+  post_remove,
+};
+/*! \brief Requirement subject domain. */
+enum class requirement_subject_kind { package, profile };
+/*! \brief Declared source input location domain. */
+enum class source_input_kind { remote, local };
+/*! \brief Program language understood by later execution stages. */
+enum class program_language { posix_shell };
 
-/*! \brief Return the stable diagnostic spelling of a typed value. */
-[[nodiscard]] std::string_view to_string(source_format value) noexcept;
 [[nodiscard]] std::string_view to_string(digest_algorithm value) noexcept;
-[[nodiscard]] std::string_view to_string(dependency_scope value) noexcept;
+[[nodiscard]] std::string_view to_string(requirement_scope_kind value) noexcept;
+[[nodiscard]] std::string_view to_string(lifecycle_action value) noexcept;
+[[nodiscard]] std::string_view to_string(requirement_subject_kind value) noexcept;
 [[nodiscard]] std::string_view to_string(source_input_kind value) noexcept;
-[[nodiscard]] std::string_view to_string(recipe_entry_point value) noexcept;
-[[nodiscard]] std::string_view to_string(lifecycle_phase value) noexcept;
-[[nodiscard]] std::string_view to_string(resource_kind value) noexcept;
-[[nodiscard]] std::string_view to_string(resource_format value) noexcept;
-[[nodiscard]] std::string_view to_string(strip_pattern_syntax value) noexcept;
-[[nodiscard]] std::string_view to_string(footprint_format value) noexcept;
-[[nodiscard]] std::string_view to_string(build_architecture value) noexcept;
+[[nodiscard]] std::string_view to_string(program_language value) noexcept;
 
 /*! \brief Validated lowercase hexadecimal digest value. */
 class digest final {
 public:
-  /*! \throws error when \a hex has the wrong width or non-hexadecimal data. */
   digest(digest_algorithm algorithm, std::string hex);
   [[nodiscard]] digest_algorithm algorithm() const noexcept;
   [[nodiscard]] const std::string& hex() const noexcept;
+  friend bool operator==(const digest& lhs, const digest& rhs) noexcept;
+  friend bool operator!=(const digest& lhs, const digest& rhs) noexcept;
+  friend bool operator<(const digest& lhs, const digest& rhs) noexcept;
 private:
   digest_algorithm algorithm_;
   std::string hex_;
 };
 
-/*! \brief Normalized package release identity. */
-class package_identity final {
+/*! \brief Canonical exact package name. */
+class package_reference final {
 public:
-  /*! \throws error when a field is empty, contains whitespace, controls, or '/'. */
-  package_identity(std::string name, std::string version, std::string release);
+  explicit package_reference(std::string name);
   [[nodiscard]] const std::string& name() const noexcept;
+  friend bool operator==(const package_reference& lhs,
+                         const package_reference& rhs) noexcept;
+  friend bool operator!=(const package_reference& lhs,
+                         const package_reference& rhs) noexcept;
+  friend bool operator<(const package_reference& lhs,
+                        const package_reference& rhs) noexcept;
+private:
+  std::string name_;
+};
+
+/*! \brief Canonical named profile reference, including its leading '@'. */
+class profile_reference final {
+public:
+  explicit profile_reference(std::string name);
+  [[nodiscard]] const std::string& name() const noexcept;
+  friend bool operator==(const profile_reference& lhs,
+                         const profile_reference& rhs) noexcept;
+  friend bool operator!=(const profile_reference& lhs,
+                         const profile_reference& rhs) noexcept;
+  friend bool operator<(const profile_reference& lhs,
+                        const profile_reference& rhs) noexcept;
+private:
+  std::string name_;
+};
+
+/*! \brief Canonical build or target architecture name. */
+class architecture_reference final {
+public:
+  explicit architecture_reference(std::string name);
+  [[nodiscard]] const std::string& name() const noexcept;
+  friend bool operator==(const architecture_reference& lhs,
+                         const architecture_reference& rhs) noexcept;
+  friend bool operator!=(const architecture_reference& lhs,
+                         const architecture_reference& rhs) noexcept;
+  friend bool operator<(const architecture_reference& lhs,
+                        const architecture_reference& rhs) noexcept;
+private:
+  std::string name_;
+};
+
+/*! \brief Exact source declaration site retained through sealing. */
+class declaration_provenance final {
+public:
+  declaration_provenance(std::string document, std::string path,
+                         std::uint32_t line, std::uint32_t column);
+  [[nodiscard]] const std::string& document() const noexcept;
+  [[nodiscard]] const std::string& path() const noexcept;
+  [[nodiscard]] std::uint32_t line() const noexcept;
+  [[nodiscard]] std::uint32_t column() const noexcept;
+  friend bool operator==(const declaration_provenance& lhs,
+                         const declaration_provenance& rhs) noexcept;
+  friend bool operator!=(const declaration_provenance& lhs,
+                         const declaration_provenance& rhs) noexcept;
+  friend bool operator<(const declaration_provenance& lhs,
+                        const declaration_provenance& rhs) noexcept;
+private:
+  std::string document_;
+  std::string path_;
+  std::uint32_t line_;
+  std::uint32_t column_;
+};
+
+/*! \brief Typed requirement scope with lifecycle binding where applicable. */
+class requirement_scope final {
+public:
+  [[nodiscard]] static requirement_scope build();
+  [[nodiscard]] static requirement_scope run();
+  [[nodiscard]] static requirement_scope check();
+  [[nodiscard]] static requirement_scope lifecycle(lifecycle_action action);
+  [[nodiscard]] requirement_scope_kind kind() const noexcept;
+  [[nodiscard]] const std::optional<lifecycle_action>& action() const noexcept;
+  friend bool operator==(const requirement_scope& lhs,
+                         const requirement_scope& rhs) noexcept;
+  friend bool operator!=(const requirement_scope& lhs,
+                         const requirement_scope& rhs) noexcept;
+  friend bool operator<(const requirement_scope& lhs,
+                        const requirement_scope& rhs) noexcept;
+private:
+  requirement_scope(requirement_scope_kind kind,
+                    std::optional<lifecycle_action> action);
+  requirement_scope_kind kind_;
+  std::optional<lifecycle_action> action_;
+};
+
+/*! \brief Exact package or profile subject. */
+class requirement_subject final {
+public:
+  explicit requirement_subject(package_reference package);
+  explicit requirement_subject(profile_reference profile);
+  [[nodiscard]] requirement_subject_kind kind() const noexcept;
+  [[nodiscard]] const package_reference& package() const;
+  [[nodiscard]] const profile_reference& profile() const;
+  [[nodiscard]] std::string text() const;
+  friend bool operator==(const requirement_subject& lhs,
+                         const requirement_subject& rhs) noexcept;
+  friend bool operator!=(const requirement_subject& lhs,
+                         const requirement_subject& rhs) noexcept;
+  friend bool operator<(const requirement_subject& lhs,
+                        const requirement_subject& rhs) noexcept;
+private:
+  requirement_subject_kind kind_;
+  std::optional<package_reference> package_;
+  std::optional<profile_reference> profile_;
+};
+
+/*! \brief One parser-neutral requirement declaration. */
+class requirement_declaration final {
+public:
+  requirement_declaration(requirement_scope scope, requirement_subject subject,
+                          declaration_provenance provenance);
+  [[nodiscard]] const requirement_scope& scope() const noexcept;
+  [[nodiscard]] const requirement_subject& subject() const noexcept;
+  [[nodiscard]] const declaration_provenance& provenance() const noexcept;
+private:
+  requirement_scope scope_;
+  requirement_subject subject_;
+  declaration_provenance provenance_;
+};
+
+/*! \brief Native package release coordinates and semantic identity. */
+class package_release final {
+public:
+  package_release(package_reference package, std::string version,
+                  std::uint32_t release);
+  [[nodiscard]] const package_reference& package() const noexcept;
   [[nodiscard]] const std::string& version() const noexcept;
-  [[nodiscard]] const std::string& release() const noexcept;
+  [[nodiscard]] std::uint32_t release() const noexcept;
+  [[nodiscard]] const package_release_identity& identity() const noexcept;
   [[nodiscard]] std::string version_release() const;
 private:
-  std::string name_;
+  package_reference package_;
   std::string version_;
-  std::string release_;
+  std::uint32_t release_;
+  package_release_identity identity_;
 };
 
-/*! \brief Optional human-facing metadata declared by a package source. */
-class descriptive_metadata final {
+/*! \brief Metadata retained for package-image and installed-state stages. */
+class package_metadata final {
 public:
-  /*! \throws error when a present field is empty or contains controls. */
-  descriptive_metadata(std::optional<std::string> description,
-                       std::optional<std::string> url,
-                       std::optional<std::string> packager,
-                       std::optional<std::string> maintainer);
+  package_metadata(std::string summary,
+                   std::optional<std::string> description,
+                   std::optional<std::string> homepage,
+                   std::vector<std::string> licenses);
+  [[nodiscard]] const std::string& summary() const noexcept;
   [[nodiscard]] const std::optional<std::string>& description() const noexcept;
-  [[nodiscard]] const std::optional<std::string>& url() const noexcept;
-  [[nodiscard]] const std::optional<std::string>& packager() const noexcept;
-  [[nodiscard]] const std::optional<std::string>& maintainer() const noexcept;
+  [[nodiscard]] const std::optional<std::string>& homepage() const noexcept;
+  [[nodiscard]] const std::vector<std::string>& licenses() const noexcept;
 private:
+  std::string summary_;
   std::optional<std::string> description_;
-  std::optional<std::string> url_;
-  std::optional<std::string> packager_;
-  std::optional<std::string> maintainer_;
+  std::optional<std::string> homepage_;
+  std::vector<std::string> licenses_;
 };
 
-/*! \brief One normalized dependency declaration. */
-class dependency final {
-public:
-  dependency(std::string name, dependency_scope scope);
-  [[nodiscard]] const std::string& name() const noexcept;
-  [[nodiscard]] dependency_scope scope() const noexcept;
-private:
-  std::string name_;
-  dependency_scope scope_;
-};
-
-/*! \brief Lifetime-bound reference to one regular file in a source snapshot.
- *
- * Copies share ownership of the private snapshot tree.  The native path remains
- * valid until the final source_snapshot or captured_file owner is destroyed.
- */
-class captured_file final {
-public:
-  captured_file() = default;
-  [[nodiscard]] const std::filesystem::path& relative_path() const noexcept;
-  /*! \brief Return the file path inside the private captured tree.
-   *  \throws error when this is an empty captured_file.
-   */
-  [[nodiscard]] std::filesystem::path native_path() const;
-  [[nodiscard]] const digest& content_digest() const noexcept;
-  [[nodiscard]] std::uint32_t original_mode() const noexcept;
-  [[nodiscard]] std::uintmax_t size() const noexcept;
-  [[nodiscard]] bool executable() const noexcept;
-  [[nodiscard]] explicit operator bool() const noexcept;
-private:
-  friend class pkgfile_backend;
-  friend class source_snapshot;
-  friend captured_file detail::make_captured_file(
-      const std::shared_ptr<const detail::snapshot_state>&,
-      const std::filesystem::path&);
-  captured_file(std::shared_ptr<const detail::snapshot_state> state,
-                std::filesystem::path relative_path,
-                digest content_digest,
-                std::uint32_t original_mode,
-                std::uintmax_t size);
-  std::shared_ptr<const detail::snapshot_state> state_;
-  std::filesystem::path relative_path_;
-  digest content_digest_{digest_algorithm::sha256, std::string(64, '0')};
-  std::uint32_t original_mode_{0};
-  std::uintmax_t size_{0};
-};
-
-/*! \brief Declared input to the build recipe.
- *
- * Remote inputs carry a locator and no captured local file.  Their declaration
- * is either the locator itself or `local_name::locator` when pkgfile/0 supplies
- * an explicit distfile name.  Recipe-local inputs carry a captured regular file
- * and no remote locator.
- */
+/*! \brief One normalized source input declaration. */
 class source_input final {
 public:
-  source_input(std::string declaration, source_input_kind kind,
-               std::string local_name, std::optional<std::string> locator,
-               std::vector<digest> digests,
-               std::optional<captured_file> local_file);
-  [[nodiscard]] const std::string& declaration() const noexcept;
+  [[nodiscard]] static source_input remote(std::string url,
+                                           std::string local_name,
+                                           digest content_digest);
+  [[nodiscard]] static source_input local(std::string path,
+                                          std::string local_name,
+                                          digest content_digest);
   [[nodiscard]] source_input_kind kind() const noexcept;
+  [[nodiscard]] const std::string& location() const noexcept;
   [[nodiscard]] const std::string& local_name() const noexcept;
-  [[nodiscard]] const std::optional<std::string>& locator() const noexcept;
-  [[nodiscard]] const std::vector<digest>& digests() const noexcept;
-  [[nodiscard]] const std::optional<captured_file>& local_file() const noexcept;
+  [[nodiscard]] const digest& content_digest() const noexcept;
 private:
-  std::string declaration_;
+  source_input(source_input_kind kind, std::string location,
+               std::string local_name, digest content_digest);
   source_input_kind kind_;
+  std::string location_;
   std::string local_name_;
-  std::optional<std::string> locator_;
-  std::vector<digest> digests_;
-  std::optional<captured_file> local_file_;
+  digest content_digest_;
 };
 
-/*! \brief Captured program and callable entry point for a build recipe. */
-class recipe_descriptor final {
+/*! \brief Exact non-executed program bytes in the normalized model. */
+class program final {
 public:
-  recipe_descriptor(source_format format, recipe_entry_point entry_point,
-                    captured_file program);
-  [[nodiscard]] source_format format() const noexcept;
-  [[nodiscard]] recipe_entry_point entry_point() const noexcept;
-  [[nodiscard]] const captured_file& program() const noexcept;
+  program(program_language language, std::string material);
+  [[nodiscard]] program_language language() const noexcept;
+  [[nodiscard]] const std::string& material() const noexcept;
+  [[nodiscard]] const digest& content_digest() const noexcept;
 private:
-  source_format format_;
-  recipe_entry_point entry_point_;
-  captured_file program_;
+  program_language language_;
+  std::string material_;
+  digest content_digest_;
 };
 
-/*! \brief Captured lifecycle program; the library never executes it. */
-class lifecycle_action final {
+/*! \brief Program bound to one lifecycle action. */
+class lifecycle_program final {
 public:
-  lifecycle_action(lifecycle_phase phase, captured_file program);
-  [[nodiscard]] lifecycle_phase phase() const noexcept;
-  [[nodiscard]] const captured_file& program() const noexcept;
+  lifecycle_program(lifecycle_action action, program value);
+  [[nodiscard]] lifecycle_action action() const noexcept;
+  [[nodiscard]] const program& value() const noexcept;
 private:
-  lifecycle_phase phase_;
-  captured_file program_;
+  lifecycle_action action_;
+  program value_;
 };
 
-/*! \brief Captured descriptive resource associated with a source. */
-class resource final {
+/*! \brief Exact accepted build and target architecture sets.
+ *
+ * An empty set means unrestricted. Non-empty sets are sorted and unique.
+ */
+class architecture_requirements final {
 public:
-  resource(resource_kind kind, resource_format format, captured_file file);
-  [[nodiscard]] resource_kind kind() const noexcept;
-  [[nodiscard]] resource_format format() const noexcept;
-  [[nodiscard]] const captured_file& file() const noexcept;
+  architecture_requirements(std::vector<architecture_reference> build,
+                            std::vector<architecture_reference> target);
+  [[nodiscard]] const std::vector<architecture_reference>& build() const noexcept;
+  [[nodiscard]] const std::vector<architecture_reference>& target() const noexcept;
 private:
-  resource_kind kind_;
-  resource_format format_;
-  captured_file file_;
-};
-
-/*! \brief One normalized path pattern excluded from stripping. */
-class strip_exclusion final {
-public:
-  strip_exclusion(strip_pattern_syntax syntax, std::string pattern);
-  [[nodiscard]] strip_pattern_syntax syntax() const noexcept;
-  [[nodiscard]] const std::string& pattern() const noexcept;
-private:
-  strip_pattern_syntax syntax_;
-  std::string pattern_;
-};
-
-/*! \brief Strongly typed captured build-footprint declaration. */
-class footprint_declaration final {
-public:
-  footprint_declaration(footprint_format format, captured_file file);
-  [[nodiscard]] footprint_format format() const noexcept;
-  [[nodiscard]] const captured_file& file() const noexcept;
-private:
-  footprint_format format_;
-  captured_file file_;
-};
-
-/*! \brief Complete normalized meaning of one inspected package source. */
-class build_description final {
-public:
-  build_description(package_identity identity,
-                    descriptive_metadata metadata,
-                    std::vector<dependency> dependencies,
-                    std::vector<source_input> sources,
-                    recipe_descriptor recipe,
-                    std::vector<lifecycle_action> lifecycle_actions,
-                    std::vector<resource> resources,
-                    std::vector<strip_exclusion> strip_exclusions,
-                    std::optional<footprint_declaration> footprint,
-                    build_architecture architecture);
-  [[nodiscard]] const package_identity& identity() const noexcept;
-  [[nodiscard]] const descriptive_metadata& metadata() const noexcept;
-  [[nodiscard]] const std::vector<dependency>& dependencies() const noexcept;
-  [[nodiscard]] const std::vector<source_input>& sources() const noexcept;
-  [[nodiscard]] const recipe_descriptor& recipe() const noexcept;
-  [[nodiscard]] const std::vector<lifecycle_action>& lifecycle_actions() const noexcept;
-  [[nodiscard]] const std::vector<resource>& resources() const noexcept;
-  [[nodiscard]] const std::vector<strip_exclusion>& strip_exclusions() const noexcept;
-  [[nodiscard]] const std::optional<footprint_declaration>& footprint() const noexcept;
-  [[nodiscard]] build_architecture architecture() const noexcept;
-private:
-  package_identity identity_;
-  descriptive_metadata metadata_;
-  std::vector<dependency> dependencies_;
-  std::vector<source_input> sources_;
-  recipe_descriptor recipe_;
-  std::vector<lifecycle_action> lifecycle_actions_;
-  std::vector<resource> resources_;
-  std::vector<strip_exclusion> strip_exclusions_;
-  std::optional<footprint_declaration> footprint_;
-  build_architecture architecture_;
+  std::vector<architecture_reference> build_;
+  std::vector<architecture_reference> target_;
 };
 
 } // namespace pkgsource

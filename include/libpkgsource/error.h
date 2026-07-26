@@ -14,21 +14,21 @@ namespace pkgsource {
 /*! \brief Stable failure categories exposed by the library. */
 enum class error_code {
   invalid_request,
-  unsupported_format,
-  unsafe_source_tree,
-  unsupported_object,
-  source_mutated,
-  snapshot_failed,
-  worker_failed,
-  malformed_worker_record,
-  invalid_pkgfile,
+  invalid_identity,
+  invalid_provenance,
+  invalid_requirement,
+  invalid_profile,
+  duplicate_declaration,
+  unknown_profile,
+  profile_cycle,
+  invalid_recipe,
   invalid_metadata,
-  invalid_checksum,
-  invalid_sidecar,
-  filesystem_failed,
+  invalid_source,
+  invalid_program,
+  identity_failed,
 };
 
-/*! \brief Exception carrying an error_code and human-readable diagnostic. */
+/*! \brief Exception carrying an error_code and diagnostic text. */
 class error : public std::runtime_error {
 public:
   error(error_code code, std::string message);

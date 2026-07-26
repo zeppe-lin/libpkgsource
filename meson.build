@@ -3,7 +3,7 @@
 project(
   'libpkgsource',
   'cpp',
-  version: '0.2.1',
+  version: '1.0.0',
   license: 'GPL-3.0-or-later',
   meson_version: '>=1.2.0',
   default_options: [
@@ -25,42 +25,8 @@ if (library_kind == 'static') != want_static
 endif
 
 libcrypto_dep = dependency('libcrypto', required: true, static: want_static)
-libpkgplan_dep = dependency(
-  'libpkgplan',
-  version: '>=0.2.0',
-  required: get_option('planner_adapter'),
-  static: want_static,
-  fallback: ['libpkgplan', 'libpkgplan_dep'],
-  default_options: [
-    'default_library=' + library_kind,
-    'link_mode=' + get_option('link_mode'),
-  ],
-)
 pkgconf = import('pkgconfig')
 
-pkgfile_worker_install_path = join_paths(
-  get_option('prefix'),
-  get_option('libexecdir'),
-  'pkgsource-pkgfile-worker',
-)
-
-pkgfile_worker = configure_file(
-  input: 'src/pkgsource-pkgfile-worker.in',
-  output: 'pkgsource-pkgfile-worker',
-  copy: true,
-  install: true,
-  install_dir: get_option('libexecdir'),
-  install_mode: 'rwxr-xr-x',
-)
-pkgfile_worker_build_path = join_paths(
-  meson.project_build_root(),
-  'pkgsource-pkgfile-worker',
-)
-
 subdir('src')
-if libpkgplan_dep.found()
-  subdir('adapter')
-endif
-subdir('tools')
 subdir('man')
 subdir('tests')

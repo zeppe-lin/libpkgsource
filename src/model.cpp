@@ -1,193 +1,468 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <libpkgsource/model.h>
+
 #include <libpkgsource/error.h>
-#include "internal.h"
+
+#include "identity_support.h"
 
 #include <algorithm>
 #include <cctype>
-#include <regex>
 #include <set>
+#include <tuple>
 #include <utility>
 
 namespace pkgsource {
 namespace {
-bool valid_hex(const std::string& value, std::size_t expected) {
-  return value.size() == expected && std::all_of(value.begin(), value.end(),
-    [](unsigned char c){ return std::isxdigit(c) != 0; });
-}
-bool valid_atom(const std::string& value) {
-  if (value.empty() || value == "." || value == "..") return false;
-  return std::none_of(value.begin(), value.end(), [](unsigned char c) {
-    return std::iscntrl(c) != 0 || std::isspace(c) != 0 || c == '/';
-  });
+
+bool canonical_atom(std::string_view value, bool allow_at)
+{
+  std::size_t offset = 0;
+  if (allow_at) {
+    if (value.empty() || value.front() != '@')
+      return false;
+    offset = 1;
+  }
+  if (offset == value.size())
+    return false;
+  const auto valid_first = [](char c) {
+    return c >= 'a' && c <= 'z';
+  };
+  const auto valid_rest = [](char c) {
+    return (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9')
+        || c == '+' || c == '.' || c == '_' || c == '-';
+  };
+  if (!valid_first(value[offset]))
+    return false;
+  for (std::size_t i = offset + 1; i < value.size(); ++i)
+    if (!valid_rest(value[i]))
+      return false;
+  return true;
 }
 
-bool valid_text(const std::string& value) {
-  return !value.empty() && std::none_of(value.begin(), value.end(),
-    [](unsigned char c) { return c == '\0' || (std::iscntrl(c) && c != '\t'); });
+bool line_safe(std::string_view value)
+{
+  if (value.empty())
+    return false;
+  for (unsigned char c : value)
+    if (c == 0 || c == '\n' || c == '\r' || c < 0x20 || c == 0x7f)
+      return false;
+  return true;
 }
 
-bool safe_basename(const std::string& value) {
-  const std::filesystem::path path(value);
-  return valid_text(value) && !path.is_absolute() && path.filename() == path &&
-         value != "." && value != "..";
-}
+bool text_safe(std::string_view value)
+{
+  if (value.empty())
+    return false;
+  for (unsigned char c : value)
+    if (c == 0 || (c < 0x20 && c != '\n' && c != '\t') || c == 0x7f)
+      return false;
+  return true;
 }
 
-std::string_view to_string(source_format v) noexcept { return v == source_format::pkgfile_v0 ? "pkgfile/0" : "unknown"; }
-std::string_view to_string(digest_algorithm v) noexcept { return v == digest_algorithm::md5 ? "md5" : "sha256"; }
-std::string_view to_string(dependency_scope) noexcept { return "build_and_run"; }
-std::string_view to_string(source_input_kind v) noexcept { return v == source_input_kind::remote ? "remote" : "recipe_local"; }
-std::string_view to_string(recipe_entry_point) noexcept { return "build"; }
-std::string_view to_string(lifecycle_phase v) noexcept {
-  switch (v) { case lifecycle_phase::pre_install: return "pre_install"; case lifecycle_phase::post_install: return "post_install"; case lifecycle_phase::pre_remove: return "pre_remove"; case lifecycle_phase::post_remove: return "post_remove"; }
+bool safe_basename(std::string_view value)
+{
+  return line_safe(value) && value != "." && value != ".."
+      && value.find('/') == std::string_view::npos;
+}
+
+bool safe_relative_path(std::string_view value)
+{
+  if (!line_safe(value) || value.front() == '/')
+    return false;
+  std::size_t start = 0;
+  while (start <= value.size()) {
+    const std::size_t end = value.find('/', start);
+    const std::string_view part = value.substr(
+        start, end == std::string_view::npos ? value.size() - start : end - start);
+    if (part.empty() || part == "." || part == "..")
+      return false;
+    if (end == std::string_view::npos)
+      break;
+    start = end + 1;
+  }
+  return true;
+}
+
+template <typename T>
+void sort_unique(std::vector<T>& values, std::string_view field)
+{
+  std::sort(values.begin(), values.end());
+  if (std::adjacent_find(values.begin(), values.end()) != values.end())
+    throw error(error_code::duplicate_declaration,
+                "duplicate normalized " + std::string(field));
+}
+
+package_release_identity make_release_identity(const package_reference& package,
+                                               std::string_view version,
+                                               std::uint32_t release)
+{
+  detail::identity_writer writer;
+  writer.text("libpkgsource/package-release/v1");
+  writer.text(package.name());
+  writer.text(version);
+  writer.number(release);
+  return package_release_identity::from_sha256(writer.finish());
+}
+
+} // namespace
+
+std::string_view to_string(digest_algorithm) noexcept { return "sha256"; }
+std::string_view to_string(requirement_scope_kind value) noexcept
+{
+  switch (value) {
+    case requirement_scope_kind::build: return "build";
+    case requirement_scope_kind::run: return "run";
+    case requirement_scope_kind::check: return "check";
+    case requirement_scope_kind::lifecycle: return "lifecycle";
+  }
   return "unknown";
 }
-std::string_view to_string(resource_kind) noexcept { return "readme"; }
-std::string_view to_string(resource_format v) noexcept { return v == resource_format::plain_text ? "plain_text" : "markdown"; }
-std::string_view to_string(strip_pattern_syntax) noexcept { return "posix_ere"; }
-std::string_view to_string(footprint_format) noexcept { return "pkgfile_footprint/0"; }
-std::string_view to_string(build_architecture v) noexcept { return v == build_architecture::native ? "native" : "legacy_32bit"; }
+std::string_view to_string(lifecycle_action value) noexcept
+{
+  switch (value) {
+    case lifecycle_action::pre_install: return "pre-install";
+    case lifecycle_action::post_install: return "post-install";
+    case lifecycle_action::pre_remove: return "pre-remove";
+    case lifecycle_action::post_remove: return "post-remove";
+  }
+  return "unknown";
+}
+std::string_view to_string(requirement_subject_kind value) noexcept
+{
+  return value == requirement_subject_kind::package ? "package" : "profile";
+}
+std::string_view to_string(source_input_kind value) noexcept
+{
+  return value == source_input_kind::remote ? "remote" : "local";
+}
+std::string_view to_string(program_language) noexcept { return "posix-shell"; }
 
-digest::digest(digest_algorithm a, std::string h) : algorithm_(a), hex_(std::move(h)) {
-  std::transform(hex_.begin(), hex_.end(), hex_.begin(), [](unsigned char c){ return static_cast<char>(std::tolower(c)); });
-  const std::size_t n = algorithm_ == digest_algorithm::md5 ? 32 : 64;
-  if (!valid_hex(hex_, n)) throw error(error_code::invalid_request, "invalid digest value");
+digest::digest(digest_algorithm algorithm, std::string hex)
+    : algorithm_(algorithm), hex_(std::move(hex))
+{
+  detail::require_sha256_hex(hex_);
 }
 digest_algorithm digest::algorithm() const noexcept { return algorithm_; }
 const std::string& digest::hex() const noexcept { return hex_; }
-
-package_identity::package_identity(std::string n, std::string v, std::string r)
-  : name_(std::move(n)), version_(std::move(v)), release_(std::move(r)) {
-  if (!valid_atom(name_) || !valid_atom(version_) || !valid_atom(release_))
-    throw error(error_code::invalid_pkgfile, "invalid package identity");
+bool operator==(const digest& lhs, const digest& rhs) noexcept
+{
+  return lhs.algorithm_ == rhs.algorithm_ && lhs.hex_ == rhs.hex_;
 }
-const std::string& package_identity::name() const noexcept { return name_; }
-const std::string& package_identity::version() const noexcept { return version_; }
-const std::string& package_identity::release() const noexcept { return release_; }
-std::string package_identity::version_release() const { return version_ + "-" + release_; }
-
-descriptive_metadata::descriptive_metadata(std::optional<std::string> d, std::optional<std::string> u, std::optional<std::string> p, std::optional<std::string> m)
-  : description_(std::move(d)), url_(std::move(u)), packager_(std::move(p)), maintainer_(std::move(m)) {
-  const std::optional<std::string>* fields[] = {&description_, &url_, &packager_, &maintainer_};
-  for (const auto* field : fields)
-    if (*field && !valid_text(**field))
-      throw error(error_code::invalid_metadata, "invalid descriptive metadata value");
+bool operator!=(const digest& lhs, const digest& rhs) noexcept { return !(lhs == rhs); }
+bool operator<(const digest& lhs, const digest& rhs) noexcept
+{
+  return std::tie(lhs.algorithm_, lhs.hex_) < std::tie(rhs.algorithm_, rhs.hex_);
 }
-const std::optional<std::string>& descriptive_metadata::description() const noexcept { return description_; }
-const std::optional<std::string>& descriptive_metadata::url() const noexcept { return url_; }
-const std::optional<std::string>& descriptive_metadata::packager() const noexcept { return packager_; }
-const std::optional<std::string>& descriptive_metadata::maintainer() const noexcept { return maintainer_; }
 
-dependency::dependency(std::string n, dependency_scope s) : name_(std::move(n)), scope_(s) {
-  if (!valid_atom(name_)) throw error(error_code::invalid_metadata, "invalid dependency name: " + name_);
+package_reference::package_reference(std::string name) : name_(std::move(name))
+{
+  if (!canonical_atom(name_, false))
+    throw error(error_code::invalid_identity,
+                "invalid canonical package reference: " + name_);
 }
-const std::string& dependency::name() const noexcept { return name_; }
-dependency_scope dependency::scope() const noexcept { return scope_; }
-
-captured_file::captured_file(std::shared_ptr<const detail::snapshot_state> s, std::filesystem::path p, digest d, std::uint32_t m, std::uintmax_t z)
- : state_(std::move(s)), relative_path_(std::move(p)), content_digest_(std::move(d)), original_mode_(m), size_(z) {}
-const std::filesystem::path& captured_file::relative_path() const noexcept { return relative_path_; }
-std::filesystem::path captured_file::native_path() const {
-  if (!state_) throw error(error_code::invalid_request, "empty captured file");
-  return state_->root / relative_path_;
+const std::string& package_reference::name() const noexcept { return name_; }
+bool operator==(const package_reference& lhs, const package_reference& rhs) noexcept
+{
+  return lhs.name_ == rhs.name_;
 }
-const digest& captured_file::content_digest() const noexcept { return content_digest_; }
-std::uint32_t captured_file::original_mode() const noexcept { return original_mode_; }
-std::uintmax_t captured_file::size() const noexcept { return size_; }
-bool captured_file::executable() const noexcept { return (original_mode_ & 0111U) != 0; }
-captured_file::operator bool() const noexcept { return static_cast<bool>(state_); }
+bool operator!=(const package_reference& lhs, const package_reference& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const package_reference& lhs, const package_reference& rhs) noexcept
+{
+  return lhs.name_ < rhs.name_;
+}
 
-source_input::source_input(std::string d, source_input_kind k, std::string n, std::optional<std::string> l, std::vector<digest> g, std::optional<captured_file> f)
- : declaration_(std::move(d)), kind_(k), local_name_(std::move(n)), locator_(std::move(l)), digests_(std::move(g)), local_file_(std::move(f)) {
-  if (!valid_text(declaration_) || !safe_basename(local_name_) || digests_.empty())
-    throw error(error_code::invalid_pkgfile, "invalid source input");
-  std::set<digest_algorithm> algorithms;
-  for (const auto& item : digests_)
-    if (!algorithms.insert(item.algorithm()).second)
-      throw error(error_code::invalid_pkgfile, "duplicate source digest algorithm");
+profile_reference::profile_reference(std::string name) : name_(std::move(name))
+{
+  if (!canonical_atom(name_, true))
+    throw error(error_code::invalid_identity,
+                "invalid canonical profile reference: " + name_);
+}
+const std::string& profile_reference::name() const noexcept { return name_; }
+bool operator==(const profile_reference& lhs, const profile_reference& rhs) noexcept
+{
+  return lhs.name_ == rhs.name_;
+}
+bool operator!=(const profile_reference& lhs, const profile_reference& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const profile_reference& lhs, const profile_reference& rhs) noexcept
+{
+  return lhs.name_ < rhs.name_;
+}
+
+architecture_reference::architecture_reference(std::string name)
+    : name_(std::move(name))
+{
+  if (!canonical_atom(name_, false))
+    throw error(error_code::invalid_identity,
+                "invalid canonical architecture reference: " + name_);
+}
+const std::string& architecture_reference::name() const noexcept { return name_; }
+bool operator==(const architecture_reference& lhs,
+                const architecture_reference& rhs) noexcept
+{
+  return lhs.name_ == rhs.name_;
+}
+bool operator!=(const architecture_reference& lhs,
+                const architecture_reference& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const architecture_reference& lhs,
+               const architecture_reference& rhs) noexcept
+{
+  return lhs.name_ < rhs.name_;
+}
+
+declaration_provenance::declaration_provenance(
+    std::string document, std::string path, std::uint32_t line,
+    std::uint32_t column)
+    : document_(std::move(document)), path_(std::move(path)),
+      line_(line), column_(column)
+{
+  if (!line_safe(document_) || !line_safe(path_) || line_ == 0 || column_ == 0)
+    throw error(error_code::invalid_provenance,
+                "invalid declaration provenance");
+}
+const std::string& declaration_provenance::document() const noexcept { return document_; }
+const std::string& declaration_provenance::path() const noexcept { return path_; }
+std::uint32_t declaration_provenance::line() const noexcept { return line_; }
+std::uint32_t declaration_provenance::column() const noexcept { return column_; }
+bool operator==(const declaration_provenance& lhs,
+                const declaration_provenance& rhs) noexcept
+{
+  return std::tie(lhs.document_, lhs.path_, lhs.line_, lhs.column_)
+      == std::tie(rhs.document_, rhs.path_, rhs.line_, rhs.column_);
+}
+bool operator!=(const declaration_provenance& lhs,
+                const declaration_provenance& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const declaration_provenance& lhs,
+               const declaration_provenance& rhs) noexcept
+{
+  return std::tie(lhs.document_, lhs.path_, lhs.line_, lhs.column_)
+       < std::tie(rhs.document_, rhs.path_, rhs.line_, rhs.column_);
+}
+
+requirement_scope::requirement_scope(
+    requirement_scope_kind kind, std::optional<lifecycle_action> action)
+    : kind_(kind), action_(action)
+{
+  if ((kind_ == requirement_scope_kind::lifecycle) != action_.has_value())
+    throw error(error_code::invalid_requirement,
+                "lifecycle requirement scope binding mismatch");
+}
+requirement_scope requirement_scope::build()
+{
+  return requirement_scope(requirement_scope_kind::build, std::nullopt);
+}
+requirement_scope requirement_scope::run()
+{
+  return requirement_scope(requirement_scope_kind::run, std::nullopt);
+}
+requirement_scope requirement_scope::check()
+{
+  return requirement_scope(requirement_scope_kind::check, std::nullopt);
+}
+requirement_scope requirement_scope::lifecycle(lifecycle_action action)
+{
+  return requirement_scope(requirement_scope_kind::lifecycle, action);
+}
+requirement_scope_kind requirement_scope::kind() const noexcept { return kind_; }
+const std::optional<lifecycle_action>& requirement_scope::action() const noexcept
+{
+  return action_;
+}
+bool operator==(const requirement_scope& lhs, const requirement_scope& rhs) noexcept
+{
+  return std::tie(lhs.kind_, lhs.action_) == std::tie(rhs.kind_, rhs.action_);
+}
+bool operator!=(const requirement_scope& lhs, const requirement_scope& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const requirement_scope& lhs, const requirement_scope& rhs) noexcept
+{
+  return std::tie(lhs.kind_, lhs.action_) < std::tie(rhs.kind_, rhs.action_);
+}
+
+requirement_subject::requirement_subject(package_reference package)
+    : kind_(requirement_subject_kind::package), package_(std::move(package))
+{
+}
+requirement_subject::requirement_subject(profile_reference profile)
+    : kind_(requirement_subject_kind::profile), profile_(std::move(profile))
+{
+}
+requirement_subject_kind requirement_subject::kind() const noexcept { return kind_; }
+const package_reference& requirement_subject::package() const
+{
+  if (!package_)
+    throw error(error_code::invalid_request,
+                "requirement subject is not a package reference");
+  return *package_;
+}
+const profile_reference& requirement_subject::profile() const
+{
+  if (!profile_)
+    throw error(error_code::invalid_request,
+                "requirement subject is not a profile reference");
+  return *profile_;
+}
+std::string requirement_subject::text() const
+{
+  return kind_ == requirement_subject_kind::package ? package_->name()
+                                                     : profile_->name();
+}
+bool operator==(const requirement_subject& lhs,
+                const requirement_subject& rhs) noexcept
+{
+  return std::tie(lhs.kind_, lhs.package_, lhs.profile_)
+      == std::tie(rhs.kind_, rhs.package_, rhs.profile_);
+}
+bool operator!=(const requirement_subject& lhs,
+                const requirement_subject& rhs) noexcept
+{
+  return !(lhs == rhs);
+}
+bool operator<(const requirement_subject& lhs,
+               const requirement_subject& rhs) noexcept
+{
+  return std::tie(lhs.kind_, lhs.package_, lhs.profile_)
+       < std::tie(rhs.kind_, rhs.package_, rhs.profile_);
+}
+
+requirement_declaration::requirement_declaration(
+    requirement_scope scope, requirement_subject subject,
+    declaration_provenance provenance)
+    : scope_(std::move(scope)), subject_(std::move(subject)),
+      provenance_(std::move(provenance))
+{
+}
+const requirement_scope& requirement_declaration::scope() const noexcept { return scope_; }
+const requirement_subject& requirement_declaration::subject() const noexcept { return subject_; }
+const declaration_provenance& requirement_declaration::provenance() const noexcept
+{
+  return provenance_;
+}
+
+package_release::package_release(package_reference package, std::string version,
+                                 std::uint32_t release)
+    : package_(std::move(package)), version_(std::move(version)),
+      release_(release), identity_(make_release_identity(package_, version_, release_))
+{
+  if (!line_safe(version_) || version_.find('/') != std::string::npos || release_ == 0)
+    throw error(error_code::invalid_metadata,
+                "invalid package version or release");
+}
+const package_reference& package_release::package() const noexcept { return package_; }
+const std::string& package_release::version() const noexcept { return version_; }
+std::uint32_t package_release::release() const noexcept { return release_; }
+const package_release_identity& package_release::identity() const noexcept
+{
+  return identity_;
+}
+std::string package_release::version_release() const
+{
+  return version_ + "-" + std::to_string(release_);
+}
+
+package_metadata::package_metadata(
+    std::string summary, std::optional<std::string> description,
+    std::optional<std::string> homepage, std::vector<std::string> licenses)
+    : summary_(std::move(summary)), description_(std::move(description)),
+      homepage_(std::move(homepage)), licenses_(std::move(licenses))
+{
+  if (!line_safe(summary_) || (description_ && !text_safe(*description_))
+      || (homepage_ && !line_safe(*homepage_)) || licenses_.empty())
+    throw error(error_code::invalid_metadata, "invalid package metadata");
+  for (const std::string& license : licenses_)
+    if (!line_safe(license))
+      throw error(error_code::invalid_metadata, "invalid package license");
+  sort_unique(licenses_, "package license");
+}
+const std::string& package_metadata::summary() const noexcept { return summary_; }
+const std::optional<std::string>& package_metadata::description() const noexcept
+{
+  return description_;
+}
+const std::optional<std::string>& package_metadata::homepage() const noexcept
+{
+  return homepage_;
+}
+const std::vector<std::string>& package_metadata::licenses() const noexcept
+{
+  return licenses_;
+}
+
+source_input::source_input(source_input_kind kind, std::string location,
+                           std::string local_name, digest content_digest)
+    : kind_(kind), location_(std::move(location)), local_name_(std::move(local_name)),
+      content_digest_(std::move(content_digest))
+{
+  if (!safe_basename(local_name_))
+    throw error(error_code::invalid_source, "invalid source local name");
   if (kind_ == source_input_kind::remote) {
-    const bool plain = locator_ && *locator_ == declaration_;
-    const bool explicitly_named = locator_ &&
-        declaration_ == local_name_ + "::" + *locator_;
-    if (!locator_ || locator_->find("://") == std::string::npos ||
-        (!plain && !explicitly_named) || local_file_)
-      throw error(error_code::invalid_pkgfile, "invalid remote source input");
-  } else if (locator_ || !local_file_ ||
-             local_file_->relative_path().filename().string() != local_name_) {
-    throw error(error_code::invalid_pkgfile, "invalid recipe-local source input");
+    if (!line_safe(location_) || location_.find("://") == std::string::npos)
+      throw error(error_code::invalid_source, "invalid remote source URL");
+  } else if (!safe_relative_path(location_)) {
+    throw error(error_code::invalid_source, "invalid local source path");
   }
 }
-const std::string& source_input::declaration() const noexcept { return declaration_; }
+source_input source_input::remote(std::string url, std::string local_name,
+                                  digest content_digest)
+{
+  return source_input(source_input_kind::remote, std::move(url),
+                      std::move(local_name), std::move(content_digest));
+}
+source_input source_input::local(std::string path, std::string local_name,
+                                 digest content_digest)
+{
+  return source_input(source_input_kind::local, std::move(path),
+                      std::move(local_name), std::move(content_digest));
+}
 source_input_kind source_input::kind() const noexcept { return kind_; }
+const std::string& source_input::location() const noexcept { return location_; }
 const std::string& source_input::local_name() const noexcept { return local_name_; }
-const std::optional<std::string>& source_input::locator() const noexcept { return locator_; }
-const std::vector<digest>& source_input::digests() const noexcept { return digests_; }
-const std::optional<captured_file>& source_input::local_file() const noexcept { return local_file_; }
+const digest& source_input::content_digest() const noexcept { return content_digest_; }
 
-recipe_descriptor::recipe_descriptor(source_format f, recipe_entry_point e, captured_file p) : format_(f), entry_point_(e), program_(std::move(p)) {
-  if (!program_) throw error(error_code::invalid_request, "recipe has no captured program");
+program::program(program_language language, std::string material)
+    : language_(language), material_(std::move(material)),
+      content_digest_(digest_algorithm::sha256,
+                      detail::sha256_hex(material_))
+{
+  if (!text_safe(material_))
+    throw error(error_code::invalid_program, "invalid empty or binary program");
 }
-source_format recipe_descriptor::format() const noexcept { return format_; }
-recipe_entry_point recipe_descriptor::entry_point() const noexcept { return entry_point_; }
-const captured_file& recipe_descriptor::program() const noexcept { return program_; }
+program_language program::language() const noexcept { return language_; }
+const std::string& program::material() const noexcept { return material_; }
+const digest& program::content_digest() const noexcept { return content_digest_; }
 
-lifecycle_action::lifecycle_action(lifecycle_phase p, captured_file f) : phase_(p), program_(std::move(f)) {
-  if (!program_) throw error(error_code::invalid_request, "lifecycle action has no captured program");
+lifecycle_program::lifecycle_program(lifecycle_action action, program value)
+    : action_(action), value_(std::move(value))
+{
 }
-lifecycle_phase lifecycle_action::phase() const noexcept { return phase_; }
-const captured_file& lifecycle_action::program() const noexcept { return program_; }
+lifecycle_action lifecycle_program::action() const noexcept { return action_; }
+const program& lifecycle_program::value() const noexcept { return value_; }
 
-resource::resource(resource_kind k, resource_format f, captured_file file) : kind_(k), format_(f), file_(std::move(file)) {
-  if (!file_) throw error(error_code::invalid_request, "resource has no captured file");
+architecture_requirements::architecture_requirements(
+    std::vector<architecture_reference> build,
+    std::vector<architecture_reference> target)
+    : build_(std::move(build)), target_(std::move(target))
+{
+  sort_unique(build_, "build architecture");
+  sort_unique(target_, "target architecture");
 }
-resource_kind resource::kind() const noexcept { return kind_; }
-resource_format resource::format() const noexcept { return format_; }
-const captured_file& resource::file() const noexcept { return file_; }
-
-strip_exclusion::strip_exclusion(strip_pattern_syntax s, std::string p) : syntax_(s), pattern_(std::move(p)) {
-  if (pattern_.find('\0') != std::string::npos)
-    throw error(error_code::invalid_sidecar, "strip pattern contains NUL");
-}
-strip_pattern_syntax strip_exclusion::syntax() const noexcept { return syntax_; }
-const std::string& strip_exclusion::pattern() const noexcept { return pattern_; }
-
-footprint_declaration::footprint_declaration(footprint_format f, captured_file file) : format_(f), file_(std::move(file)) {
-  if (!file_) throw error(error_code::invalid_request, "footprint has no captured file");
-}
-footprint_format footprint_declaration::format() const noexcept { return format_; }
-const captured_file& footprint_declaration::file() const noexcept { return file_; }
-
-build_description::build_description(package_identity i, descriptive_metadata m, std::vector<dependency> d, std::vector<source_input> s, recipe_descriptor r,
- std::vector<lifecycle_action> a, std::vector<resource> res, std::vector<strip_exclusion> x, std::optional<footprint_declaration> f, build_architecture arch)
- : identity_(std::move(i)), metadata_(std::move(m)), dependencies_(std::move(d)), sources_(std::move(s)), recipe_(std::move(r)), lifecycle_actions_(std::move(a)), resources_(std::move(res)), strip_exclusions_(std::move(x)), footprint_(std::move(f)), architecture_(arch) {
-  std::set<std::string> dependency_names;
-  for (const auto& item : dependencies_)
-    if (!dependency_names.insert(item.name()).second)
-      throw error(error_code::invalid_metadata, "duplicate normalized dependency");
-  std::set<std::string> source_names;
-  for (const auto& item : sources_)
-    if (!source_names.insert(item.local_name()).second)
-      throw error(error_code::invalid_pkgfile, "duplicate normalized source name");
-  std::set<lifecycle_phase> phases;
-  for (const auto& item : lifecycle_actions_)
-    if (!phases.insert(item.phase()).second)
-      throw error(error_code::invalid_sidecar, "duplicate lifecycle phase");
-  std::set<std::pair<resource_kind, resource_format>> resource_keys;
-  for (const auto& item : resources_)
-    if (!resource_keys.emplace(item.kind(), item.format()).second)
-      throw error(error_code::invalid_sidecar, "duplicate source resource");
-}
-const package_identity& build_description::identity() const noexcept { return identity_; }
-const descriptive_metadata& build_description::metadata() const noexcept { return metadata_; }
-const std::vector<dependency>& build_description::dependencies() const noexcept { return dependencies_; }
-const std::vector<source_input>& build_description::sources() const noexcept { return sources_; }
-const recipe_descriptor& build_description::recipe() const noexcept { return recipe_; }
-const std::vector<lifecycle_action>& build_description::lifecycle_actions() const noexcept { return lifecycle_actions_; }
-const std::vector<resource>& build_description::resources() const noexcept { return resources_; }
-const std::vector<strip_exclusion>& build_description::strip_exclusions() const noexcept { return strip_exclusions_; }
-const std::optional<footprint_declaration>& build_description::footprint() const noexcept { return footprint_; }
-build_architecture build_description::architecture() const noexcept { return architecture_; }
+const std::vector<architecture_reference>&
+architecture_requirements::build() const noexcept { return build_; }
+const std::vector<architecture_reference>&
+architecture_requirements::target() const noexcept { return target_; }
 
 } // namespace pkgsource

@@ -14,21 +14,8 @@ option(
   description: 'Build and run the libpkgsource test suite',
 )
 option(
-  'reference_tools',
-  type: 'feature',
-  value: 'disabled',
-  description: 'Build uninstalled reference inspection tools',
-)
-option(
   'man_pages',
   type: 'feature',
   value: 'auto',
   description: 'Build manual pages with scdoc',
-)
-
-option(
-  'planner_adapter',
-  type: 'feature',
-  value: 'disabled',
-  description: 'Build the optional libpkgplan candidate projection adapter',
 )

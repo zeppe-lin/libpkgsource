@@ -2,7 +2,7 @@ libpkgsource(3)
 
 # NAME
 
-libpkgsource - immutable package-source inspection library
+libpkgsource - native sealed package-source model library
 
 # SYNOPSIS
 
@@ -10,38 +10,23 @@ libpkgsource - immutable package-source inspection library
 
 # DESCRIPTION
 
-*libpkgsource* inspects one package-source directory and returns a normalized,
-immutable *source_snapshot*(3). Version 0.2.1 implements only the *pkgfile/0*
-backend.
+*libpkgsource* defines the native Zeppe-Lin package-source value domains.  Input
+syntax is not authority.  Parser-neutral declarations are validated and later
+sealed into immutable profile and recipe values.
 
-The library owns source-format probing, package identity, descriptive metadata,
-legacy dependency declarations, source declarations and checksums, recipe and
-lifecycle descriptors, README resources, strip exclusions, footprint
-declaration, architecture marker, and a private source snapshot.
-
-It does not scan collections, select precedence, resolve dependencies, download
-or verify distfiles, execute recipes or lifecycle programs, construct package
-images, inspect archives, install packages, or access installed state.
+Version 1 removes the historical Pkgfile backend and all CRUX compatibility
+semantics.  The library does not execute build or lifecycle programs.
 
 # BUILD
 
-Shared and static libraries require separate Meson configurations. The project
-rejects *default_library=both*. The corresponding *link_mode* option must match
-*default_library*.
+Shared and static libraries require separate Meson configurations.  The project
+rejects *default_library=both*.  *link_mode* must select the same library kind.
 
 # ERRORS
 
-Contract failures throw *pkgsource::error*. Callers should inspect its typed
-*error_code* rather than parse diagnostic text.
-
-# SECURITY
-
-Pkgfiles are executable shell. The private worker uses an explicit environment,
-working directory, umask, and optional uid/gid, and validates a NUL-framed
-record. It is not a syscall or network sandbox.
+Contract failures throw *pkgsource::error*.  Branch on *error_code*, not on
+diagnostic text.
 
 # SEE ALSO
 
-*pkgsource_model*(3), *pkgsource_backend*(3),
-*pkgsource_pkgfile_backend*(3), *pkgsource_snapshot*(3),
-*pkgsource_plan_adapter*(3)
+*pkgsource_model*(3)

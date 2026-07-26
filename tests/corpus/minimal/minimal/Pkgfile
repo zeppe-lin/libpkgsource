@@ -1,5 +1,0 @@
-# Description: Minimal corpus package
-name=minimal
-version=1
-release=1
-build() { :; }
