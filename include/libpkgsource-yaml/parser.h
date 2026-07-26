@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /*! \file parser.h
- *  \brief Strict profiles.yml/1 syntax adapter.
+ *  \brief Strict recipe.yml/1 and profiles.yml/1 syntax adapter.
  */
 #pragma once
 
@@ -59,12 +59,32 @@ private:
   std::vector<profile_declaration> declarations_;
 };
 
+/*! \brief Parser-neutral recipe declaration from one recipe.yml/1 document. */
+class parsed_recipe_document final {
+public:
+  parsed_recipe_document(source_origin origin, recipe_declaration declaration);
+  [[nodiscard]] const source_origin& origin() const noexcept;
+  [[nodiscard]] const recipe_declaration& declaration() const noexcept;
+private:
+  source_origin origin_;
+  recipe_declaration declaration_;
+};
+
 /*! \brief Parse one strict profiles.yml/1 document without sealing it. */
 [[nodiscard]] parsed_profile_document parse_profiles_yaml_v1(
+    std::string_view bytes, source_origin origin);
+
+/*! \brief Parse one strict recipe.yml/1 document without sealing it. */
+[[nodiscard]] parsed_recipe_document parse_recipe_yaml_v1(
     std::string_view bytes, source_origin origin);
 
 /*! \brief Parse and seal one profiles.yml/1 document. */
 [[nodiscard]] profile_catalog seal_profiles_yaml_v1(
     std::string_view bytes, source_origin origin);
+
+/*! \brief Parse and seal one recipe.yml/1 document. */
+[[nodiscard]] source_snapshot seal_recipe_yaml_v1(
+    std::string_view bytes, source_origin origin,
+    const profile_catalog& profiles);
 
 } // namespace pkgsource::yaml_adapter

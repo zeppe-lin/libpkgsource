@@ -7,6 +7,7 @@ libpkgsource_yaml = library(
   'pkgsource-yaml',
   'document.cpp',
   'profiles.cpp',
+  'recipe.cpp',
   include_directories: yaml_adapter_inc,
   dependencies: [libpkgsource_dep, libyaml_dep],
   install: true,

@@ -52,6 +52,14 @@ if get_option('tests').enabled()
     )
     test('yaml-profiles', yaml_profiles_test)
 
+    yaml_recipe_test = executable(
+      'yaml-recipe-test',
+      'yaml_recipe_test.cpp',
+      dependencies: libpkgsource_yaml_dep,
+      install: false,
+    )
+    test('yaml-recipe', yaml_recipe_test)
+
     yaml_adapter_header_test = executable(
       'yaml-adapter-header-test',
       'yaml_adapter_header_test.cpp',
