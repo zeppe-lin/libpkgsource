@@ -19,3 +19,9 @@ option(
   value: 'auto',
   description: 'Build manual pages with scdoc',
 )
+option(
+  'planner_adapter',
+  type: 'feature',
+  value: 'disabled',
+  description: 'Build the optional native libpkgplan projection adapter',
+)

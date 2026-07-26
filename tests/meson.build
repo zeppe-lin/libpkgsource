@@ -25,6 +25,24 @@ if get_option('tests').enabled()
   )
   test('recipe', recipe_test)
 
+  if libpkgplan_dep.found()
+    plan_adapter_test = executable(
+      'plan-adapter-test',
+      'plan_adapter_test.cpp',
+      dependencies: libpkgsource_plan_dep,
+      install: false,
+    )
+    test('plan-adapter', plan_adapter_test)
+
+    plan_adapter_header_test = executable(
+      'plan-adapter-header-test',
+      'plan_adapter_header_test.cpp',
+      dependencies: libpkgsource_plan_dep,
+      install: false,
+    )
+    test('plan-adapter-header', plan_adapter_header_test)
+  endif
+
   public_headers = executable(
     'public-headers',
     'public_headers.cpp',
