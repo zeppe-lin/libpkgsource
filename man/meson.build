@@ -9,6 +9,7 @@ if scdoc.found()
     ['pkgsource_backend.3.scd', 'pkgsource_backend.3'],
     ['pkgsource_pkgfile_backend.3.scd', 'pkgsource_pkgfile_backend.3'],
     ['pkgsource_snapshot.3.scd', 'pkgsource_snapshot.3'],
+    ['pkgsource_plan_adapter.3.scd', 'pkgsource_plan_adapter.3'],
   ]
     custom_target(
       page[1],

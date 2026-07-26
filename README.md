@@ -6,7 +6,7 @@
 `libpkgsource` inspects one package-source directory and returns an immutable,
 normalized description of what that source declares.
 
-Version 0.1.0 implements one format only: `pkgfile/0`.  In this library,
+Version 0.2.0 implements one format only: `pkgfile/0`.  In this library,
 `pkgfile/0` means the complete legacy source-directory protocol, not only the
 `Pkgfile` shell program.  The inspected unit includes metadata comments,
 identity and source declarations, the `build()` entry point, `.md5sum`,
@@ -90,8 +90,9 @@ GPL-3.0-or-later.  See `COPYING` and `COPYRIGHT`.
 
 ## Optional planner adapter
 
-`libpkgsource-plan` is an optional composition library that projects one sealed
-source snapshot into a `libpkgplan` candidate package fact.  It keeps the source
+`libpkgsource-plan` is an optional composition library, enabled with
+`-Dplanner_adapter=enabled`, that projects one sealed source snapshot into a
+`libpkgplan` candidate package fact.  It keeps the source
 snapshot alive, preserves exact removal lifecycle bytes, and computes
 source-owned release and candidate-control identities.  The core
 `libpkgsource` library does not depend on `libpkgplan`.

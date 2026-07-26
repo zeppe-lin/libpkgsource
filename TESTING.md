@@ -29,7 +29,11 @@ Coverage includes:
 * unsupported special-object rejection;
 * deterministic reference-tool output;
 * independent public-header compilation;
-* consumer linkage in the active configuration.
+* consumer linkage in the active configuration;
+* exact source-to-planner candidate projection;
+* release and candidate-control identity stability and change sensitivity;
+* exclusion of unrelated source bytes from candidate-control identity; and
+* independent `libpkgsource-plan` public-header compilation.
 
 Run the normal suite:
 
@@ -53,3 +57,7 @@ configuration.
 
 No test downloads source archives or accesses a package collection over the
 network.
+
+The optional planner adapter is qualified against libpkgplan 0.2.0 and its
+libpkgimage 0.3.0 public dependency.  The core library remains linkable without
+either planning dependency.
