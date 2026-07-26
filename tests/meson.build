@@ -52,6 +52,13 @@ if get_option('tests').enabled()
   )
   test('linkage-current-configuration', linkage_consumer)
 
+  ci_contract = find_program('check_ci_contract.sh')
+  test(
+    'ci-contract',
+    ci_contract,
+    args: [meson.project_source_root()],
+  )
+
   blackbox = find_program(join_paths(meson.current_source_dir(), 'blackbox.sh'))
   test(
     'reference-tool-black-box',
