@@ -14,10 +14,10 @@ libpkgsource - native sealed package-source authority
 requirement profiles, expands exact requirements, and returns immutable
 *source_snapshot* values.
 
-Input syntax is provenance, not authority.  Version 1 defines the
-*recipe.yml/1* syntax contract but does not include a YAML parser.  A reader
-constructs *recipe_declaration* values and calls *seal_source()* with an already
-sealed *profile_catalog*.
+Input syntax is provenance, not authority.  The optional
+*libpkgsource-yaml* library parses strict *profiles.yml/1* and *recipe.yml/1*
+documents into parser-neutral declarations.  A declaration becomes authority
+only when the existing profile or source sealer accepts it.
 
 The normalized authority distinguishes package release, package metadata,
 source inputs, build program, build requirements, runtime requirements, check
@@ -47,4 +47,5 @@ diagnostic text.
 # SEE ALSO
 
 *pkgsource_model*(3), *pkgsource_profile*(3), *pkgsource_recipe*(3),
-*pkgsource_snapshot*(3), *pkgsource_plan_adapter*(3)
+*pkgsource_snapshot*(3), *pkgsource_plan_adapter*(3), *pkgsource_yaml*(3),
+*pkgsource_profiles_yaml*(5), *pkgsource_recipe_yaml*(5)

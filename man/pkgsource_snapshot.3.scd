@@ -19,8 +19,11 @@ syntax do not become package semantics.  Equivalent native declarations from a
 different document location seal to the same recipe and snapshot identities.
 
 Version 1 records *source_syntax::recipe_yaml_v1*.  The YAML document itself is
-not authority and the library does not parse it.
+not authority.  The core library does not parse it; the optional
+*libpkgsource-yaml* syntax adapter produces declarations for the existing
+sealer.
 
 # SEE ALSO
 
-*libpkgsource*(3), *pkgsource_recipe*(3), *pkgsource_plan_adapter*(3)
+*libpkgsource*(3), *pkgsource_recipe*(3), *pkgsource_plan_adapter*(3),
+*pkgsource_yaml*(3)

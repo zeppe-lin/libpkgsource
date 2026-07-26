@@ -39,10 +39,11 @@ requirement domain without adding test execution to the library.
 
 ## Input syntax
 
-The initial syntax contract is [RECIPE-YAML-1.md](RECIPE-YAML-1.md).
-`libpkgsource` does not contain a YAML parser in version 1.  A syntax reader must
-construct `recipe_declaration` values and supply a separately sealed
-`profile_catalog`.  Only `seal_source()` crosses the authority boundary.
+The native syntax contracts are [PROFILES-YAML-1.md](PROFILES-YAML-1.md) and
+[RECIPE-YAML-1.md](RECIPE-YAML-1.md).  The optional `libpkgsource-yaml` adapter
+parses raw document bytes into parser-neutral declarations.  It never opens
+paths or scans collections.  Only the existing profile and source sealers cross
+the authority boundary.
 
 `recipe.yml/1` uses explicit requirement mappings:
 
@@ -101,6 +102,19 @@ meson test -C build-static --print-errorlogs
 Tests are enabled by default.  Manual pages are built when `scdoc` is available
 or can be required with `-Dman_pages=enabled`.
 
+## Optional YAML adapter
+
+`libpkgsource-yaml` is enabled with `-Dyaml_adapter=enabled` and requires
+libyaml 0.2.5 or later.  It provides strict `profiles.yml/1` and `recipe.yml/1`
+parsers, structured syntax diagnostics, parser-neutral declarations, and
+convenience functions that invoke the native sealers.  The adapter rejects
+duplicate keys, unknown fields, multiple documents, anchors, aliases, merge
+keys, unsupported tags, scalar requirement shorthand, and schema/type drift.
+
+The adapter is syntax only.  It does not discover collections, combine profile
+documents, choose precedence, resolve requirements, fetch sources, or execute
+programs.
+
 ## Optional planner adapter
 
 `libpkgsource-plan` is enabled with `-Dplanner_adapter=enabled`.  It projects one
@@ -119,7 +133,8 @@ no downstream planner API change is required for version 1.
 
 ## ABI and license
 
-The core library and optional planner adapter use SONAME 1.  Consumers must move
+The core library, optional planner adapter, and optional YAML adapter use
+SONAME 1.  Consumers must move
 atomically from the removed version-0 API; no compatibility headers or binary
 bridge are provided.
 

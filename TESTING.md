@@ -3,8 +3,10 @@
 
 # Testing
 
-The suite is offline and model-driven.  It does not parse YAML, inspect package
-collections, execute recipe programs, or access installed state.
+The suite is offline and model-driven.  When the optional YAML adapter is
+enabled it parses in-memory documents through libyaml; it does not open files,
+inspect package collections, execute recipe programs, or access installed
+state.
 
 Coverage includes:
 
@@ -31,7 +33,14 @@ Coverage includes:
   control;
 * exclusion of installation lifecycle programs from durable removal control;
 * target architecture projection; and
-* independent `libpkgsource-plan` public-header compilation.
+* independent `libpkgsource-plan` public-header compilation;
+* strict one-document YAML parsing and structured syntax provenance;
+* duplicate/unknown key, alias, anchor, merge-key, directive, tag, and type
+  rejection;
+* exact `profiles.yml/1` declarations and deterministic profile sealing;
+* exact `recipe.yml/1` declarations and identity-equivalent reordered input;
+* syntax-versus-semantic error-domain separation;
+* independent `libpkgsource-yaml` public-header compilation.
 
 Run the core shared configuration:
 
@@ -61,3 +70,15 @@ static closure.  `default_library=both` is deliberately invalid.
 The release metadata test binds project version, SONAMEs, dependency floor,
 history heading, README version contract, and installed public headers.  It is
 part of the normal suite.
+
+
+Run the YAML adapter:
+
+```sh
+meson setup build-yaml \
+  -Ddefault_library=shared \
+  -Dlink_mode=shared \
+  -Dyaml_adapter=enabled
+meson compile -C build-yaml
+meson test -C build-yaml --print-errorlogs
+```

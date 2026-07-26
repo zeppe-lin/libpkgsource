@@ -42,6 +42,25 @@ The library does not scan collections, select precedence, resolve available
 packages, download or verify source objects, execute programs, construct package
 images, inspect archives, install packages, or read installed state.
 
+## YAML syntax adapter
+
+`libpkgsource-yaml` is an optional syntax boundary.  It depends on libyaml and
+translates raw `profiles.yml/1` and `recipe.yml/1` bytes into the same
+parser-neutral declarations accepted by the core.  The core library has no YAML
+dependency, and parsed documents never become an alternative authority model.
+
+The adapter is deliberately strict: one document, exact field sets, duplicate
+key rejection, explicit package/profile subject mappings, and no anchors,
+aliases, merge keys, custom tags, or directives.  It retains document, schema
+path, line, and column for diagnostics while leaving those values outside
+semantic identities.
+
+Profile syntax and recipe syntax remain separate.  Profiles are parsed and
+sealed before recipes so a recipe can only select already authoritative profile
+values.  Collection acquisition, document discovery, and cross-collection
+profile policy belong to `libpkgcatalog` acquisition tooling, not to this
+adapter.
+
 ## Requirement model
 
 Requirement scope and requirement subject are independent typed domains.

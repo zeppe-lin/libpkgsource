@@ -3,11 +3,12 @@
 
 # recipe.yml/1 input contract
 
-`recipe.yml/1` is the initial native Zeppe-Lin recipe syntax.  It is an input
-protocol, not the package-source authority.  A reader must translate the YAML
-document into parser-neutral declarations and pass them through the native
-sealer with an already sealed profile catalog.  Only the returned
-`source_snapshot` may be consumed by later stages.
+`recipe.yml/1` is the initial native Zeppe-Lin recipe syntax.  It is an
+input protocol, not the package-source authority.  The optional
+`libpkgsource-yaml` adapter translates the YAML document into parser-neutral
+declarations and passes them through the native sealer with an already sealed
+profile catalog.  Other readers may implement the same contract.  Only the
+returned `source_snapshot` may be consumed by later stages.
 
 ## Document shape
 
@@ -67,8 +68,12 @@ architectures:
     - x86_64
 ```
 
-Unknown keys and duplicate YAML mapping keys are errors.  Scalar shorthand for
-requirement subjects is not part of version one.  `{package: NAME}` and
+The document is parsed as one strict YAML document.  Duplicate mapping keys,
+unknown keys, non-scalar mapping keys, YAML directives, anchors, aliases, merge
+keys, and custom or kind-incompatible tags are errors.  Standard string,
+integer, sequence, and mapping tags are accepted only where their node kind
+matches the schema.  Scalar shorthand for requirement subjects is not part of
+version one.  `{package: NAME}` and
 `{profile: "@NAME"}` are distinct syntax forms because their normalized
 subjects are distinct authority domains.
 
@@ -77,8 +82,9 @@ subjects are distinct authority domains.
 `format` is required and must be exactly `zeppe-lin.recipe/1`.
 
 `package.name` is a canonical exact package reference.  `package.version` is a
-non-empty line-safe string without `/`.  `package.release` is an integer greater
-than zero.  `summary` and a non-empty `licenses` sequence are required.
+non-empty line-safe string without `/`.  `package.release` is a canonical
+decimal integer greater than zero, without a sign or leading zeroes.  `summary`
+and a non-empty `licenses` sequence are required.
 `description` and `homepage` are optional.  License strings are retained as
 normalized exact values; version one does not infer them from source files.
 
@@ -151,3 +157,17 @@ line numbers therefore seal to the same recipe identity.  Changes to package
 release, metadata, exact requirements, profile identities or expansion paths,
 source declarations, program bytes, lifecycle programs, or architecture
 requirements change the recipe identity.
+
+## YAML adapter API
+
+`libpkgsource-yaml` parses raw document bytes and never opens paths.
+`parse_recipe_yaml_v1()` returns a parser-neutral `parsed_recipe_document`;
+`seal_recipe_yaml_v1()` additionally invokes the native sealer and returns the
+authoritative `source_snapshot`.  Syntax failures throw structured
+`yaml_error` values carrying a stable code, document, schema path, and one-based
+line and column.  Invalid declaration values are reported at their syntax
+location.  Failures from the native source sealer remain `pkgsource::error`
+values.
+
+The adapter does not scan collections, discover `profiles.yml`, download source
+objects, execute programs, or resolve requirements.
