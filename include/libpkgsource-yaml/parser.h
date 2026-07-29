@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 /*! \file parser.h
- *  \brief Strict recipe.yml/1 and profiles.yml/1 syntax adapter.
+ *  \brief Strict recipe.yml/1, recipe.yml/2, and profiles.yml/1 syntax adapter.
  */
 #pragma once
 
@@ -59,7 +59,7 @@ private:
   std::vector<profile_declaration> declarations_;
 };
 
-/*! \brief Parser-neutral recipe declaration from one recipe.yml/1 document. */
+/*! \brief Parser-neutral recipe declaration from one native recipe document. */
 class parsed_recipe_document final {
 public:
   parsed_recipe_document(source_origin origin, recipe_declaration declaration);
@@ -78,12 +78,21 @@ private:
 [[nodiscard]] parsed_recipe_document parse_recipe_yaml_v1(
     std::string_view bytes, source_origin origin);
 
+/*! \brief Parse one strict recipe.yml/2 document without sealing it. */
+[[nodiscard]] parsed_recipe_document parse_recipe_yaml_v2(
+    std::string_view bytes, source_origin origin);
+
 /*! \brief Parse and seal one profiles.yml/1 document. */
 [[nodiscard]] profile_catalog seal_profiles_yaml_v1(
     std::string_view bytes, source_origin origin);
 
 /*! \brief Parse and seal one recipe.yml/1 document. */
 [[nodiscard]] source_snapshot seal_recipe_yaml_v1(
+    std::string_view bytes, source_origin origin,
+    const profile_catalog& profiles);
+
+/*! \brief Parse and seal one recipe.yml/2 document. */
+[[nodiscard]] source_snapshot seal_recipe_yaml_v2(
     std::string_view bytes, source_origin origin,
     const profile_catalog& profiles);
 

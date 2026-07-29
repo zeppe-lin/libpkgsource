@@ -280,14 +280,22 @@ const recipe_declaration& parsed_recipe_document::declaration() const noexcept
   return declaration_;
 }
 
-parsed_recipe_document parse_recipe_yaml_v1(
-    std::string_view bytes, source_origin origin)
+namespace {
+
+parsed_recipe_document parse_recipe_yaml(
+    std::string_view bytes, source_origin origin,
+    std::string_view expected_format, bool check_program_allowed)
 {
   node root = parse_document(bytes, origin);
-  allow_keys(root, origin, "$",
-             {"format", "package", "requirements", "sources", "build",
-              "lifecycle", "architectures"});
-  require_format(root, origin, "zeppe-lin.recipe/1");
+  if (check_program_allowed)
+    allow_keys(root, origin, "$",
+               {"format", "package", "requirements", "sources", "build",
+                "check", "lifecycle", "architectures"});
+  else
+    allow_keys(root, origin, "$",
+               {"format", "package", "requirements", "sources", "build",
+                "lifecycle", "architectures"});
+  require_format(root, origin, expected_format);
 
   const node& package = required_key(root, "package", origin, "$");
   require_kind(package, node_kind::mapping, origin, "package", "package");
@@ -297,6 +305,10 @@ parsed_recipe_document parse_recipe_yaml_v1(
   const node& requirements = required_key(root, "requirements", origin, "$");
   const node& sources = required_key(root, "sources", origin, "$");
   const node& build = required_key(root, "build", origin, "$");
+
+  std::optional<program> check;
+  if (const node* value = find_key(root, "check"))
+    check = program_value(*value, origin, "check");
 
   std::vector<lifecycle_program> lifecycle;
   if (const node* value = find_key(root, "lifecycle"))
@@ -309,10 +321,25 @@ parsed_recipe_document parse_recipe_yaml_v1(
       requirements_value(requirements, origin, "requirements"),
       std::move(lifecycle),
       architectures_value(find_key(root, "architectures"), origin),
-      provenance(origin, "document", root));
+      provenance(origin, "document", root), std::move(check));
   return parsed_recipe_document(std::move(origin), std::move(declaration));
 }
 
+} // namespace
+
+parsed_recipe_document parse_recipe_yaml_v1(
+    std::string_view bytes, source_origin origin)
+{
+  return parse_recipe_yaml(bytes, std::move(origin),
+                           "zeppe-lin.recipe/1", false);
+}
+
+parsed_recipe_document parse_recipe_yaml_v2(
+    std::string_view bytes, source_origin origin)
+{
+  return parse_recipe_yaml(bytes, std::move(origin),
+                           "zeppe-lin.recipe/2", true);
+}
 
 source_snapshot seal_recipe_yaml_v1(std::string_view bytes,
                                     source_origin origin,
@@ -320,6 +347,15 @@ source_snapshot seal_recipe_yaml_v1(std::string_view bytes,
 {
   parsed_recipe_document parsed = parse_recipe_yaml_v1(bytes, origin);
   return seal_source(std::move(origin), source_syntax::recipe_yaml_v1,
+                     parsed.declaration(), profiles);
+}
+
+source_snapshot seal_recipe_yaml_v2(std::string_view bytes,
+                                    source_origin origin,
+                                    const profile_catalog& profiles)
+{
+  parsed_recipe_document parsed = parse_recipe_yaml_v2(bytes, origin);
+  return seal_source(std::move(origin), source_syntax::recipe_yaml_v2,
                      parsed.declaration(), profiles);
 }
 

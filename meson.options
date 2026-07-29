@@ -29,5 +29,5 @@ option(
   'yaml_adapter',
   type: 'feature',
   value: 'disabled',
-  description: 'Build the strict recipe.yml/1 and profiles.yml/1 syntax adapter',
+  description: 'Build the strict recipe.yml/1, recipe.yml/2, and profiles.yml/1 syntax adapter',
 )
