@@ -14,7 +14,7 @@ declaration_provenance at(const char* path, std::uint32_t line)
   return declaration_provenance("recipe.yml", path, line, 3);
 }
 
-source_snapshot snapshot()
+source_snapshot snapshot(const char* check_script = "echo check\n")
 {
   const profile_catalog catalog = profile_catalog::seal({
       profile_declaration(
@@ -25,7 +25,7 @@ source_snapshot snapshot()
               declaration_provenance("profiles.yml", "toolchain[0]", 2, 3))}),
   });
   return seal_source(
-      source_origin("recipe.yml"), source_syntax::recipe_yaml_v1,
+      source_origin("recipe.yml"), source_syntax::recipe_yaml_v2,
       recipe_declaration(
           package_release(package_reference("example"), "1.0", 1),
           package_metadata("Example", std::nullopt, std::nullopt, {"MIT"}),
@@ -59,7 +59,8 @@ source_snapshot snapshot()
           architecture_requirements(
               {architecture_reference("aarch64")},
               {architecture_reference("x86_64")}),
-          at("$", 1)),
+          at("$", 1),
+          program(program_language::posix_shell, check_script)),
       catalog);
 }
 
@@ -83,4 +84,9 @@ int main()
   assert(control.target_profile()[0].name()
          == "pkgsource.target-architectures");
   assert(control.target_profile()[0].value() == "x86_64");
+
+  plan_adapter::candidate_projection changed =
+      plan_adapter::project_candidate(snapshot("meson test -C build\n"));
+  assert(projected.source_identity() != changed.source_identity());
+  assert(candidate.identity() == changed.candidate().identity());
 }
