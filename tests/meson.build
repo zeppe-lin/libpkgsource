@@ -76,6 +76,7 @@ if get_option('tests').enabled()
         join_paths(meson.current_source_dir(),
                    'yaml_adapter_metadata_test.sh'),
         meson.project_build_root(),
+        meson.project_version(),
       ],
     )
   endif
