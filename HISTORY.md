@@ -3,6 +3,23 @@
 
 # History
 
+## 2.0.0
+
+Explicit native check-program authority.
+
+* add an optional exact check program to parser-neutral recipe declarations and
+  sealed recipe authority without adding execution behavior;
+* preserve the published `recipe.yml/1` protocol and its semantic identity
+  vectors unchanged;
+* define strict `recipe.yml/2` input with one optional top-level check program;
+* require version-two check requirements to be closed by a check program while
+  allowing a check program with no additional check requirements;
+* include exact check-program language and bytes in version-two recipe and
+  source-snapshot identities;
+* keep check execution environment, result evidence, transaction binding, and
+  scheduling outside `libpkgsource`; and
+* keep check programs outside the durable planner candidate projection.
+
 ## 1.1.0
 
 Native YAML syntax frontend.

@@ -10,7 +10,7 @@ libpkgsource_plan = library(
   dependencies: [libpkgsource_dep, libpkgplan_dep, libcrypto_dep],
   install: true,
   version: meson.project_version(),
-  soversion: '1',
+  soversion: '2',
 )
 
 libpkgsource_plan_dep = declare_dependency(

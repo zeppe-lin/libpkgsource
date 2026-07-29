@@ -12,7 +12,7 @@ libpkgsource_yaml = library(
   dependencies: [libpkgsource_dep, libyaml_dep],
   install: true,
   version: meson.project_version(),
-  soversion: '1',
+  soversion: '2',
 )
 
 libpkgsource_yaml_dep = declare_dependency(

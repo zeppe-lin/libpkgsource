@@ -18,7 +18,7 @@ libpkgsource = library(
   dependencies: libcrypto_dep,
   install: true,
   version: meson.project_version(),
-  soversion: '1',
+  soversion: '2',
 )
 
 libpkgsource_dep = declare_dependency(
