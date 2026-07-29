@@ -35,12 +35,14 @@ recipe_identity make_recipe_identity(
     const package_metadata& metadata,
     const std::vector<source_input>& sources,
     const program& build_program,
+    const std::optional<program>& check_program,
     const sealed_requirement_set& requirements,
     const std::vector<lifecycle_program>& lifecycle_programs,
     const architecture_requirements& architectures)
 {
   detail::identity_writer writer;
-  writer.text("libpkgsource/recipe/v1");
+  writer.text(check_program ? "libpkgsource/recipe/v2"
+                            : "libpkgsource/recipe/v1");
   writer.text(release.identity().hex());
   writer.text(metadata.summary());
   write_optional(writer, metadata.description());
@@ -60,6 +62,10 @@ recipe_identity make_recipe_identity(
 
   writer.text(to_string(build_program.language()));
   writer.text(build_program.material());
+  if (check_program) {
+    writer.text(to_string(check_program->language()));
+    writer.text(check_program->material());
+  }
 
   writer.number(requirements.requirements().size());
   for (const resolved_requirement& requirement : requirements.requirements()) {
@@ -108,8 +114,25 @@ recipe_declaration::recipe_declaration(
     std::vector<lifecycle_program> lifecycle_programs,
     architecture_requirements architectures,
     declaration_provenance provenance)
+    : recipe_declaration(
+          std::move(release), std::move(metadata), std::move(sources),
+          std::move(build_program), std::move(requirements),
+          std::move(lifecycle_programs), std::move(architectures),
+          std::move(provenance), std::nullopt)
+{
+}
+
+recipe_declaration::recipe_declaration(
+    package_release release, package_metadata metadata,
+    std::vector<source_input> sources, program build_program,
+    std::vector<requirement_declaration> requirements,
+    std::vector<lifecycle_program> lifecycle_programs,
+    architecture_requirements architectures,
+    declaration_provenance provenance,
+    std::optional<program> check_program)
     : release_(std::move(release)), metadata_(std::move(metadata)),
       sources_(std::move(sources)), build_program_(std::move(build_program)),
+      check_program_(std::move(check_program)),
       requirements_(std::move(requirements)),
       lifecycle_programs_(std::move(lifecycle_programs)),
       architectures_(std::move(architectures)),
@@ -125,6 +148,10 @@ const std::vector<source_input>& recipe_declaration::sources() const noexcept
 const program& recipe_declaration::build_program() const noexcept
 {
   return build_program_;
+}
+const std::optional<program>& recipe_declaration::check_program() const noexcept
+{
+  return check_program_;
 }
 const std::vector<requirement_declaration>&
 recipe_declaration::requirements() const noexcept { return requirements_; }
@@ -147,8 +174,25 @@ sealed_recipe::sealed_recipe(
     std::vector<lifecycle_program> lifecycle_programs,
     architecture_requirements architectures,
     declaration_provenance provenance, recipe_identity identity)
+    : sealed_recipe(
+          std::move(release), std::move(metadata), std::move(sources),
+          std::move(build_program), std::move(requirements),
+          std::move(lifecycle_programs), std::move(architectures),
+          std::move(provenance), std::move(identity), std::nullopt)
+{
+}
+
+sealed_recipe::sealed_recipe(
+    package_release release, package_metadata metadata,
+    std::vector<source_input> sources, program build_program,
+    sealed_requirement_set requirements,
+    std::vector<lifecycle_program> lifecycle_programs,
+    architecture_requirements architectures,
+    declaration_provenance provenance, recipe_identity identity,
+    std::optional<program> check_program)
     : release_(std::move(release)), metadata_(std::move(metadata)),
       sources_(std::move(sources)), build_program_(std::move(build_program)),
+      check_program_(std::move(check_program)),
       requirements_(std::move(requirements)),
       lifecycle_programs_(std::move(lifecycle_programs)),
       architectures_(std::move(architectures)),
@@ -162,6 +206,10 @@ const std::vector<source_input>& sealed_recipe::sources() const noexcept
   return sources_;
 }
 const program& sealed_recipe::build_program() const noexcept { return build_program_; }
+const std::optional<program>& sealed_recipe::check_program() const noexcept
+{
+  return check_program_;
+}
 const sealed_requirement_set& sealed_recipe::requirements() const noexcept
 {
   return requirements_;
@@ -255,14 +303,14 @@ sealed_recipe seal_recipe(recipe_declaration declaration,
 
   const recipe_identity identity = make_recipe_identity(
       declaration.release(), declaration.metadata(), sources,
-      declaration.build_program(), requirements, lifecycle,
-      declaration.architectures());
+      declaration.build_program(), declaration.check_program(), requirements,
+      lifecycle, declaration.architectures());
 
   return sealed_recipe(
       declaration.release(), declaration.metadata(), std::move(sources),
       declaration.build_program(), std::move(requirements),
       std::move(lifecycle), declaration.architectures(),
-      declaration.provenance(), identity);
+      declaration.provenance(), identity, declaration.check_program());
 }
 
 } // namespace pkgsource

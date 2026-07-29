@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <optional>
 #include <vector>
 
 #include <libpkgsource/profile.h>
@@ -23,10 +24,20 @@ public:
                      std::vector<lifecycle_program> lifecycle_programs,
                      architecture_requirements architectures,
                      declaration_provenance provenance);
+  recipe_declaration(package_release release,
+                     package_metadata metadata,
+                     std::vector<source_input> sources,
+                     program build_program,
+                     std::vector<requirement_declaration> requirements,
+                     std::vector<lifecycle_program> lifecycle_programs,
+                     architecture_requirements architectures,
+                     declaration_provenance provenance,
+                     std::optional<program> check_program);
   [[nodiscard]] const package_release& release() const noexcept;
   [[nodiscard]] const package_metadata& metadata() const noexcept;
   [[nodiscard]] const std::vector<source_input>& sources() const noexcept;
   [[nodiscard]] const program& build_program() const noexcept;
+  [[nodiscard]] const std::optional<program>& check_program() const noexcept;
   [[nodiscard]] const std::vector<requirement_declaration>& requirements() const noexcept;
   [[nodiscard]] const std::vector<lifecycle_program>& lifecycle_programs() const noexcept;
   [[nodiscard]] const architecture_requirements& architectures() const noexcept;
@@ -36,6 +47,7 @@ private:
   package_metadata metadata_;
   std::vector<source_input> sources_;
   program build_program_;
+  std::optional<program> check_program_;
   std::vector<requirement_declaration> requirements_;
   std::vector<lifecycle_program> lifecycle_programs_;
   architecture_requirements architectures_;
@@ -54,10 +66,21 @@ public:
                 architecture_requirements architectures,
                 declaration_provenance provenance,
                 recipe_identity identity);
+  sealed_recipe(package_release release,
+                package_metadata metadata,
+                std::vector<source_input> sources,
+                program build_program,
+                sealed_requirement_set requirements,
+                std::vector<lifecycle_program> lifecycle_programs,
+                architecture_requirements architectures,
+                declaration_provenance provenance,
+                recipe_identity identity,
+                std::optional<program> check_program);
   [[nodiscard]] const package_release& release() const noexcept;
   [[nodiscard]] const package_metadata& metadata() const noexcept;
   [[nodiscard]] const std::vector<source_input>& sources() const noexcept;
   [[nodiscard]] const program& build_program() const noexcept;
+  [[nodiscard]] const std::optional<program>& check_program() const noexcept;
   [[nodiscard]] const sealed_requirement_set& requirements() const noexcept;
   [[nodiscard]] std::vector<resolved_requirement> build_requirements() const;
   [[nodiscard]] std::vector<resolved_requirement> run_requirements() const;
@@ -77,6 +100,7 @@ private:
   package_metadata metadata_;
   std::vector<source_input> sources_;
   program build_program_;
+  std::optional<program> check_program_;
   sealed_requirement_set requirements_;
   std::vector<lifecycle_program> lifecycle_programs_;
   architecture_requirements architectures_;

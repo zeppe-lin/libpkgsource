@@ -14,7 +14,7 @@
 namespace pkgsource {
 
 /*! \brief Input syntax recorded for diagnostics, never semantic authority. */
-enum class source_syntax { recipe_yaml_v1 };
+enum class source_syntax { recipe_yaml_v1, recipe_yaml_v2 };
 [[nodiscard]] std::string_view to_string(source_syntax value) noexcept;
 
 /*! \brief Stable diagnostic origin of one source document. */
