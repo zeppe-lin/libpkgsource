@@ -24,6 +24,9 @@ Coverage includes:
   and duplicate local-name rejection;
 * separate build and target architecture requirements;
 * lifecycle program uniqueness and lifecycle-requirement/program closure;
+* optional exact check-program retention and check-requirement/program closure;
+* version-one recipe and source-snapshot identity-vector preservation;
+* check-program identity sensitivity and syntax-provenance separation;
 * recipe identity stability across non-semantic source order and provenance;
 * recipe identity change sensitivity to program and profile semantics;
 * source snapshot identity and syntax-provenance separation;
@@ -39,6 +42,8 @@ Coverage includes:
   rejection;
 * exact `profiles.yml/1` declarations and deterministic profile sealing;
 * exact `recipe.yml/1` declarations and identity-equivalent reordered input;
+* exact `recipe.yml/2` check programs and version-two closure refusal;
+* version-one rejection of the version-two check-program field;
 * syntax-versus-semantic error-domain separation;
 * independent `libpkgsource-yaml` public-header compilation; and
 * generated `libpkgsource-yaml.pc` dependency metadata.

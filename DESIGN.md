@@ -34,9 +34,9 @@ input syntax + sealed profile catalog
 ```
 
 The sealed snapshot owns normalized package release, metadata, source inputs,
-build program, requirements, lifecycle programs, lifecycle requirements,
-architecture requirements, selected build profiles, the exact profile closure
-used for expansion, and domain-separated identities.
+build program, optional check program, requirements, lifecycle programs,
+lifecycle requirements, architecture requirements, selected build profiles,
+the exact profile closure used for expansion, and domain-separated identities.
 
 The library does not scan collections, select precedence, resolve available
 packages, download or verify source objects, execute programs, construct package
@@ -45,8 +45,8 @@ images, inspect archives, install packages, or read installed state.
 ## YAML syntax adapter
 
 `libpkgsource-yaml` is an optional syntax boundary.  It depends on libyaml and
-translates raw `profiles.yml/1` and `recipe.yml/1` bytes into the same
-parser-neutral declarations accepted by the core.  The core library has no YAML
+translates raw `profiles.yml/1`, `recipe.yml/1`, and `recipe.yml/2` bytes into
+the same parser-neutral declarations accepted by the core.  The core library has no YAML
 dependency, and parsed documents never become an alternative authority model.
 
 The adapter is deliberately strict: one document, exact field sets, duplicate
@@ -70,8 +70,12 @@ Scopes are:
 * build;
 * run;
 * lifecycle, bound to exactly one lifecycle action; and
-* check, reserved as a first-class domain so test requirements do not need a
-  later compatibility scope.
+* check, retained as a first-class domain for later check execution.
+
+`recipe.yml/1` reserves check requirements without executable check authority.
+`recipe.yml/2` may bind them to one exact optional check program.  The source
+sealer rejects version-two check requirements when that program is absent.  A
+check program without additional requirements is valid.
 
 Subjects are:
 
@@ -110,6 +114,12 @@ normalized recipe identity, and source snapshot identity.  Declaration
 provenance does not change semantic identity, but it is retained for diagnostics
 and audit.
 
+Version-one recipe identity encoding remains unchanged.  A recipe with an exact
+check program uses the version-two recipe identity domain and includes the
+program language and exact bytes.  Source syntax remains diagnostic provenance;
+a version-two document with no added check semantics may therefore share the
+same semantic identities as an equivalent version-one declaration.
+
 ## Planner projection
 
 `libpkgsource-plan` is a composition boundary inside this repository.  It may
@@ -120,8 +130,8 @@ runtime semantics from build declarations.
 The native projection sends exact run requirements, durable removal lifecycle
 programs, and normalized target-architecture requirements to `libpkgplan`.
 Build requirements, check requirements, lifecycle requirements, selected build
-profiles, build architecture requirements, source inputs, and build programs
-remain upstream execution or resolution inputs.
+profiles, build architecture requirements, source inputs, build programs, and
+check programs remain upstream execution or resolution inputs.
 
 The current `libpkgplan` candidate-control API already has the required runtime
 dependency, removal lifecycle, and target-profile value domains.  No planner API

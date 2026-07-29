@@ -15,15 +15,19 @@ requirement profiles, expands exact requirements, and returns immutable
 *source_snapshot* values.
 
 Input syntax is provenance, not authority.  The optional
-*libpkgsource-yaml* library parses strict *profiles.yml/1* and *recipe.yml/1*
-documents into parser-neutral declarations.  A declaration becomes authority
-only when the existing profile or source sealer accepts it.
+*libpkgsource-yaml* library parses strict *profiles.yml/1*, *recipe.yml/1*, and
+*recipe.yml/2* documents into parser-neutral declarations.  A declaration
+becomes authority only when the existing profile or source sealer accepts it.
 
 The normalized authority distinguishes package release, package metadata,
-source inputs, build program, build requirements, runtime requirements, check
-requirements, lifecycle programs, action-bound lifecycle requirements, build
-and target architecture requirements, selected build profiles, and the exact
-profile closure used during expansion.
+source inputs, build program, optional check program, build requirements,
+runtime requirements, check requirements, lifecycle programs, action-bound
+lifecycle requirements, build and target architecture requirements, selected
+build profiles, and the exact profile closure used during expansion.
+
+Version one retains check requirements as a reserved domain without check
+program authority.  Version two may bind them to one exact optional check
+program.  The library retains program bytes but does not execute them.
 
 There is no Pkgfile backend, historical CRUX compatibility model, MD5 source
 identity, or combined build-and-run requirement scope.

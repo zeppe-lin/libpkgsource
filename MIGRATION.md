@@ -37,8 +37,10 @@ facts can receive the native projection.  It remains deliberately unaware of
 build requirements, check requirements, lifecycle requirements, profile
 expansion, source inputs, and build execution.
 
-Consumers must move atomically to the new SONAME and headers.  There is no
-supported source or binary compatibility bridge inside `libpkgsource`.
+Consumers must move atomically to SONAME 2 and the matching headers.  The
+optional YAML and planner adapters move with the core because their public C++
+values contain recipe or source-snapshot authority.  There is no supported
+binary compatibility bridge inside `libpkgsource`.
 
 
 ## Native syntax transition
@@ -51,3 +53,14 @@ semantics remain migration errors or explicit operator decisions.
 The YAML adapter accepts document bytes only.  Historical collection layout,
 `pkgman.conf`, directory naming, and source-tree precedence are not parser
 semantics and remain outside this repository.
+
+## Native check-program transition
+
+Version 2 adds `recipe.yml/2` with one optional exact check program.
+`recipe.yml/1` remains accepted unchanged and does not acquire executable check
+authority.  Migration tools that can recover an unambiguous historical check
+function may emit version two; ambiguous historical behavior remains an
+operator decision rather than a core inference.
+
+Check execution paths, environment, success policy, and terminal evidence are
+not migration semantics and remain outside this repository.

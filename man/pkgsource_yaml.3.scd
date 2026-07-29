@@ -2,7 +2,7 @@ pkgsource_yaml(3)
 
 # NAME
 
-pkgsource_yaml - strict native profiles.yml/1 and recipe.yml/1 frontend
+pkgsource_yaml - strict native profiles.yml/1 and recipe YAML frontend
 
 # SYNOPSIS
 
@@ -16,6 +16,10 @@ pkgsource_yaml - strict native profiles.yml/1 and recipe.yml/1 frontend
 *parse_recipe_yaml_v1(std::string_view bytes,*
 *    pkgsource::source_origin origin);*
 
+*pkgsource::yaml_adapter::parsed_recipe_document*
+*parse_recipe_yaml_v2(std::string_view bytes,*
+*    pkgsource::source_origin origin);*
+
 # DESCRIPTION
 
 *libpkgsource-yaml* parses one strict native YAML document from caller-owned
@@ -23,9 +27,14 @@ bytes.  It produces parser-neutral *profile_declaration* or
 *recipe_declaration* values.  Parsed documents are not authority.
 
 *seal_profiles_yaml_v1()* invokes *profile_catalog::seal()*.
-*seal_recipe_yaml_v1()* invokes *seal_source()* with an already sealed profile
-catalog.  Only those sealed native values cross the semantic authority
-boundary.
+*seal_recipe_yaml_v1()* and *seal_recipe_yaml_v2()* invoke *seal_source()* with
+an already sealed profile catalog.  Only those sealed native values cross the
+semantic authority boundary.
+
+Version one preserves the published no-check-program protocol.  Version two
+adds one optional exact check program using the same *language* and *script*
+shape as other programs.  Version-two check requirements without that program
+are semantic errors from *seal_source()*.
 
 The adapter does not open paths, discover collections, combine profile
 documents, choose precedence, resolve requirements, fetch sources, or execute
@@ -33,7 +42,7 @@ programs.
 
 # STRICTNESS
 
-Version one rejects multiple documents, YAML directives, duplicate or unknown
+The adapter rejects multiple documents, YAML directives, duplicate or unknown
 mapping keys, non-scalar mapping keys, anchors, aliases, merge keys, custom or
 kind-incompatible tags, scalar requirement shorthand, and schema/type drift.
 
@@ -54,8 +63,8 @@ values; the adapter does not translate sealer error codes.
 
 # ABI
 
-*libpkgsource-yaml.so.1* is an optional library.  Its public headers do not
-expose libyaml types.  The core *libpkgsource.so.1* has no libyaml dependency.
+*libpkgsource-yaml.so.2* is an optional library.  Its public headers do not
+expose libyaml types.  The core *libpkgsource.so.2* has no libyaml dependency.
 
 # SEE ALSO
 

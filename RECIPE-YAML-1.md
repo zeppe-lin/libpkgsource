@@ -92,9 +92,10 @@ normalized exact values; version one does not infer them from source files.
 
 `requirements` is required.  Omitted scope lists are empty.
 
-`build`, `run`, and `check` contain requirement subjects.  `check` is already a
-typed native scope even though build execution and test execution are outside
-this implementation series.
+`build`, `run`, and `check` contain requirement subjects.  `check` is a typed
+native scope retained as reserved, non-executable metadata in version one.
+Version one has no root check program.  Executable check authority begins with
+`recipe.yml/2`.
 
 `requirements.lifecycle` maps an exact lifecycle action to subjects.  Valid
 actions are `pre-install`, `post-install`, `pre-remove`, and `post-remove`.
@@ -130,6 +131,9 @@ does not download, copy, or verify them.
 exact non-empty YAML string in `script`.  The normalized model retains the
 program bytes and their SHA-256 digest but never executes them.
 
+A root `check` program is not part of version one and is rejected as an unknown
+field.  Version-two check syntax is defined separately in `RECIPE-YAML-2.md`.
+
 `lifecycle` is optional and maps lifecycle actions to the same program shape.
 Duplicate actions are errors.  Installation and removal programs remain
 separate values; requirements are bound to the exact action rather than to a
@@ -155,8 +159,9 @@ Declaration locations are retained for diagnostics but excluded from semantic
 identity.  Equivalent declarations in a different YAML order or at different
 line numbers therefore seal to the same recipe identity.  Changes to package
 release, metadata, exact requirements, profile identities or expansion paths,
-source declarations, program bytes, lifecycle programs, or architecture
-requirements change the recipe identity.
+source declarations, build-program bytes, lifecycle programs, or architecture
+requirements change the recipe identity.  Version-one recipe and source-snapshot
+identity encoding remains stable in `libpkgsource` 2.0.
 
 ## YAML adapter API
 
