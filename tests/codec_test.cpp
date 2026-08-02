@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 
 #include <libpkgsource/libpkgsource.h>
+#include <libpkgsource-codec/codec.h>
 
 #include <openssl/evp.h>
 
@@ -17,6 +18,7 @@
 #include <vector>
 
 using namespace pkgsource;
+using namespace pkgsource::codec;
 
 namespace {
 

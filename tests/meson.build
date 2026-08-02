@@ -28,7 +28,7 @@ if get_option('tests').enabled()
   codec_test = executable(
     'codec-test',
     'codec_test.cpp',
-    dependencies: libpkgsource_dep,
+    dependencies: libpkgsource_codec_dep,
     install: false,
   )
   test('codec', codec_test)
@@ -40,6 +40,14 @@ if get_option('tests').enabled()
     install: false,
   )
   test('public-headers', public_headers)
+
+  codec_public_headers = executable(
+    'codec-public-headers',
+    'codec_public_headers.cpp',
+    dependencies: libpkgsource_codec_dep,
+    install: false,
+  )
+  test('codec-public-headers', codec_public_headers)
 
   codec_contract = find_program('check_codec_contract.sh')
   test(

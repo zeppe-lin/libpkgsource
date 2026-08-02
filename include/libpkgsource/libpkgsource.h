@@ -4,7 +4,6 @@
 /*! \file libpkgsource.h \brief Complete public libpkgsource API. */
 #pragma once
 
-#include <libpkgsource/codec.h>
 #include <libpkgsource/error.h>
 #include <libpkgsource/identity.h>
 #include <libpkgsource/model.h>

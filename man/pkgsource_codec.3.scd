@@ -6,7 +6,7 @@ pkgsource_codec - canonical durable package-source authority
 
 # SYNOPSIS
 
-*#include <libpkgsource/codec.h>*
+*#include <libpkgsource-codec/codec.h>*
 
 *profile_catalog_encoding encode_profile_catalog(const profile_catalog& catalog);*
 
@@ -19,7 +19,7 @@ pkgsource_codec - canonical durable package-source authority
 # DESCRIPTION
 
 The profile-catalog and source-snapshot codecs are the durable representation
-owned by *libpkgsource*.  Records use fixed eight-byte house magics, a
+owned by *libpkgsource-codec*.  Records use fixed eight-byte house magics, a
 big-endian schema version, bounded length-prefixed fields, and a whole-record
 SHA-256 checksum.
 
@@ -49,5 +49,5 @@ records, identity mismatch, and non-canonical input.
 
 # SEE ALSO
 
-*libpkgsource*(3), *pkgsource_profile*(3), *pkgsource_recipe*(3),
+*libpkgsource-codec*(3), *pkgsource_profile*(3), *pkgsource_recipe*(3),
 *pkgsource_snapshot*(3)

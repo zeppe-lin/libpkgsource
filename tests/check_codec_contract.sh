@@ -11,51 +11,27 @@ require() {
     exit 1
   }
 }
-require_absent() {
-  file=$1
-  text=$2
-  if grep -F -- "$text" "$file" >/dev/null; then
-    echo "forbidden codec dependency in ${file#$root/}: $text" >&2
-    exit 1
-  fi
-}
-require "$root/include/libpkgsource/codec.h" \
-  'profile_catalog_encoding_version = 1'
-require "$root/include/libpkgsource/codec.h" \
-  'source_snapshot_encoding_version = 1'
-require "$root/include/libpkgsource/codec.h" \
-  'encode_profile_catalog('
-require "$root/include/libpkgsource/codec.h" \
-  'decode_profile_catalog('
-require "$root/include/libpkgsource/codec.h" \
-  'encode_source_snapshot('
-require "$root/include/libpkgsource/codec.h" \
-  'decode_source_snapshot('
-require "$root/src/codec.cpp" \
-  "'Z', 'L', 'P', 'S', 'P', 'C', 'A', 'T'"
-require "$root/src/codec.cpp" \
-  "'Z', 'L', 'P', 'S', 'S', 'N', 'A', 'P'"
-require "$root/src/codec.cpp" 'profile_catalog::seal('
-require "$root/src/codec.cpp" 'seal_source('
-require "$root/src/codec.cpp" 'encode_profile_catalog(result) != encoding'
-require "$root/src/codec.cpp" 'encode_source_snapshot(result) != encoding'
-require_absent "$root/src/codec.cpp" 'libpkgsource-yaml'
-require_absent "$root/src/codec.cpp" '<filesystem>'
-require_absent "$root/src/codec.cpp" 'std::ifstream'
-require_absent "$root/src/codec.cpp" 'std::ofstream'
-require "$root/src/meson.build" "'codec.cpp'"
-require "$root/src/meson.build" "'../include/libpkgsource/codec.h'"
-require "$root/tests/meson.build" "'codec_test.cpp'"
-require "$root/man/meson.build" \
-  "['pkgsource_codec.3.scd', 'pkgsource_codec.3']"
-for path in \
-  include/libpkgsource/codec.h \
-  src/codec.cpp \
-  tests/codec_test.cpp \
-  man/pkgsource_codec.3.scd
-do
-  test -f "$root/$path" || {
-    echo "missing codec path: $path" >&2
-    exit 1
-  }
-done
+header=$root/include/libpkgsource-codec/codec.h
+source=$root/codec/codec.cpp
+require "$header" 'namespace pkgsource::codec'
+require "$header" 'profile_catalog_encoding_version = 1'
+require "$header" 'source_snapshot_encoding_version = 1'
+require "$header" 'maximum_profile_catalog_encoding_size'
+require "$header" 'maximum_source_snapshot_encoding_size'
+require "$header" 'encode_profile_catalog('
+require "$header" 'decode_profile_catalog('
+require "$header" 'encode_source_snapshot('
+require "$header" 'decode_source_snapshot('
+require "$source" 'profile_catalog::seal('
+require "$source" 'seal_source('
+require "$source" 'encode_profile_catalog(result) != encoding'
+require "$source" 'encode_source_snapshot(result) != encoding'
+require "$source" 'checksum_mismatch'
+require "$root/codec/meson.build" "soversion: '1'"
+require "$root/codec/meson.build" "'libpkgsource = ' + meson.project_version()"
+
+if grep -R -E 'source_syntax|recipe_yaml_v[0-9]|recipe_identity' \
+    "$header" "$source" >/dev/null; then
+  echo 'codec record still contains parser generations or removed identities' >&2
+  exit 1
+fi

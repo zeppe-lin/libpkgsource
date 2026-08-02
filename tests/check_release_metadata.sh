@@ -17,8 +17,9 @@ require "$root/HISTORY.md" '## 2.1.0'
 require "$root/src/meson.build" "'../include/libpkgsource/profile.h'"
 require "$root/src/meson.build" "'../include/libpkgsource/recipe.h'"
 require "$root/src/meson.build" "'../include/libpkgsource/snapshot.h'"
-require "$root/src/meson.build" "'../include/libpkgsource/codec.h'"
 require "$root/include/libpkgsource/recipe.h" "check_program() const noexcept"
+require "$root/codec/meson.build" "  soversion: '1',"
+require "$root/codec/meson.build" "'libpkgsource = ' + meson.project_version()"
 
 if grep -R -E 'libpkgsource-(yaml|plan)|yaml_adapter|planner_adapter' \
     "$root/meson.build" "$root/meson.options" "$root/src" \

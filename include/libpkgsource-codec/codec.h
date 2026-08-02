@@ -14,7 +14,7 @@
 
 #include <libpkgsource/snapshot.h>
 
-namespace pkgsource {
+namespace pkgsource::codec {
 
 inline constexpr std::uint16_t profile_catalog_encoding_version = 1;
 inline constexpr std::uint16_t source_snapshot_encoding_version = 1;
@@ -61,4 +61,4 @@ using source_snapshot_encoding = std::vector<std::uint8_t>;
 [[nodiscard]] source_snapshot decode_source_snapshot(
     const source_snapshot_encoding& encoding);
 
-} // namespace pkgsource
+} // namespace pkgsource::codec

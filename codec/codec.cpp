@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-#include <libpkgsource/codec.h>
+#include <libpkgsource-codec/codec.h>
 
 #include <libpkgsource/error.h>
 
@@ -19,7 +19,7 @@
 #include <utility>
 #include <vector>
 
-namespace pkgsource {
+namespace pkgsource::codec {
 namespace {
 
 constexpr std::array<std::uint8_t, 8> profile_magic = {
@@ -753,4 +753,4 @@ source_snapshot decode_source_snapshot(
   }
 }
 
-} // namespace pkgsource
+} // namespace pkgsource::codec

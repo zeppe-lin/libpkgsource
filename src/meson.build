@@ -6,7 +6,6 @@ private_inc = include_directories('.')
 libpkgsource = library(
   'pkgsource',
   [
-    'codec.cpp',
     'error.cpp',
     'identity.cpp',
     'identity_support.cpp',
@@ -31,7 +30,6 @@ meson.override_dependency('libpkgsource', libpkgsource_dep)
 
 install_headers(
   '../include/libpkgsource/libpkgsource.h',
-  '../include/libpkgsource/codec.h',
   '../include/libpkgsource/error.h',
   '../include/libpkgsource/identity.h',
   '../include/libpkgsource/model.h',
