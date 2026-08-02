@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <libpkgsource/export.h>
 #include <libpkgsource/recipe.h>
 
 #include <string>
@@ -13,7 +14,7 @@
 namespace pkgsource {
 
 /*! \brief Stable diagnostic origin of one source declaration document. */
-class source_origin final {
+class PKGSOURCE_API source_origin final {
 public:
   explicit source_origin(std::string document);
   [[nodiscard]] const std::string& document() const noexcept;
@@ -23,7 +24,7 @@ private:
 };
 
 /*! \brief Sealed parser-neutral package-source authority. */
-class source_snapshot final {
+class PKGSOURCE_API source_snapshot final {
 public:
   source_snapshot(source_origin origin,
                   sealed_recipe recipe,
@@ -39,8 +40,9 @@ private:
 };
 
 /*! \brief Seal one parser-neutral declaration into source authority. */
-[[nodiscard]] source_snapshot seal_source(source_origin origin,
-                                          recipe_declaration declaration,
-                                          const profile_catalog& profiles);
+[[nodiscard]] PKGSOURCE_API source_snapshot
+seal_source(source_origin origin,
+            recipe_declaration declaration,
+            const profile_catalog& profiles);
 
 } // namespace pkgsource

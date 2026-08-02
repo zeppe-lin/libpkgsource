@@ -2,6 +2,14 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 codec_inc = include_directories('../include')
 
+codec_export_script = configure_file(
+  input: '../abi/libpkgsource-codec.exports',
+  output: 'libpkgsource-codec.exports.map',
+  command: [elf_export_generator, '@INPUT@'],
+  capture: true,
+)
+
+
 libpkgsource_codec = library(
   'pkgsource-codec',
   [
@@ -14,6 +22,10 @@ libpkgsource_codec = library(
   ],
   include_directories: codec_inc,
   dependencies: [libpkgsource_dep, libpkgsource_sha256_provider_dep],
+  cpp_args: visibility_cpp_args + ['-DPKGSOURCE_CODEC_BUILDING_LIBRARY'],
+  gnu_symbol_visibility: 'hidden',
+  link_args: ['-Wl,--version-script=' + codec_export_script.full_path()],
+  link_depends: [codec_export_script],
   install: true,
   version: meson.project_version(),
   soversion: '1',
@@ -27,7 +39,9 @@ libpkgsource_codec_dep = declare_dependency(
 meson.override_dependency('libpkgsource-codec', libpkgsource_codec_dep)
 
 install_headers(
+  '../include/libpkgsource-codec/libpkgsource-codec.h',
   '../include/libpkgsource-codec/codec.h',
+  '../include/libpkgsource-codec/export.h',
   subdir: 'libpkgsource-codec',
 )
 
@@ -37,6 +51,5 @@ pkgconf.generate(
   filebase: 'libpkgsource-codec',
   description: 'Canonical durable records for libpkgsource authority',
   subdirs: '.',
-  requires: ['libpkgsource = ' + meson.project_version()],
-  requires_private: ['libcrypto'],
+  requires: [libpkgsource_dep],
 )

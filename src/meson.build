@@ -3,6 +3,17 @@
 public_inc = include_directories('../include')
 private_inc = include_directories('.')
 
+elf_export_generator = find_program(
+  meson.project_source_root() / 'tools/generate-elf-export-script.sh',
+)
+core_export_script = configure_file(
+  input: '../abi/libpkgsource.exports',
+  output: 'libpkgsource.exports.map',
+  command: [elf_export_generator, '@INPUT@'],
+  capture: true,
+)
+
+
 libpkgsource = library(
   'pkgsource',
   [
@@ -17,6 +28,10 @@ libpkgsource = library(
   ],
   include_directories: [public_inc, private_inc],
   dependencies: libpkgsource_sha256_provider_dep,
+  cpp_args: visibility_cpp_args + ['-DPKGSOURCE_BUILDING_LIBRARY'],
+  gnu_symbol_visibility: 'hidden',
+  link_args: ['-Wl,--version-script=' + core_export_script.full_path()],
+  link_depends: [core_export_script],
   install: true,
   version: meson.project_version(),
   soversion: '3',
@@ -32,6 +47,7 @@ meson.override_dependency('libpkgsource', libpkgsource_dep)
 install_headers(
   '../include/libpkgsource/libpkgsource.h',
   '../include/libpkgsource/error.h',
+  '../include/libpkgsource/export.h',
   '../include/libpkgsource/identity.h',
   '../include/libpkgsource/model.h',
   '../include/libpkgsource/profile.h',
@@ -46,5 +62,4 @@ pkgconf.generate(
   filebase: 'libpkgsource',
   description: 'Native sealed package-source model library',
   subdirs: '.',
-  requires_private: ['libcrypto'],
 )

@@ -25,6 +25,12 @@ if (library_kind == 'static') != want_static
 endif
 
 libcrypto_dep = dependency('libcrypto', required: true, static: want_static)
+cpp = meson.get_compiler('cpp')
+visibility_cpp_args = []
+if cpp.has_argument('-fvisibility-inlines-hidden')
+  visibility_cpp_args += ['-fvisibility-inlines-hidden']
+endif
+
 pkgconf = import('pkgconfig')
 
 subdir('internal')

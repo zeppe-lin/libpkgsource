@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <libpkgsource-codec/export.h>
 #include <libpkgsource/snapshot.h>
 
 #include <cstddef>
@@ -35,7 +36,7 @@ enum class codec_error_code : std::uint8_t {
   noncanonical = 8,
 };
 
-class codec_error final : public std::invalid_argument {
+class PKGSOURCE_CODEC_API codec_error final : public std::invalid_argument {
 public:
   codec_error(codec_error_code code, std::string message);
   ~codec_error() override;

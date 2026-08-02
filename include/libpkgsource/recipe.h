@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <libpkgsource/export.h>
 #include <libpkgsource/profile.h>
 
 #include <optional>
@@ -14,7 +15,7 @@
 namespace pkgsource {
 
 /*! \brief Parser-neutral declaration of one complete native recipe. */
-class recipe_declaration final {
+class PKGSOURCE_API recipe_declaration final {
 public:
   recipe_declaration(package_release release,
                      package_metadata metadata,
@@ -58,7 +59,7 @@ private:
 };
 
 /*! \brief Complete normalized recipe authority. */
-class sealed_recipe final {
+class PKGSOURCE_API sealed_recipe final {
 public:
   sealed_recipe(package_release release,
                 package_metadata metadata,
@@ -112,7 +113,7 @@ private:
 };
 
 /*! \brief Validate, expand, normalize, and seal one native recipe. */
-[[nodiscard]] sealed_recipe seal_recipe(recipe_declaration declaration,
-                                        const profile_catalog& profiles);
+[[nodiscard]] PKGSOURCE_API sealed_recipe
+seal_recipe(recipe_declaration declaration, const profile_catalog& profiles);
 
 } // namespace pkgsource

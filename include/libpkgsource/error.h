@@ -6,6 +6,8 @@
  */
 #pragma once
 
+#include <libpkgsource/export.h>
+
 #include <stdexcept>
 #include <string>
 
@@ -29,9 +31,10 @@ enum class error_code {
 };
 
 /*! \brief Exception carrying an error_code and diagnostic text. */
-class error : public std::runtime_error {
+class PKGSOURCE_API error : public std::runtime_error {
 public:
   error(error_code code, std::string message);
+  ~error() override;
   [[nodiscard]] error_code code() const noexcept;
 
 private:

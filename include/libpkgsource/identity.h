@@ -6,22 +6,24 @@
  */
 #pragma once
 
+#include <libpkgsource/export.h>
+
 #include <string>
 #include <string_view>
 
 namespace pkgsource {
 
 #define PKGSOURCE_DECLARE_IDENTITY(type_name)                                  \
-  class type_name final {                                                      \
+  class PKGSOURCE_API type_name final {                                        \
   public:                                                                      \
     [[nodiscard]] static type_name from_sha256(std::string hex);               \
     [[nodiscard]] const std::string& hex() const noexcept;                     \
-    friend bool operator==(const type_name& lhs,                               \
-                           const type_name& rhs) noexcept;                     \
-    friend bool operator!=(const type_name& lhs,                               \
-                           const type_name& rhs) noexcept;                     \
-    friend bool operator<(const type_name& lhs,                                \
-                          const type_name& rhs) noexcept;                      \
+    friend PKGSOURCE_API bool operator==(const type_name& lhs,                 \
+                                         const type_name& rhs) noexcept;       \
+    friend PKGSOURCE_API bool operator!=(const type_name& lhs,                 \
+                                         const type_name& rhs) noexcept;       \
+    friend PKGSOURCE_API bool operator<(const type_name& lhs,                  \
+                                        const type_name& rhs) noexcept;        \
                                                                                \
   private:                                                                     \
     explicit type_name(std::string hex);                                       \

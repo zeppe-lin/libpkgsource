@@ -6,6 +6,7 @@
  */
 #pragma once
 
+#include <libpkgsource/export.h>
 #include <libpkgsource/identity.h>
 
 #include <cstdint>
@@ -49,23 +50,31 @@ enum class program_language {
   posix_shell
 };
 
-[[nodiscard]] std::string_view to_string(digest_algorithm value) noexcept;
-[[nodiscard]] std::string_view to_string(requirement_scope_kind value) noexcept;
-[[nodiscard]] std::string_view to_string(lifecycle_action value) noexcept;
+[[nodiscard]] PKGSOURCE_API std::string_view
+to_string(digest_algorithm value) noexcept;
+[[nodiscard]] PKGSOURCE_API std::string_view
+to_string(requirement_scope_kind value) noexcept;
+[[nodiscard]] PKGSOURCE_API std::string_view
+to_string(lifecycle_action value) noexcept;
 [[nodiscard]] std::string_view
 to_string(requirement_subject_kind value) noexcept;
-[[nodiscard]] std::string_view to_string(source_input_kind value) noexcept;
-[[nodiscard]] std::string_view to_string(program_language value) noexcept;
+[[nodiscard]] PKGSOURCE_API std::string_view
+to_string(source_input_kind value) noexcept;
+[[nodiscard]] PKGSOURCE_API std::string_view
+to_string(program_language value) noexcept;
 
 /*! \brief Validated lowercase hexadecimal digest value. */
-class digest final {
+class PKGSOURCE_API digest final {
 public:
   digest(digest_algorithm algorithm, std::string hex);
   [[nodiscard]] digest_algorithm algorithm() const noexcept;
   [[nodiscard]] const std::string& hex() const noexcept;
-  friend bool operator==(const digest& lhs, const digest& rhs) noexcept;
-  friend bool operator!=(const digest& lhs, const digest& rhs) noexcept;
-  friend bool operator<(const digest& lhs, const digest& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const digest& lhs,
+                                       const digest& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const digest& lhs,
+                                       const digest& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const digest& lhs,
+                                      const digest& rhs) noexcept;
 
 private:
   digest_algorithm algorithm_;
@@ -73,55 +82,58 @@ private:
 };
 
 /*! \brief Canonical exact package name. */
-class package_reference final {
+class PKGSOURCE_API package_reference final {
 public:
   explicit package_reference(std::string name);
   [[nodiscard]] const std::string& name() const noexcept;
-  friend bool operator==(const package_reference& lhs,
-                         const package_reference& rhs) noexcept;
-  friend bool operator!=(const package_reference& lhs,
-                         const package_reference& rhs) noexcept;
-  friend bool operator<(const package_reference& lhs,
-                        const package_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const package_reference& lhs,
+                                       const package_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const package_reference& lhs,
+                                       const package_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const package_reference& lhs,
+                                      const package_reference& rhs) noexcept;
 
 private:
   std::string name_;
 };
 
 /*! \brief Canonical named profile reference, including its leading '@'. */
-class profile_reference final {
+class PKGSOURCE_API profile_reference final {
 public:
   explicit profile_reference(std::string name);
   [[nodiscard]] const std::string& name() const noexcept;
-  friend bool operator==(const profile_reference& lhs,
-                         const profile_reference& rhs) noexcept;
-  friend bool operator!=(const profile_reference& lhs,
-                         const profile_reference& rhs) noexcept;
-  friend bool operator<(const profile_reference& lhs,
-                        const profile_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const profile_reference& lhs,
+                                       const profile_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const profile_reference& lhs,
+                                       const profile_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const profile_reference& lhs,
+                                      const profile_reference& rhs) noexcept;
 
 private:
   std::string name_;
 };
 
 /*! \brief Canonical build or target architecture name. */
-class architecture_reference final {
+class PKGSOURCE_API architecture_reference final {
 public:
   explicit architecture_reference(std::string name);
   [[nodiscard]] const std::string& name() const noexcept;
-  friend bool operator==(const architecture_reference& lhs,
-                         const architecture_reference& rhs) noexcept;
-  friend bool operator!=(const architecture_reference& lhs,
-                         const architecture_reference& rhs) noexcept;
-  friend bool operator<(const architecture_reference& lhs,
-                        const architecture_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool
+  operator==(const architecture_reference& lhs,
+             const architecture_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool
+  operator!=(const architecture_reference& lhs,
+             const architecture_reference& rhs) noexcept;
+  friend PKGSOURCE_API bool
+  operator<(const architecture_reference& lhs,
+            const architecture_reference& rhs) noexcept;
 
 private:
   std::string name_;
 };
 
 /*! \brief Exact source declaration site retained through sealing. */
-class declaration_provenance final {
+class PKGSOURCE_API declaration_provenance final {
 public:
   declaration_provenance(std::string document,
                          std::string path,
@@ -131,12 +143,15 @@ public:
   [[nodiscard]] const std::string& path() const noexcept;
   [[nodiscard]] std::uint32_t line() const noexcept;
   [[nodiscard]] std::uint32_t column() const noexcept;
-  friend bool operator==(const declaration_provenance& lhs,
-                         const declaration_provenance& rhs) noexcept;
-  friend bool operator!=(const declaration_provenance& lhs,
-                         const declaration_provenance& rhs) noexcept;
-  friend bool operator<(const declaration_provenance& lhs,
-                        const declaration_provenance& rhs) noexcept;
+  friend PKGSOURCE_API bool
+  operator==(const declaration_provenance& lhs,
+             const declaration_provenance& rhs) noexcept;
+  friend PKGSOURCE_API bool
+  operator!=(const declaration_provenance& lhs,
+             const declaration_provenance& rhs) noexcept;
+  friend PKGSOURCE_API bool
+  operator<(const declaration_provenance& lhs,
+            const declaration_provenance& rhs) noexcept;
 
 private:
   std::string document_;
@@ -146,7 +161,7 @@ private:
 };
 
 /*! \brief Typed requirement scope with lifecycle binding where applicable. */
-class requirement_scope final {
+class PKGSOURCE_API requirement_scope final {
 public:
   [[nodiscard]] static requirement_scope build();
   [[nodiscard]] static requirement_scope run();
@@ -154,12 +169,12 @@ public:
   [[nodiscard]] static requirement_scope lifecycle(lifecycle_action action);
   [[nodiscard]] requirement_scope_kind kind() const noexcept;
   [[nodiscard]] const std::optional<lifecycle_action>& action() const noexcept;
-  friend bool operator==(const requirement_scope& lhs,
-                         const requirement_scope& rhs) noexcept;
-  friend bool operator!=(const requirement_scope& lhs,
-                         const requirement_scope& rhs) noexcept;
-  friend bool operator<(const requirement_scope& lhs,
-                        const requirement_scope& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const requirement_scope& lhs,
+                                       const requirement_scope& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const requirement_scope& lhs,
+                                       const requirement_scope& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const requirement_scope& lhs,
+                                      const requirement_scope& rhs) noexcept;
 
 private:
   requirement_scope(requirement_scope_kind kind,
@@ -169,7 +184,7 @@ private:
 };
 
 /*! \brief Exact package or profile subject. */
-class requirement_subject final {
+class PKGSOURCE_API requirement_subject final {
 public:
   explicit requirement_subject(package_reference package);
   explicit requirement_subject(profile_reference profile);
@@ -177,12 +192,12 @@ public:
   [[nodiscard]] const package_reference& package() const;
   [[nodiscard]] const profile_reference& profile() const;
   [[nodiscard]] std::string text() const;
-  friend bool operator==(const requirement_subject& lhs,
-                         const requirement_subject& rhs) noexcept;
-  friend bool operator!=(const requirement_subject& lhs,
-                         const requirement_subject& rhs) noexcept;
-  friend bool operator<(const requirement_subject& lhs,
-                        const requirement_subject& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const requirement_subject& lhs,
+                                       const requirement_subject& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const requirement_subject& lhs,
+                                       const requirement_subject& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const requirement_subject& lhs,
+                                      const requirement_subject& rhs) noexcept;
 
 private:
   requirement_subject_kind kind_;
@@ -191,7 +206,7 @@ private:
 };
 
 /*! \brief One parser-neutral requirement declaration. */
-class requirement_declaration final {
+class PKGSOURCE_API requirement_declaration final {
 public:
   requirement_declaration(requirement_scope scope,
                           requirement_subject subject,
@@ -207,7 +222,7 @@ private:
 };
 
 /*! \brief Native package release coordinates and semantic identity. */
-class package_release final {
+class PKGSOURCE_API package_release final {
 public:
   package_release(package_reference package,
                   std::string version,
@@ -226,7 +241,7 @@ private:
 };
 
 /*! \brief Metadata retained for package-image and installed-state stages. */
-class package_metadata final {
+class PKGSOURCE_API package_metadata final {
 public:
   package_metadata(std::string summary,
                    std::optional<std::string> description,
@@ -245,7 +260,7 @@ private:
 };
 
 /*! \brief One normalized source input declaration. */
-class source_input final {
+class PKGSOURCE_API source_input final {
 public:
   [[nodiscard]] static source_input
   remote(std::string url, std::string local_name, digest content_digest);
@@ -255,12 +270,12 @@ public:
   [[nodiscard]] const std::string& location() const noexcept;
   [[nodiscard]] const std::string& local_name() const noexcept;
   [[nodiscard]] const digest& content_digest() const noexcept;
-  friend bool operator==(const source_input& lhs,
-                         const source_input& rhs) noexcept;
-  friend bool operator!=(const source_input& lhs,
-                         const source_input& rhs) noexcept;
-  friend bool operator<(const source_input& lhs,
-                        const source_input& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const source_input& lhs,
+                                       const source_input& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const source_input& lhs,
+                                       const source_input& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const source_input& lhs,
+                                      const source_input& rhs) noexcept;
 
 private:
   source_input(source_input_kind kind,
@@ -274,15 +289,18 @@ private:
 };
 
 /*! \brief Exact non-executed program bytes in the normalized model. */
-class program final {
+class PKGSOURCE_API program final {
 public:
   program(program_language language, std::string material);
   [[nodiscard]] program_language language() const noexcept;
   [[nodiscard]] const std::string& material() const noexcept;
   [[nodiscard]] const digest& content_digest() const noexcept;
-  friend bool operator==(const program& lhs, const program& rhs) noexcept;
-  friend bool operator!=(const program& lhs, const program& rhs) noexcept;
-  friend bool operator<(const program& lhs, const program& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const program& lhs,
+                                       const program& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const program& lhs,
+                                       const program& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const program& lhs,
+                                      const program& rhs) noexcept;
 
 private:
   program_language language_;
@@ -291,17 +309,17 @@ private:
 };
 
 /*! \brief Program bound to one lifecycle action. */
-class lifecycle_program final {
+class PKGSOURCE_API lifecycle_program final {
 public:
   lifecycle_program(lifecycle_action action, program value);
   [[nodiscard]] lifecycle_action action() const noexcept;
   [[nodiscard]] const program& value() const noexcept;
-  friend bool operator==(const lifecycle_program& lhs,
-                         const lifecycle_program& rhs) noexcept;
-  friend bool operator!=(const lifecycle_program& lhs,
-                         const lifecycle_program& rhs) noexcept;
-  friend bool operator<(const lifecycle_program& lhs,
-                        const lifecycle_program& rhs) noexcept;
+  friend PKGSOURCE_API bool operator==(const lifecycle_program& lhs,
+                                       const lifecycle_program& rhs) noexcept;
+  friend PKGSOURCE_API bool operator!=(const lifecycle_program& lhs,
+                                       const lifecycle_program& rhs) noexcept;
+  friend PKGSOURCE_API bool operator<(const lifecycle_program& lhs,
+                                      const lifecycle_program& rhs) noexcept;
 
 private:
   lifecycle_action action_;
@@ -312,7 +330,7 @@ private:
  *
  * An empty set means unrestricted. Non-empty sets are sorted and unique.
  */
-class architecture_requirements final {
+class PKGSOURCE_API architecture_requirements final {
 public:
   architecture_requirements(std::vector<architecture_reference> build,
                             std::vector<architecture_reference> target);

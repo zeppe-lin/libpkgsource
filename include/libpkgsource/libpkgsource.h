@@ -5,6 +5,7 @@
 #pragma once
 
 #include <libpkgsource/error.h>
+#include <libpkgsource/export.h>
 #include <libpkgsource/identity.h>
 #include <libpkgsource/model.h>
 #include <libpkgsource/profile.h>
