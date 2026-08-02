@@ -51,5 +51,7 @@ pkgconf.generate(
   filebase: 'libpkgsource-codec',
   description: 'Canonical durable records for libpkgsource authority',
   subdirs: '.',
+  # Promote the versioned semantic owner from the target's private closure.
+  # Reusing the dependency object prevents duplicate Requires entries.
   requires: [libpkgsource_dep],
 )

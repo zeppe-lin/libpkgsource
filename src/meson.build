@@ -37,6 +37,8 @@ libpkgsource = library(
   soversion: '3',
 )
 
+# The version is part of the codec's generated public pkg-config requirement.
+# Meson promotes this same dependency object from the target's private closure.
 libpkgsource_dep = declare_dependency(
   link_with: libpkgsource,
   include_directories: public_inc,
