@@ -73,7 +73,7 @@ A source record embeds only the exact profile closure retained by that snapshot,
 not an acquired global catalog. This keeps the primitive record independently
 reconstructible without duplicating unrelated profile authority.
 
-The normative byte protocol is `SOURCE-RECORDS-1.md`.
+The normative byte protocol is `docs/protocols/source-records-v1.md`.
 
 ## Boundary
 

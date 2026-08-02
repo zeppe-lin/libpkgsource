@@ -23,7 +23,7 @@ admissible; never silently reinterpret them.
 
 ## Durable records
 
-`SOURCE-RECORDS-1.md` is normative. Schema 1 accepts no trailing or unknown
+`docs/protocols/source-records-v1.md` is normative. Schema 1 accepts no trailing or unknown
 fields. Any change to emitted or accepted bytes requires either proof that the
 schema-1 bytes are unchanged or a new outer schema version with new vectors.
 

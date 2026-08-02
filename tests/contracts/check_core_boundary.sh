@@ -13,7 +13,7 @@ for required in \
   "$root/include/libpkgsource/libpkgsource.h" \
   "$root/include/libpkgsource/snapshot.h" \
   "$root/include/libpkgsource-codec/codec.h" \
-  "$root/SOURCE-RECORDS-1.md"
+  "$root/docs/protocols/source-records-v1.md"
 do
   [ -f "$required" ] || fail "missing ${required#$root/}"
 done

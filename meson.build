@@ -29,5 +29,5 @@ pkgconf = import('pkgconfig')
 
 subdir('src')
 subdir('codec')
-subdir('man')
+subdir('docs')
 subdir('tests')

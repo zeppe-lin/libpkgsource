@@ -35,7 +35,7 @@ jobs:
       - name: Test
         run: meson test -C build --print-errorlogs
       - name: Lint manuals
-        run: find build/man -type f -name '*.3' -exec mandoc -Tlint {} +
+        run: find build/docs/man -type f -name '*.3' -exec mandoc -Tlint {} +
       - name: Install
         run: meson install -C build
       - name: Qualify installed consumers
@@ -52,11 +52,11 @@ jobs:
             flags+=(--static)
           fi
           "$CXX" -std=c++17 -Wall -Wextra -Wpedantic -Werror \
-            tests/public_headers.cpp \
+            tests/public/core_umbrella_header_test.cpp \
             $(pkg-config "${flags[@]}" --cflags --libs libpkgsource) \
             -o core-consumer
           "$CXX" -std=c++17 -Wall -Wextra -Wpedantic -Werror \
-            tests/codec_public_headers.cpp \
+            tests/public/codec_header_test.cpp \
             $(pkg-config "${flags[@]}" --cflags --libs libpkgsource-codec) \
             -o codec-consumer
           if [[ '${{ matrix.mode }}' == shared ]]; then

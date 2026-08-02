@@ -3,7 +3,7 @@
 if get_option('tests').enabled()
   model_test = executable(
     'model-test',
-    'model_test.cpp',
+    'model/value_domains_test.cpp',
     dependencies: libpkgsource_dep,
     install: false,
   )
@@ -11,7 +11,7 @@ if get_option('tests').enabled()
 
   profile_test = executable(
     'profile-test',
-    'profile_test.cpp',
+    'profiles/sealing_test.cpp',
     dependencies: libpkgsource_dep,
     install: false,
   )
@@ -19,7 +19,7 @@ if get_option('tests').enabled()
 
   recipe_test = executable(
     'recipe-test',
-    'recipe_test.cpp',
+    'recipes/sealing_test.cpp',
     dependencies: libpkgsource_dep,
     install: false,
   )
@@ -27,7 +27,7 @@ if get_option('tests').enabled()
 
   codec_test = executable(
     'codec-test',
-    'codec_test.cpp',
+    'codec/codec_test.cpp',
     dependencies: libpkgsource_codec_dep,
     install: false,
   )
@@ -35,7 +35,7 @@ if get_option('tests').enabled()
 
   public_headers = executable(
     'public-headers',
-    'public_headers.cpp',
+    'public/core_umbrella_header_test.cpp',
     dependencies: libpkgsource_dep,
     install: false,
   )
@@ -43,13 +43,13 @@ if get_option('tests').enabled()
 
   codec_public_headers = executable(
     'codec-public-headers',
-    'codec_public_headers.cpp',
+    'public/codec_header_test.cpp',
     dependencies: libpkgsource_codec_dep,
     install: false,
   )
   test('codec-public-headers', codec_public_headers)
 
-  codec_contract = find_program('check_codec_contract.sh')
+  codec_contract = find_program('contracts/check_codec_contract.sh')
   test(
     'codec-contract',
     codec_contract,
@@ -57,28 +57,28 @@ if get_option('tests').enabled()
   )
 
 
-  core_boundary = find_program('check_core_boundary.sh')
+  core_boundary = find_program('contracts/check_core_boundary.sh')
   test(
     'core-boundary',
     core_boundary,
     args: [meson.project_source_root()],
   )
 
-  documentation_contract = find_program('check_documentation_contract.sh')
+  documentation_contract = find_program('contracts/check_documentation_contract.sh')
   test(
     'documentation-contract',
     documentation_contract,
     args: [meson.project_source_root()],
   )
 
-  pkgconfig_metadata = find_program('pkgconfig_metadata_test.sh')
+  pkgconfig_metadata = find_program('contracts/pkgconfig_metadata_test.sh')
   test(
     'pkgconfig-metadata',
     pkgconfig_metadata,
     args: [meson.project_build_root(), meson.project_version()],
   )
 
-  release_metadata = find_program('check_release_metadata.sh')
+  release_metadata = find_program('contracts/check_release_metadata.sh')
   test(
     'release-metadata',
     release_metadata,

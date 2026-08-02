@@ -23,7 +23,7 @@ Core changes require model tests, deterministic identity tests, negative
 invariant tests, public-header compilation, and shared/static qualification.
 Codec changes additionally require bounded-decoder tests, stored-identity
 substitution tests, canonical re-encoding tests, golden vectors, and an explicit
-schema-version decision in `SOURCE-RECORDS-1.md`.
+schema-version decision in `docs/protocols/source-records-v1.md`.
 
 Keep implementation, tests, documentation, CI, and release preparation in
 reviewable commits. Run `git diff --check` and the complete Meson suite before
