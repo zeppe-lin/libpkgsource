@@ -27,7 +27,6 @@ bool operator<(const type_name& lhs, const type_name& rhs) noexcept {           
 
 PKGSOURCE_DEFINE_IDENTITY(package_release_identity)
 PKGSOURCE_DEFINE_IDENTITY(profile_identity)
-PKGSOURCE_DEFINE_IDENTITY(recipe_identity)
 PKGSOURCE_DEFINE_IDENTITY(source_snapshot_identity)
 
 #undef PKGSOURCE_DEFINE_IDENTITY

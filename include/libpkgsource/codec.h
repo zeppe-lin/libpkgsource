@@ -53,11 +53,11 @@ using source_snapshot_encoding = std::vector<std::uint8_t>;
 [[nodiscard]] profile_catalog decode_profile_catalog(
     const profile_catalog_encoding& encoding);
 
-/*! \brief Encode one sealed source snapshot and its retained profile closure. */
+/*! \brief Encode one sealed source snapshot and its exact retained profile closure. */
 [[nodiscard]] source_snapshot_encoding encode_source_snapshot(
     const source_snapshot& snapshot);
 
-/*! \brief Decode only through profile and source sealing. */
+/*! \brief Decode only through profile and source sealing; syntax is never recorded. */
 [[nodiscard]] source_snapshot decode_source_snapshot(
     const source_snapshot_encoding& encoding);
 

@@ -7,17 +7,12 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 
 #include <libpkgsource/recipe.h>
 
 namespace pkgsource {
 
-/*! \brief Input syntax recorded for diagnostics, never semantic authority. */
-enum class source_syntax { recipe_yaml_v1, recipe_yaml_v2 };
-[[nodiscard]] std::string_view to_string(source_syntax value) noexcept;
-
-/*! \brief Stable diagnostic origin of one source document. */
+/*! \brief Stable diagnostic origin of one source declaration document. */
 class source_origin final {
 public:
   explicit source_origin(std::string document);
@@ -26,25 +21,23 @@ private:
   std::string document_;
 };
 
-/*! \brief Sealed native source authority and its syntax provenance. */
+/*! \brief Sealed parser-neutral package-source authority. */
 class source_snapshot final {
 public:
-  source_snapshot(source_origin origin, source_syntax syntax,
-                  sealed_recipe recipe, source_snapshot_identity identity);
+  source_snapshot(source_origin origin, sealed_recipe recipe,
+                  source_snapshot_identity identity);
   [[nodiscard]] const source_origin& origin() const noexcept;
-  [[nodiscard]] source_syntax syntax() const noexcept;
   [[nodiscard]] const sealed_recipe& recipe() const noexcept;
   [[nodiscard]] const source_snapshot_identity& identity() const noexcept;
 private:
   source_origin origin_;
-  source_syntax syntax_;
   sealed_recipe recipe_;
   source_snapshot_identity identity_;
 };
 
-/*! \brief Seal declarations into syntax-independent source authority. */
+/*! \brief Seal one parser-neutral declaration into source authority. */
 [[nodiscard]] source_snapshot seal_source(
-    source_origin origin, source_syntax syntax,
-    recipe_declaration declaration, const profile_catalog& profiles);
+    source_origin origin, recipe_declaration declaration,
+    const profile_catalog& profiles);
 
 } // namespace pkgsource

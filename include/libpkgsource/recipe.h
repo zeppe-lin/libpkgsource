@@ -64,8 +64,7 @@ public:
                 sealed_requirement_set requirements,
                 std::vector<lifecycle_program> lifecycle_programs,
                 architecture_requirements architectures,
-                declaration_provenance provenance,
-                recipe_identity identity);
+                declaration_provenance provenance);
   sealed_recipe(package_release release,
                 package_metadata metadata,
                 std::vector<source_input> sources,
@@ -74,7 +73,6 @@ public:
                 std::vector<lifecycle_program> lifecycle_programs,
                 architecture_requirements architectures,
                 declaration_provenance provenance,
-                recipe_identity identity,
                 std::optional<program> check_program);
   [[nodiscard]] const package_release& release() const noexcept;
   [[nodiscard]] const package_metadata& metadata() const noexcept;
@@ -94,7 +92,6 @@ public:
       lifecycle_action action) const noexcept;
   [[nodiscard]] const architecture_requirements& architectures() const noexcept;
   [[nodiscard]] const declaration_provenance& provenance() const noexcept;
-  [[nodiscard]] const recipe_identity& identity() const noexcept;
 private:
   package_release release_;
   package_metadata metadata_;
@@ -105,7 +102,6 @@ private:
   std::vector<lifecycle_program> lifecycle_programs_;
   architecture_requirements architectures_;
   declaration_provenance provenance_;
-  recipe_identity identity_;
 };
 
 /*! \brief Validate, expand, normalize, and seal one native recipe. */

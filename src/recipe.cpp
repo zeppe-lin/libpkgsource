@@ -4,108 +4,12 @@
 
 #include <libpkgsource/error.h>
 
-#include "identity_support.h"
-
 #include <algorithm>
 #include <set>
 #include <tuple>
 #include <utility>
 
 namespace pkgsource {
-namespace {
-
-void write_optional(detail::identity_writer& writer,
-                    const std::optional<std::string>& value)
-{
-  writer.number(value.has_value() ? 1 : 0);
-  if (value)
-    writer.text(*value);
-}
-
-void write_scope(detail::identity_writer& writer,
-                 const requirement_scope& scope)
-{
-  writer.text(to_string(scope.kind()));
-  if (scope.action())
-    writer.text(to_string(*scope.action()));
-}
-
-recipe_identity make_recipe_identity(
-    const package_release& release,
-    const package_metadata& metadata,
-    const std::vector<source_input>& sources,
-    const program& build_program,
-    const std::optional<program>& check_program,
-    const sealed_requirement_set& requirements,
-    const std::vector<lifecycle_program>& lifecycle_programs,
-    const architecture_requirements& architectures)
-{
-  detail::identity_writer writer;
-  writer.text(check_program ? "libpkgsource/recipe/v2"
-                            : "libpkgsource/recipe/v1");
-  writer.text(release.identity().hex());
-  writer.text(metadata.summary());
-  write_optional(writer, metadata.description());
-  write_optional(writer, metadata.homepage());
-  writer.number(metadata.licenses().size());
-  for (const std::string& license : metadata.licenses())
-    writer.text(license);
-
-  writer.number(sources.size());
-  for (const source_input& source : sources) {
-    writer.text(to_string(source.kind()));
-    writer.text(source.location());
-    writer.text(source.local_name());
-    writer.text(to_string(source.content_digest().algorithm()));
-    writer.text(source.content_digest().hex());
-  }
-
-  writer.text(to_string(build_program.language()));
-  writer.text(build_program.material());
-  if (check_program) {
-    writer.text(to_string(check_program->language()));
-    writer.text(check_program->material());
-  }
-
-  writer.number(requirements.requirements().size());
-  for (const resolved_requirement& requirement : requirements.requirements()) {
-    write_scope(writer, requirement.scope());
-    writer.text(requirement.package().name());
-    writer.number(requirement.origins().size());
-    for (const requirement_origin& origin : requirement.origins()) {
-      writer.number(origin.expansion().size());
-      for (const profile_expansion_step& step : origin.expansion()) {
-        writer.text(step.profile().name());
-        writer.text(to_string(step.member().kind()));
-        writer.text(step.member().text());
-      }
-    }
-  }
-
-  writer.number(requirements.profile_closure().size());
-  for (const sealed_profile& profile : requirements.profile_closure()) {
-    writer.text(profile.name().name());
-    writer.text(profile.identity().hex());
-  }
-
-  writer.number(lifecycle_programs.size());
-  for (const lifecycle_program& lifecycle : lifecycle_programs) {
-    writer.text(to_string(lifecycle.action()));
-    writer.text(to_string(lifecycle.value().language()));
-    writer.text(lifecycle.value().material());
-  }
-
-  writer.number(architectures.build().size());
-  for (const architecture_reference& architecture : architectures.build())
-    writer.text(architecture.name());
-  writer.number(architectures.target().size());
-  for (const architecture_reference& architecture : architectures.target())
-    writer.text(architecture.name());
-
-  return recipe_identity::from_sha256(writer.finish());
-}
-
-} // namespace
 
 recipe_declaration::recipe_declaration(
     package_release release, package_metadata metadata,
@@ -173,12 +77,12 @@ sealed_recipe::sealed_recipe(
     sealed_requirement_set requirements,
     std::vector<lifecycle_program> lifecycle_programs,
     architecture_requirements architectures,
-    declaration_provenance provenance, recipe_identity identity)
+    declaration_provenance provenance)
     : sealed_recipe(
           std::move(release), std::move(metadata), std::move(sources),
           std::move(build_program), std::move(requirements),
           std::move(lifecycle_programs), std::move(architectures),
-          std::move(provenance), std::move(identity), std::nullopt)
+          std::move(provenance), std::nullopt)
 {
 }
 
@@ -188,7 +92,7 @@ sealed_recipe::sealed_recipe(
     sealed_requirement_set requirements,
     std::vector<lifecycle_program> lifecycle_programs,
     architecture_requirements architectures,
-    declaration_provenance provenance, recipe_identity identity,
+    declaration_provenance provenance,
     std::optional<program> check_program)
     : release_(std::move(release)), metadata_(std::move(metadata)),
       sources_(std::move(sources)), build_program_(std::move(build_program)),
@@ -196,7 +100,7 @@ sealed_recipe::sealed_recipe(
       requirements_(std::move(requirements)),
       lifecycle_programs_(std::move(lifecycle_programs)),
       architectures_(std::move(architectures)),
-      provenance_(std::move(provenance)), identity_(std::move(identity))
+      provenance_(std::move(provenance))
 {
 }
 const package_release& sealed_recipe::release() const noexcept { return release_; }
@@ -264,8 +168,6 @@ const declaration_provenance& sealed_recipe::provenance() const noexcept
 {
   return provenance_;
 }
-const recipe_identity& sealed_recipe::identity() const noexcept { return identity_; }
-
 sealed_recipe seal_recipe(recipe_declaration declaration,
                           const profile_catalog& profiles)
 {
@@ -301,16 +203,16 @@ sealed_recipe seal_recipe(recipe_declaration declaration,
                       + std::string(to_string(action)));
   }
 
-  const recipe_identity identity = make_recipe_identity(
-      declaration.release(), declaration.metadata(), sources,
-      declaration.build_program(), declaration.check_program(), requirements,
-      lifecycle, declaration.architectures());
+  if (!requirements.for_scope(requirement_scope::check()).empty()
+      && !declaration.check_program())
+    throw error(error_code::invalid_recipe,
+                "check requirements without check program");
 
   return sealed_recipe(
       declaration.release(), declaration.metadata(), std::move(sources),
       declaration.build_program(), std::move(requirements),
       std::move(lifecycle), declaration.architectures(),
-      declaration.provenance(), identity, declaration.check_program());
+      declaration.provenance(), declaration.check_program());
 }
 
 } // namespace pkgsource

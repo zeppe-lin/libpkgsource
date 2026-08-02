@@ -555,24 +555,6 @@ architecture_requirements decode_architectures(reader& input)
   return architecture_requirements(std::move(build), std::move(target));
 }
 
-source_syntax decode_syntax(std::uint8_t value)
-{
-  if (value == 1U) return source_syntax::recipe_yaml_v1;
-  if (value == 2U) return source_syntax::recipe_yaml_v2;
-  fail(codec_error_code::invalid_record,
-       "invalid package-source syntax value");
-}
-
-std::uint8_t encode_syntax(source_syntax value)
-{
-  switch (value) {
-    case source_syntax::recipe_yaml_v1: return 1U;
-    case source_syntax::recipe_yaml_v2: return 2U;
-  }
-  fail(codec_error_code::invalid_record,
-       "unknown package-source syntax value");
-}
-
 [[noreturn]] void translate_model_failure(const error& failure)
 {
   fail(codec_error_code::invalid_record,
@@ -653,9 +635,7 @@ source_snapshot_encoding encode_source_snapshot(
   output.raw(snapshot_magic);
   output.u16(source_snapshot_encoding_version);
   output.text(snapshot.origin().document());
-  output.u8(encode_syntax(snapshot.syntax()));
   output.text(snapshot.identity().hex());
-  output.text(snapshot.recipe().identity().hex());
   output.blob(catalog_encoding);
 
   const auto& release = snapshot.recipe().release();
@@ -697,9 +677,7 @@ source_snapshot decode_source_snapshot(
       fail(codec_error_code::unsupported_version,
            "unsupported source snapshot encoding version");
     auto origin = input.text();
-    const auto syntax = decode_syntax(input.u8());
     auto expected_snapshot = input.text();
-    auto expected_recipe = input.text();
     auto catalog_bytes = input.blob(maximum_profile_catalog_encoding_size);
     auto catalog = decode_profile_catalog(catalog_bytes);
 
@@ -757,10 +735,8 @@ source_snapshot decode_source_snapshot(
               std::move(lifecycle), std::move(architectures),
               std::move(provenance));
     auto result = seal_source(
-        source_origin(std::move(origin)), syntax, std::move(declaration),
-        catalog);
-    if (result.identity().hex() != expected_snapshot ||
-        result.recipe().identity().hex() != expected_recipe)
+        source_origin(std::move(origin)), std::move(declaration), catalog);
+    if (result.identity().hex() != expected_snapshot)
       fail(codec_error_code::identity_mismatch,
            "source snapshot identity changed during decoding");
     if (encode_source_snapshot(result) != encoding)

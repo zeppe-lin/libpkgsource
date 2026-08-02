@@ -68,10 +68,6 @@ recipe_declaration declaration(bool with_check)
           requirement_subject(package_reference("libfoo")),
           at("recipe.yml", "requirements.run[1]", 14)),
       requirement_declaration(
-          requirement_scope::check(),
-          requirement_subject(package_reference("pkgcheck")),
-          at("recipe.yml", "requirements.check[0]", 15)),
-      requirement_declaration(
           requirement_scope::lifecycle(lifecycle_action::post_install),
           requirement_subject(package_reference("desktop-file-utils")),
           at("recipe.yml", "requirements.lifecycle.post-install[0]", 16)),
@@ -103,12 +99,17 @@ recipe_declaration declaration(bool with_check)
       {architecture_reference("x86_64")});
   auto provenance = at("recipe.yml", "$", 1);
 
-  if (with_check)
+  if (with_check) {
+    requirements.emplace_back(
+        requirement_scope::check(),
+        requirement_subject(package_reference("pkgcheck")),
+        at("recipe.yml", "requirements.check[0]", 15));
     return recipe_declaration(
         std::move(release), std::move(metadata), std::move(sources),
         std::move(build), std::move(requirements), std::move(lifecycle),
         std::move(architectures), std::move(provenance),
         program(program_language::posix_shell, "meson test -C build\n"));
+  }
   return recipe_declaration(
       std::move(release), std::move(metadata), std::move(sources),
       std::move(build), std::move(requirements), std::move(lifecycle),
@@ -201,37 +202,35 @@ void test_profile_catalog_round_trip()
 void test_source_snapshot_round_trip()
 {
   const auto catalog = profiles();
-  const auto v1 = seal_source(
+  const auto plain = seal_source(
       source_origin("recipes/example/recipe.yml"),
-      source_syntax::recipe_yaml_v1, declaration(false), catalog);
-  const auto v1_encoding = encode_source_snapshot(v1);
-  const auto v1_decoded = decode_source_snapshot(v1_encoding);
-  assert(v1_decoded.identity() == v1.identity());
-  assert(v1_decoded.recipe().identity() == v1.recipe().identity());
-  assert(v1_decoded.origin().document() == v1.origin().document());
-  assert(v1_decoded.syntax() == source_syntax::recipe_yaml_v1);
-  assert(v1_decoded.recipe().build_requirements().size() == 2);
-  assert(v1_decoded.recipe().run_requirements().size() == 1);
-  assert(v1_decoded.recipe().profile_closure().size() == 3);
-  assert(encode_source_snapshot(v1_decoded) == v1_encoding);
+      declaration(false), catalog);
+  const auto plain_encoding = encode_source_snapshot(plain);
+  const auto plain_decoded = decode_source_snapshot(plain_encoding);
+  assert(plain_decoded.identity() == plain.identity());
+  assert(plain_decoded.origin().document() == plain.origin().document());
+  assert(plain_decoded.recipe().build_requirements().size() == 2);
+  assert(plain_decoded.recipe().run_requirements().size() == 1);
+  assert(plain_decoded.recipe().profile_closure().size() == 3);
+  assert(encode_source_snapshot(plain_decoded) == plain_encoding);
 
-  const auto v2 = seal_source(
+  const auto checked = seal_source(
       source_origin("recipes/example/recipe.yml"),
-      source_syntax::recipe_yaml_v2, declaration(true), catalog);
-  const auto v2_encoding = encode_source_snapshot(v2);
-  const auto v2_decoded = decode_source_snapshot(v2_encoding);
-  assert(v2_decoded.identity() == v2.identity());
-  assert(v2_decoded.recipe().check_program());
-  assert(v2_decoded.recipe().check_program()->material()
+      declaration(true), catalog);
+  const auto checked_encoding = encode_source_snapshot(checked);
+  const auto checked_decoded = decode_source_snapshot(checked_encoding);
+  assert(checked_decoded.identity() == checked.identity());
+  assert(checked_decoded.recipe().check_program());
+  assert(checked_decoded.recipe().check_program()->material()
          == "meson test -C build\n");
-  assert(encode_source_snapshot(v2_decoded) == v2_encoding);
+  assert(encode_source_snapshot(checked_decoded) == checked_encoding);
 }
 
 void test_refusals()
 {
   const auto catalog = profiles();
   const auto snapshot = seal_source(
-      source_origin("recipe.yml"), source_syntax::recipe_yaml_v2,
+      source_origin("recipe.yml"),
       declaration(true), catalog);
 
   auto corrupt = encode_source_snapshot(snapshot);
@@ -264,7 +263,7 @@ void test_refusals()
   auto wrong_identity = encode_source_snapshot(snapshot);
   std::size_t offset = 10;
   const auto origin_size = u32(wrong_identity, offset);
-  offset += 4 + origin_size + 1;
+  offset += 4 + origin_size;
   const auto identity_size = u32(wrong_identity, offset);
   assert(identity_size == 64);
   offset += 4;

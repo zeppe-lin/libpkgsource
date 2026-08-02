@@ -11,8 +11,8 @@ require() {
     exit 1
   }
 }
-require "$root/meson.build" "  version: '2.1.0',"
-require "$root/src/meson.build" "  soversion: '2',"
+require "$root/meson.build" "  version: '3.0.0',"
+require "$root/src/meson.build" "  soversion: '3',"
 require "$root/HISTORY.md" '## 2.1.0'
 require "$root/src/meson.build" "'../include/libpkgsource/profile.h'"
 require "$root/src/meson.build" "'../include/libpkgsource/recipe.h'"

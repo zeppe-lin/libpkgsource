@@ -73,10 +73,6 @@ recipe_declaration declaration(bool reverse = false,
           requirement_subject(package_reference("libfoo")),
           at("recipe.yml", "requirements.run[0]", 15)),
       requirement_declaration(
-          requirement_scope::check(),
-          requirement_subject(package_reference("pkgcheck")),
-          at("recipe.yml", "requirements.check[0]", 18)),
-      requirement_declaration(
           requirement_scope::lifecycle(lifecycle_action::post_install),
           requirement_subject(package_reference("desktop-file-utils")),
           at("recipe.yml", "requirements.lifecycle.post-install[0]", 21)),
@@ -103,38 +99,17 @@ recipe_declaration declaration(bool reverse = false,
 }
 
 
-recipe_declaration declaration_without_check_requirement()
-{
-  recipe_declaration value = declaration();
-  std::vector<requirement_declaration> requirements = value.requirements();
-  requirements.erase(
-      std::remove_if(requirements.begin(), requirements.end(),
-                     [](const requirement_declaration& requirement) {
-                       return requirement.scope().kind()
-                           == requirement_scope_kind::check;
-                     }),
-      requirements.end());
-  return recipe_declaration(
-      value.release(), value.metadata(), value.sources(), value.build_program(),
-      std::move(requirements), value.lifecycle_programs(),
-      value.architectures(), value.provenance());
-}
-
 recipe_declaration declaration_with_check(
     const char* check_script = "meson test -C build\n",
     bool include_check_requirement = true)
 {
   recipe_declaration value = declaration();
   std::vector<requirement_declaration> requirements = value.requirements();
-  if (!include_check_requirement) {
-    requirements.erase(
-        std::remove_if(requirements.begin(), requirements.end(),
-                       [](const requirement_declaration& requirement) {
-                         return requirement.scope().kind()
-                             == requirement_scope_kind::check;
-                       }),
-        requirements.end());
-  }
+  if (include_check_requirement)
+    requirements.emplace_back(
+        requirement_scope::check(),
+        requirement_subject(package_reference("pkgcheck")),
+        at("recipe.yml", "requirements.check[0]", 18));
   return recipe_declaration(
       value.release(), value.metadata(), value.sources(), value.build_program(),
       std::move(requirements), value.lifecycle_programs(),
@@ -146,7 +121,7 @@ void test_complete_snapshot()
 {
   const profile_catalog catalog = profiles();
   source_snapshot snapshot = seal_source(
-      source_origin("recipe.yml"), source_syntax::recipe_yaml_v1,
+      source_origin("recipe.yml"),
       declaration(), catalog);
   const sealed_recipe& recipe = snapshot.recipe();
   assert(recipe.release().package().name() == "example");
@@ -154,7 +129,7 @@ void test_complete_snapshot()
   assert(recipe.sources()[0].local_name() == "example.conf");
   assert(recipe.build_requirements().size() == 2);
   assert(recipe.run_requirements().size() == 1);
-  assert(recipe.check_requirements().size() == 1);
+  assert(recipe.check_requirements().empty());
   assert(!recipe.check_program());
   assert(recipe.lifecycle_requirements(
              lifecycle_action::post_install).size() == 1);
@@ -163,28 +138,23 @@ void test_complete_snapshot()
   assert(recipe.lifecycle(lifecycle_action::post_install) != nullptr);
   assert(recipe.lifecycle(lifecycle_action::pre_remove) == nullptr);
   assert(recipe.architectures().build()[0].name() == "x86_64");
-  assert(recipe.identity().hex()
-         == "09381091ec2775fae0faaa892367596b70dc55a993408d4af243b757c1a6e0ec");
   assert(snapshot.identity().hex()
-         == "146d4c9b098e4e74f49afa7e43259e14234f93858317788782a4a8ed77a65af6");
-  assert(to_string(snapshot.syntax()) == "recipe.yml/1");
+         == "255f4719445d8a502833d79b6b63f50c0ff06c8dfc2361c981daf018e081cfcd");
 }
 
 void test_identity_normalization()
 {
   const profile_catalog catalog = profiles();
   source_snapshot first = seal_source(
-      source_origin("a.yml"), source_syntax::recipe_yaml_v1,
+      source_origin("a.yml"),
       declaration(false), catalog);
   source_snapshot reordered = seal_source(
-      source_origin("b.yml"), source_syntax::recipe_yaml_v1,
+      source_origin("b.yml"),
       declaration(true), catalog);
   source_snapshot changed = seal_source(
-      source_origin("a.yml"), source_syntax::recipe_yaml_v1,
+      source_origin("a.yml"),
       declaration(false, "echo changed\n"), catalog);
-  assert(first.recipe().identity() == reordered.recipe().identity());
   assert(first.identity() == reordered.identity());
-  assert(first.recipe().identity() != changed.recipe().identity());
 
 }
 
@@ -192,40 +162,31 @@ void test_check_program_authority()
 {
   const profile_catalog catalog = profiles();
   source_snapshot snapshot = seal_source(
-      source_origin("recipe.yml"), source_syntax::recipe_yaml_v2,
+      source_origin("recipe.yml"),
       declaration_with_check(), catalog);
-  assert(snapshot.syntax() == source_syntax::recipe_yaml_v2);
-  assert(to_string(snapshot.syntax()) == "recipe.yml/2");
   assert(snapshot.recipe().check_program());
   assert(snapshot.recipe().check_program()->material()
          == "meson test -C build\n");
   assert(snapshot.recipe().check_requirements().size() == 1);
-  assert(snapshot.recipe().identity().hex()
-         == "f7eec72acad5a25bb922ea8db0198ea5ef58a67dcd1e16da7e8a1beb236220ef");
   assert(snapshot.identity().hex()
-         == "d7c2cd14f8c2d91916a5ef048c2d9a07d99115d59fbdbf18ccb21729bed23d4c");
+         == "6c895e156c9c87d227cf78aeb340b65614957433d2313646e22e034d76e050ab");
 
   source_snapshot changed = seal_source(
-      source_origin("recipe.yml"), source_syntax::recipe_yaml_v2,
+      source_origin("recipe.yml"),
       declaration_with_check("ctest --test-dir build\n"), catalog);
-  assert(snapshot.recipe().identity() != changed.recipe().identity());
   assert(snapshot.identity() != changed.identity());
 
   source_snapshot without_requirements = seal_source(
-      source_origin("recipe.yml"), source_syntax::recipe_yaml_v2,
+      source_origin("recipe.yml"),
       declaration_with_check("meson test -C build\n", false), catalog);
   assert(without_requirements.recipe().check_program());
   assert(without_requirements.recipe().check_requirements().empty());
 
-  source_snapshot v1_without_check = seal_source(
-      source_origin("v1.yml"), source_syntax::recipe_yaml_v1,
-      declaration_without_check_requirement(), catalog);
-  source_snapshot v2_without_check = seal_source(
-      source_origin("v2.yml"), source_syntax::recipe_yaml_v2,
-      declaration_without_check_requirement(), catalog);
-  assert(v1_without_check.recipe().identity()
-         == v2_without_check.recipe().identity());
-  assert(v1_without_check.identity() == v2_without_check.identity());
+  source_snapshot first_origin = seal_source(
+      source_origin("first.yml"), declaration(), catalog);
+  source_snapshot second_origin = seal_source(
+      source_origin("second.yml"), declaration(), catalog);
+  assert(first_origin.identity() == second_origin.identity());
 }
 
 void test_program_digest_vector()
@@ -263,15 +224,20 @@ void test_rejections()
   });
 
   expect(error_code::invalid_recipe, [&] {
-    (void)seal_source(source_origin("recipe.yml"),
-                      source_syntax::recipe_yaml_v2,
-                      declaration(), catalog);
-  });
-
-  expect(error_code::invalid_recipe, [&] {
-    (void)seal_source(source_origin("recipe.yml"),
-                      source_syntax::recipe_yaml_v1,
-                      declaration_with_check(), catalog);
+    recipe_declaration value = declaration();
+    std::vector<requirement_declaration> requirements = value.requirements();
+    requirements.emplace_back(
+        requirement_scope::check(),
+        requirement_subject(package_reference("pkgcheck")),
+        at("recipe.yml", "requirements.check[0]", 18));
+    (void)seal_source(
+        source_origin("recipe.yml"),
+        recipe_declaration(
+            value.release(), value.metadata(), value.sources(),
+            value.build_program(), std::move(requirements),
+            value.lifecycle_programs(), value.architectures(),
+            value.provenance()),
+        catalog);
   });
 }
 

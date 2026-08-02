@@ -26,7 +26,6 @@ private:                                                                       \
 
 PKGSOURCE_DECLARE_IDENTITY(package_release_identity);
 PKGSOURCE_DECLARE_IDENTITY(profile_identity);
-PKGSOURCE_DECLARE_IDENTITY(recipe_identity);
 PKGSOURCE_DECLARE_IDENTITY(source_snapshot_identity);
 
 #undef PKGSOURCE_DECLARE_IDENTITY
