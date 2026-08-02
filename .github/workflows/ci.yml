@@ -11,19 +11,95 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        compiler: [g++, clang++]
         mode: [shared, static]
+    env:
+      CXX: ${{ matrix.compiler }}
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev scdoc
-      - name: Check durable codec contracts
-        run: tests/check_codec_contract.sh "$GITHUB_WORKSPACE"
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            g++ clang meson ninja-build pkg-config libssl-dev scdoc mandoc
       - name: Configure
         run: |
           meson setup build \
+            --prefix="$PWD/install" \
             -Ddefault_library=${{ matrix.mode }} \
             -Dlink_mode=${{ matrix.mode }} \
-            -Dman_pages=enabled
+            -Dman_pages=enabled \
+            -Dwerror=true
+      - name: Compile
+        run: meson compile -C build
+      - name: Test
+        run: meson test -C build --print-errorlogs
+      - name: Lint manuals
+        run: find build/man -type f -name '*.3' -exec mandoc -Tlint {} +
+      - name: Install
+        run: meson install -C build
+      - name: Qualify installed consumers
+        shell: bash
+        run: |
+          set -euo pipefail
+          pcdir=$(dirname "$(find "$PWD/install" -type f -name libpkgsource.pc -print -quit)")
+          libdir=$(dirname "$(find "$PWD/install" -type f \
+            \( -name 'libpkgsource.so' -o -name 'libpkgsource.a' \) \
+            -print -quit)")
+          export PKG_CONFIG_PATH=$pcdir
+          flags=()
+          if [[ '${{ matrix.mode }}' == static ]]; then
+            flags+=(--static)
+          fi
+          "$CXX" -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            tests/public_headers.cpp \
+            $(pkg-config "${flags[@]}" --cflags --libs libpkgsource) \
+            -o core-consumer
+          "$CXX" -std=c++17 -Wall -Wextra -Wpedantic -Werror \
+            tests/codec_public_headers.cpp \
+            $(pkg-config "${flags[@]}" --cflags --libs libpkgsource-codec) \
+            -o codec-consumer
+          if [[ '${{ matrix.mode }}' == shared ]]; then
+            LD_LIBRARY_PATH=$libdir ./core-consumer
+            LD_LIBRARY_PATH=$libdir ./codec-consumer
+          else
+            ./core-consumer
+            ./codec-consumer
+          fi
+      - name: Audit shared dependency boundary
+        if: matrix.mode == 'shared'
+        shell: bash
+        run: |
+          set -euo pipefail
+          core=$(find build -type f -name 'libpkgsource.so.*' ! -type l -print -quit)
+          codec=$(find build -type f -name 'libpkgsource-codec.so.*' ! -type l -print -quit)
+          readelf -d "$core" | tee core.dynamic
+          readelf -d "$codec" | tee codec.dynamic
+          grep -F 'Library soname: [libpkgsource.so.3]' core.dynamic
+          grep -F 'Library soname: [libpkgsource-codec.so.1]' codec.dynamic
+          ! grep -E 'libyaml|libpkgplan|libpkgsource-codec' core.dynamic
+          grep -F 'Shared library: [libpkgsource.so.3]' codec.dynamic
+
+  sanitizers:
+    runs-on: ubuntu-latest
+    env:
+      CXX: g++
+      ASAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1
+      UBSAN_OPTIONS: halt_on_error=1:abort_on_error=1:print_summary=1:print_stacktrace=1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev
+      - name: Configure
+        run: |
+          meson setup build \
+            -Ddefault_library=static \
+            -Dlink_mode=static \
+            -Dman_pages=disabled \
+            -Db_sanitize=address,undefined \
+            -Dwerror=true
       - name: Compile
         run: meson compile -C build
       - name: Test
