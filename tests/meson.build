@@ -33,62 +33,6 @@ if get_option('tests').enabled()
   )
   test('codec', codec_test)
 
-  if libpkgplan_dep.found()
-    plan_adapter_test = executable(
-      'plan-adapter-test',
-      'plan_adapter_test.cpp',
-      dependencies: libpkgsource_plan_dep,
-      install: false,
-    )
-    test('plan-adapter', plan_adapter_test)
-
-    plan_adapter_header_test = executable(
-      'plan-adapter-header-test',
-      'plan_adapter_header_test.cpp',
-      dependencies: libpkgsource_plan_dep,
-      install: false,
-    )
-    test('plan-adapter-header', plan_adapter_header_test)
-  endif
-
-  if libyaml_dep.found()
-    yaml_profiles_test = executable(
-      'yaml-profiles-test',
-      'yaml_profiles_test.cpp',
-      dependencies: libpkgsource_yaml_dep,
-      install: false,
-    )
-    test('yaml-profiles', yaml_profiles_test)
-
-    yaml_recipe_test = executable(
-      'yaml-recipe-test',
-      'yaml_recipe_test.cpp',
-      dependencies: libpkgsource_yaml_dep,
-      install: false,
-    )
-    test('yaml-recipe', yaml_recipe_test)
-
-    yaml_adapter_header_test = executable(
-      'yaml-adapter-header-test',
-      'yaml_adapter_header_test.cpp',
-      dependencies: libpkgsource_yaml_dep,
-      install: false,
-    )
-    test('yaml-adapter-header', yaml_adapter_header_test)
-
-    sh = find_program('sh')
-    test(
-      'yaml-adapter-metadata',
-      sh,
-      args: [
-        join_paths(meson.current_source_dir(),
-                   'yaml_adapter_metadata_test.sh'),
-        meson.project_build_root(),
-        meson.project_version(),
-      ],
-    )
-  endif
-
   public_headers = executable(
     'public-headers',
     'public_headers.cpp',

@@ -44,7 +44,7 @@ images, inspect archives, install packages, or read installed state.
 
 ## YAML syntax adapter
 
-`libpkgsource-yaml` is an optional syntax boundary.  It depends on libyaml and
+`libpkgsource-yaml` is a separate syntax-boundary repository.  It depends on libyaml and
 translates raw `profiles.yml/1`, `recipe.yml/1`, and `recipe.yml/2` bytes into
 the same parser-neutral declarations accepted by the core.  The core library has no YAML
 dependency, and parsed documents never become an alternative authority model.
@@ -122,7 +122,7 @@ same semantic identities as an equivalent version-one declaration.
 
 ## Planner projection
 
-`libpkgsource-plan` is a composition boundary inside this repository.  It may
+`libpkgsource-plan` is a separate composition-boundary repository.  It may
 project only facts already sealed by `libpkgsource` into `libpkgplan` values.
 It must not resolve profiles, reinterpret syntax, reopen a collection, or infer
 runtime semantics from build declarations.

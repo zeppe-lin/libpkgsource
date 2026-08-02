@@ -15,48 +15,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev libarchive-dev libyaml-dev scdoc
-      - name: Checkout exact planning dependencies
-        run: |
-          git clone https://github.com/zeppe-lin/libpkgimage.git ../libpkgimage
-          git -C ../libpkgimage checkout e1f6dfd8cc4bfeb2f8da44345d8ec6368281c6e0
-          git clone https://github.com/zeppe-lin/libpkgplan.git ../libpkgplan
-          git -C ../libpkgplan checkout 57a10b166450dd0396d4d461d1d38352073a5a1e
-      - name: Build exact planning dependencies
-        run: |
-          prefix="$GITHUB_WORKSPACE/dependencies-${{ matrix.mode }}"
-          meson setup ../libpkgimage/build-${{ matrix.mode }} \
-            --prefix="$prefix" \
-            -Ddefault_library=${{ matrix.mode }} \
-            -Dlink_mode=${{ matrix.mode }} \
-            -Dtests=disabled \
-            -Dman_pages=disabled
-          meson compile -C ../libpkgimage/build-${{ matrix.mode }}
-          meson install -C ../libpkgimage/build-${{ matrix.mode }}
-          PKG_CONFIG_PATH="$prefix/lib/pkgconfig" meson setup \
-            ../libpkgplan/build-${{ matrix.mode }} \
-            --prefix="$prefix" \
-            -Ddefault_library=${{ matrix.mode }} \
-            -Dlink_mode=${{ matrix.mode }} \
-            -Dtests=disabled \
-            -Dreference_tools=disabled \
-            -Dman_pages=disabled
-          meson compile -C ../libpkgplan/build-${{ matrix.mode }}
-          meson install -C ../libpkgplan/build-${{ matrix.mode }}
+        run: sudo apt-get update && sudo apt-get install -y g++ meson ninja-build pkg-config libssl-dev scdoc
       - name: Check durable codec contracts
         run: tests/check_codec_contract.sh "$GITHUB_WORKSPACE"
       - name: Configure
         run: |
-          prefix="$GITHUB_WORKSPACE/dependencies-${{ matrix.mode }}"
-          PKG_CONFIG_PATH="$prefix/lib/pkgconfig" meson setup build \
+          meson setup build \
             -Ddefault_library=${{ matrix.mode }} \
             -Dlink_mode=${{ matrix.mode }} \
-            -Dplanner_adapter=enabled \
-            -Dyaml_adapter=enabled \
             -Dman_pages=enabled
       - name: Compile
         run: meson compile -C build
       - name: Test
-        run: |
-          prefix="$GITHUB_WORKSPACE/dependencies-${{ matrix.mode }}"
-          LD_LIBRARY_PATH="$prefix/lib" meson test -C build --print-errorlogs
+        run: meson test -C build --print-errorlogs

@@ -15,8 +15,7 @@ requirement profiles, expands exact requirements, and returns immutable
 *source_snapshot* values.
 
 Input syntax is provenance, not authority.  The optional
-*libpkgsource-yaml* library parses strict *profiles.yml/1*, *recipe.yml/1*, and
-*recipe.yml/2* documents into parser-neutral declarations.  A declaration
+The separate *libpkgsource-yaml* library parses native YAML documents into parser-neutral declarations.  A declaration
 becomes authority only when the existing profile or source sealer accepts it.
 
 The normalized authority distinguishes package release, package metadata,
@@ -51,5 +50,4 @@ diagnostic text.
 # SEE ALSO
 
 *pkgsource_model*(3), *pkgsource_profile*(3), *pkgsource_recipe*(3),
-*pkgsource_snapshot*(3), *pkgsource_plan_adapter*(3), *pkgsource_yaml*(3),
-*pkgsource_profiles_yaml*(5), *pkgsource_recipe_yaml*(5)
+*pkgsource_snapshot*(3)

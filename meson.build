@@ -25,31 +25,8 @@ if (library_kind == 'static') != want_static
 endif
 
 libcrypto_dep = dependency('libcrypto', required: true, static: want_static)
-libyaml_dep = dependency(
-  'yaml-0.1',
-  version: '>=0.2.5',
-  required: get_option('yaml_adapter'),
-  static: want_static,
-)
-libpkgplan_dep = dependency(
-  'libpkgplan',
-  version: '>=0.2.0',
-  required: get_option('planner_adapter'),
-  static: want_static,
-  fallback: ['libpkgplan', 'libpkgplan_dep'],
-  default_options: [
-    'default_library=' + library_kind,
-    'link_mode=' + get_option('link_mode'),
-  ],
-)
 pkgconf = import('pkgconfig')
 
 subdir('src')
-if libyaml_dep.found()
-  subdir('yaml')
-endif
-if libpkgplan_dep.found()
-  subdir('adapter')
-endif
 subdir('man')
 subdir('tests')

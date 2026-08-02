@@ -145,7 +145,7 @@ programs.
 
 ## Optional planner adapter
 
-`libpkgsource-plan` is enabled with `-Dplanner_adapter=enabled`.  It projects one
+`libpkgsource-plan` is now built and released from its own repository.  It projects one
 sealed source snapshot into a `libpkgplan` candidate package fact while retaining
 the issuing source snapshot.
 
