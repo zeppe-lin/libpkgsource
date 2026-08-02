@@ -32,7 +32,14 @@ require "$root/codec/meson.build" 'requires: [libpkgsource_dep]'
 require "$root/src/snapshot.cpp" 'libpkgsource/source-snapshot/v1'
 require "$root/docs/protocols/source-records-v1.md" 'schema 1'
 require "$root/abi/libpkgsource.exports" '_ZN9pkgsource11seal_source'
-require "$root/abi/libpkgsource-codec.exports" '_ZN9pkgsource5codec'
+for operation in encode_profile_catalog decode_profile_catalog \
+                 encode_source_snapshot decode_source_snapshot
+do
+  grep -F "$operation" "$root/include/libpkgsource-codec/codec.h" >/dev/null ||
+    fail "codec header omits public operation: $operation"
+done
+[ "$(wc -l < "$root/abi/libpkgsource-codec.exports")" -eq 13 ] ||
+  fail 'codec ABI manifest does not bind all public operations and error symbols'
 
 if grep -R -E 'libpkgsource-(yaml|plan)|yaml_adapter|plan_adapter|source_syntax|recipe_identity' \
     "$root/meson.build" "$root/meson.options" "$root/src" "$root/internal" \
