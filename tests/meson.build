@@ -25,6 +25,14 @@ if get_option('tests').enabled()
   )
   test('recipe', recipe_test)
 
+  codec_test = executable(
+    'codec-test',
+    'codec_test.cpp',
+    dependencies: libpkgsource_dep,
+    install: false,
+  )
+  test('codec', codec_test)
+
   if libpkgplan_dep.found()
     plan_adapter_test = executable(
       'plan-adapter-test',

@@ -1,5 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <libpkgsource/codec.h>
 #include <libpkgsource/error.h>
 #include <libpkgsource/identity.h>
 #include <libpkgsource/model.h>
