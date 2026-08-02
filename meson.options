@@ -27,3 +27,10 @@ option(
   value: 'openssl',
   description: 'Qualified SHA-256 implementation provider',
 )
+
+option(
+  'html_docs',
+  type: 'feature',
+  value: 'disabled',
+  description: 'Generate and install versioned static HTML documentation',
+)
