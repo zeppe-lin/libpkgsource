@@ -22,6 +22,7 @@ inline constexpr std::size_t maximum_profile_catalog_encoding_size =
     64U * 1024U * 1024U;
 inline constexpr std::size_t maximum_source_snapshot_encoding_size =
     128U * 1024U * 1024U;
+inline constexpr std::uint32_t maximum_record_item_count = 1'000'000U;
 
 enum class codec_error_code : std::uint8_t {
   size_limit = 1,

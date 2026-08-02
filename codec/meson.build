@@ -15,7 +15,7 @@ libpkgsource_codec = library(
 libpkgsource_codec_dep = declare_dependency(
   link_with: libpkgsource_codec,
   include_directories: codec_inc,
-  dependencies: libpkgsource_dep,
+  dependencies: [libpkgsource_dep, libcrypto_dep],
 )
 meson.override_dependency('libpkgsource-codec', libpkgsource_codec_dep)
 

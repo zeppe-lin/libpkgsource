@@ -29,7 +29,6 @@ constexpr std::array<std::uint8_t, 8> snapshot_magic = {
     'Z', 'L', 'P', 'S', 'S', 'N', 'A', 'P',
 };
 constexpr std::size_t checksum_size = 32U;
-constexpr std::uint32_t maximum_item_count = 1'000'000U;
 
 [[noreturn]] void fail(codec_error_code code, std::string message)
 {
@@ -234,7 +233,7 @@ private:
 
 std::uint32_t count(std::size_t value)
 {
-  if (value > maximum_item_count)
+  if (value > maximum_record_item_count)
     fail(codec_error_code::size_limit,
          "package-source collection exceeds item limit");
   return static_cast<std::uint32_t>(value);
@@ -243,7 +242,7 @@ std::uint32_t count(std::size_t value)
 std::uint32_t read_count(reader& input)
 {
   const auto value = input.u32();
-  if (value > maximum_item_count)
+  if (value > maximum_record_item_count)
     fail(codec_error_code::size_limit,
          "package-source collection exceeds item limit");
   return value;
