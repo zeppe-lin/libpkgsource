@@ -42,7 +42,7 @@ void write_scope(detail::identity_writer& writer,
 source_snapshot_identity make_snapshot_identity(const sealed_recipe& recipe)
 {
   detail::identity_writer writer;
-  writer.text("libpkgsource/source-snapshot/v2");
+  writer.text("libpkgsource/source-snapshot/v1");
   writer.text(recipe.release().identity().hex());
   writer.text(recipe.metadata().summary());
   write_optional(writer, recipe.metadata().description());

@@ -139,7 +139,7 @@ void test_complete_snapshot()
   assert(recipe.lifecycle(lifecycle_action::pre_remove) == nullptr);
   assert(recipe.architectures().build()[0].name() == "x86_64");
   assert(snapshot.identity().hex()
-         == "255f4719445d8a502833d79b6b63f50c0ff06c8dfc2361c981daf018e081cfcd");
+         == "9dcbc183f1b42feaa33152d24eb559d60c2ea80b1f652a79f31e2dab18b99154");
 }
 
 void test_identity_normalization()
@@ -155,7 +155,88 @@ void test_identity_normalization()
       source_origin("a.yml"),
       declaration(false, "echo changed\n"), catalog);
   assert(first.identity() == reordered.identity());
+  assert(first.identity() != changed.identity());
+}
 
+void test_identity_field_sensitivity()
+{
+  const profile_catalog catalog = profiles();
+  const recipe_declaration base = declaration();
+  const auto baseline = seal_source(
+      source_origin("recipe.yml"), base, catalog).identity();
+
+  const auto changed_release = seal_source(
+      source_origin("recipe.yml"),
+      recipe_declaration(
+          package_release(package_reference("example"), "1.2.4", 1),
+          base.metadata(), base.sources(), base.build_program(),
+          base.requirements(), base.lifecycle_programs(), base.architectures(),
+          base.provenance()),
+      catalog);
+  assert(changed_release.identity() != baseline);
+
+  const auto changed_metadata = seal_source(
+      source_origin("recipe.yml"),
+      recipe_declaration(
+          base.release(),
+          package_metadata("Different summary", "Long description",
+                           "https://example.invalid", {"MIT"}),
+          base.sources(), base.build_program(), base.requirements(),
+          base.lifecycle_programs(), base.architectures(), base.provenance()),
+      catalog);
+  assert(changed_metadata.identity() != baseline);
+
+  auto changed_sources = base.sources();
+  changed_sources[0] = source_input::remote(
+      "https://example.invalid/example.tar.xz", "example.tar.xz",
+      digest(digest_algorithm::sha256, std::string(64, 'c')));
+  const auto changed_source = seal_source(
+      source_origin("recipe.yml"),
+      recipe_declaration(
+          base.release(), base.metadata(), std::move(changed_sources),
+          base.build_program(), base.requirements(), base.lifecycle_programs(),
+          base.architectures(), base.provenance()),
+      catalog);
+  assert(changed_source.identity() != baseline);
+
+  auto changed_requirements = base.requirements();
+  changed_requirements.emplace_back(
+      requirement_scope::run(),
+      requirement_subject(package_reference("libbar")),
+      at("recipe.yml", "requirements.run[1]", 16));
+  const auto changed_requirement = seal_source(
+      source_origin("recipe.yml"),
+      recipe_declaration(
+          base.release(), base.metadata(), base.sources(), base.build_program(),
+          std::move(changed_requirements), base.lifecycle_programs(),
+          base.architectures(), base.provenance()),
+      catalog);
+  assert(changed_requirement.identity() != baseline);
+
+  const auto changed_lifecycle = seal_source(
+      source_origin("recipe.yml"),
+      recipe_declaration(
+          base.release(), base.metadata(), base.sources(), base.build_program(),
+          base.requirements(),
+          {lifecycle_program(
+              lifecycle_action::post_install,
+              program(program_language::posix_shell,
+                      "update-desktop-database --verbose\n"))},
+          base.architectures(), base.provenance()),
+      catalog);
+  assert(changed_lifecycle.identity() != baseline);
+
+  const auto changed_architecture = seal_source(
+      source_origin("recipe.yml"),
+      recipe_declaration(
+          base.release(), base.metadata(), base.sources(), base.build_program(),
+          base.requirements(), base.lifecycle_programs(),
+          architecture_requirements(
+              {architecture_reference("x86_64")},
+              {architecture_reference("aarch64")}),
+          base.provenance()),
+      catalog);
+  assert(changed_architecture.identity() != baseline);
 }
 
 void test_check_program_authority()
@@ -169,7 +250,7 @@ void test_check_program_authority()
          == "meson test -C build\n");
   assert(snapshot.recipe().check_requirements().size() == 1);
   assert(snapshot.identity().hex()
-         == "6c895e156c9c87d227cf78aeb340b65614957433d2313646e22e034d76e050ab");
+         == "b1f0b553c0c7dbd1692d6753eedc61708efa733417abec06bdf6d395ad3fa5ef");
 
   source_snapshot changed = seal_source(
       source_origin("recipe.yml"),
@@ -247,6 +328,7 @@ int main()
 {
   test_complete_snapshot();
   test_identity_normalization();
+  test_identity_field_sensitivity();
   test_check_program_authority();
   test_program_digest_vector();
   test_rejections();
