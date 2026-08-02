@@ -64,6 +64,13 @@ if get_option('tests').enabled()
     args: [meson.project_source_root()],
   )
 
+  doxygen_contract = find_program('contracts/check_doxygen_contract.sh')
+  test(
+    'doxygen-contract',
+    doxygen_contract,
+    args: [meson.project_source_root()],
+  )
+
   documentation_contract = find_program('contracts/check_documentation_contract.sh')
   test(
     'documentation-contract',

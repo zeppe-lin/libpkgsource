@@ -1,7 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/*! \file libpkgsource.h \brief Complete public libpkgsource API. */
+/** @file libpkgsource.h
+ *  @brief Umbrella header for the complete semantic core API.
+ */
 #pragma once
 
 #include <libpkgsource/error.h>
