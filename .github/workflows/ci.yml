@@ -43,6 +43,8 @@ jobs:
             -Dman_pages=disabled
           meson compile -C ../libpkgplan/build-${{ matrix.mode }}
           meson install -C ../libpkgplan/build-${{ matrix.mode }}
+      - name: Check durable codec contracts
+        run: tests/check_codec_contract.sh "$GITHUB_WORKSPACE"
       - name: Configure
         run: |
           prefix="$GITHUB_WORKSPACE/dependencies-${{ matrix.mode }}"

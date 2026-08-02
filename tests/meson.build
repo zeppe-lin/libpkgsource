@@ -97,6 +97,13 @@ if get_option('tests').enabled()
   )
   test('public-headers', public_headers)
 
+  codec_contract = find_program('check_codec_contract.sh')
+  test(
+    'codec-contract',
+    codec_contract,
+    args: [meson.project_source_root()],
+  )
+
   release_metadata = find_program('check_release_metadata.sh')
   test(
     'release-metadata',
