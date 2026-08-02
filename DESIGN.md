@@ -138,3 +138,26 @@ dependency, removal lifecycle, and target-profile value domains.  No planner API
 change is required for this reset.  Future dependency resolution in `pkgctl`
 will consume the remaining source requirement domains before invoking package
 planning.
+
+## Durable representation boundary
+
+A sealed profile catalog and source snapshot are long-lived semantic authority,
+not merely products of one parser process.  Their durable representation is
+owned by `libpkgsource`.
+
+The profile-catalog record stores declaration-level profile definitions and
+expected profile identities.  Decode invokes `profile_catalog::seal()` and
+refuses any identity or canonical-byte disagreement.
+
+The source-snapshot record stores diagnostic origin and syntax, the exact recipe
+declaration fields, and a nested canonical encoding of the snapshot's retained
+profile closure.  Original requirement declarations are reconstructed from the
+sealed requirement origins: direct requirements retain an empty expansion path,
+while profile requirements retain the selected root as the first expansion
+step.  Decode invokes `seal_source()` and refuses any recipe or source identity
+change.
+
+The records deliberately do not embed YAML documents, collection precedence,
+fetch material, execution results, or downstream planning state.  Reopening a
+source snapshot is semantic reconstruction through the owner sealers, not input
+reacquisition and not deserialization of private object layout.

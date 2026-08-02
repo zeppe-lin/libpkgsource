@@ -9,6 +9,7 @@ if scdoc.found()
     ['pkgsource_profile.3.scd', 'pkgsource_profile.3'],
     ['pkgsource_recipe.3.scd', 'pkgsource_recipe.3'],
     ['pkgsource_snapshot.3.scd', 'pkgsource_snapshot.3'],
+    ['pkgsource_codec.3.scd', 'pkgsource_codec.3'],
     ['pkgsource_plan_adapter.3.scd', 'pkgsource_plan_adapter.3'],
     ['pkgsource_yaml.3.scd', 'pkgsource_yaml.3'],
     ['pkgsource_profiles_yaml.5.scd', 'pkgsource_profiles_yaml.5'],

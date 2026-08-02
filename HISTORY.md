@@ -3,6 +3,22 @@
 
 # History
 
+## 2.1.0
+
+Durable sealed source authority.
+
+* add canonical owner-level codecs for complete profile catalogs and source
+  snapshots;
+* adopt fixed eight-byte `ZLPSPCAT` and `ZLPSSNAP` record magics, big-endian
+  schema versions, explicit bounds, and whole-record SHA-256 checksums;
+* rebuild profile catalogs exclusively through `profile_catalog::seal()`;
+* reconstruct original direct and profile requirement declarations from sealed
+  requirement origins and rebuild snapshots through `seal_source()`;
+* retain source origin and syntax as checksum-protected diagnostics without
+  promoting them into semantic identity; and
+* add no YAML parsing, path access, collection discovery, fetch, execution,
+  planning, or migration behavior.
+
 ## 2.0.0
 
 Explicit native check-program authority.

@@ -30,6 +30,13 @@ Coverage includes:
 * recipe identity stability across non-semantic source order and provenance;
 * recipe identity change sensitivity to program and profile semantics;
 * source snapshot identity and syntax-provenance separation;
+* deterministic profile-catalog encoding independent of declaration order;
+* canonical source-snapshot round trips for recipe syntax versions one and two;
+* reconstruction of one profile declaration that expands into multiple package
+  requirements;
+* retention of direct and profile-derived origins for the same package;
+* fixed house record magics, whole-record checksum validation, truncation and
+  unsupported-version refusal, and stored-identity substitution refusal;
 * independent public-header compilation;
 * native source-to-planner candidate projection;
 * exclusion of build, check, and lifecycle requirements from planner runtime

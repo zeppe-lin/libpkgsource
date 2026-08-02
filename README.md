@@ -42,6 +42,23 @@ Unknown profiles, duplicate definitions or members, and cycles are rejected.
 scope as reserved non-executable metadata.  `recipe.yml/2` may bind it to one
 exact optional check program.  Neither form adds test execution to the library.
 
+## Durable source evidence
+
+The core library provides canonical owner-level encodings for a complete
+*profile_catalog* and one sealed *source_snapshot*.  The records use the fixed
+eight-byte house magics `ZLPSPCAT` and `ZLPSSNAP`, a big-endian schema version,
+explicit collection bounds, and a whole-record SHA-256 checksum.
+
+Decoding does not trust stored sealed identities.  Profile records are rebuilt
+from retained declarations through `profile_catalog::seal()`.  Source records
+reconstruct the retained profile closure and original requirement declarations,
+then pass the result through `seal_source()`.  The recomputed profile, recipe,
+and source-snapshot identities and canonical re-encoding must match the record.
+
+The codecs perform no YAML parsing, collection discovery, path access, source
+fetching, build execution, or policy selection.  Syntax and document origin
+remain checksum-protected diagnostics rather than package semantics.
+
 ## Input syntax
 
 The native syntax contracts are [PROFILES-YAML-1.md](PROFILES-YAML-1.md),

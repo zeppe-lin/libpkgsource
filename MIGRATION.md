@@ -64,3 +64,16 @@ operator decision rather than a core inference.
 
 Check execution paths, environment, success policy, and terminal evidence are
 not migration semantics and remain outside this repository.
+
+## Durable source evidence
+
+Version 2.1 adds native durable encodings; it does not turn historical input
+into native authority.  Migration tools may first produce valid native profile
+and recipe declarations and pass them through the ordinary sealers.  Only the
+resulting sealed profile catalog and source snapshot may then be encoded.
+
+The decoder never reparses historical Pkgfiles or YAML documents and does not
+search for replacement source trees when a record is absent.  Missing durable
+source authority remains a missing-authority error for the owning orchestration
+layer, not an invitation to infer semantics from whatever files happen to be
+present.
