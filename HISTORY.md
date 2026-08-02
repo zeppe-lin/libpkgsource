@@ -3,7 +3,7 @@
 
 # History
 
-## 3.0.0 — unreleased
+## 3.0.0
 
 Core authority and repository-boundary reset.
 

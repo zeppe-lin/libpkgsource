@@ -19,7 +19,7 @@ require()
 require "$root/meson.build" "  version: '3.0.0',"
 require "$root/src/meson.build" "  soversion: '3',"
 require "$root/codec/meson.build" "  soversion: '1',"
-require "$root/HISTORY.md" '## 3.0.0 — unreleased'
+require "$root/HISTORY.md" '## 3.0.0'
 require "$root/src/meson.build" "'../include/libpkgsource/profile.h'"
 require "$root/src/meson.build" "'../include/libpkgsource/recipe.h'"
 require "$root/src/meson.build" "'../include/libpkgsource/snapshot.h'"
