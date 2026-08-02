@@ -1,29 +1,29 @@
 # Code style
 
 The repository treats formatting and control-flow structure as executable
-engineering policy. C++ source is formatted with clang-format 17 using the
+engineering policy. C++ source is formatted with `clang-format 17` using the
 checked-in `.clang-format` file.
 
 ## Control flow
 
-Every `if`, `else`, `for`, `while`, and `do` body uses braces, including a
-single statement. A later comment or statement must not silently escape the
-condition that appears to govern it.
+Control statements always use braces, including a single statement. A later
+comment or statement must not silently escape the condition that appears to
+govern it.
 
-`switch` statements enumerate every owned enum value. A default arm is used
-only for external or byte-level input whose domain is not closed by the source
+`switch` statements enumerate every owner-controlled enum value. A default arm
+is reserved for external byte input whose domain is not closed by the source
 type system.
 
 ## Includes
 
 Includes are grouped by authority:
 
-1. this repository's installed public headers;
+1. installed public headers from this repository;
 2. private headers from the current implementation area;
-3. OpenSSL provider headers;
+3. provider headers;
 4. C++ standard-library headers.
 
-Public headers include every standard or owner header required by their own
+Public headers include every owner or standard header required by their own
 declarations. They do not rely on inclusion order.
 
 ## Names and comments
@@ -36,6 +36,14 @@ Public API contracts live in Doxygen comments on installed headers.
 Implementation files use ordinary comments for internal invariants and do not
 copy the public manual.
 
+## Documentation
+
+Markdown uses ATX headings only. Repository Markdown does not carry SPDX HTML
+comments; licensing authority remains in `COPYING` and `COPYRIGHT`.
+
+Manual pages use the restricted profile in `docs/manpage-markdown.md`.
+Generated roff is derived output and is never edited directly.
+
 ## Formatting gate
 
 Run:
@@ -45,6 +53,5 @@ clang-format-17 -i $(find include internal src codec tests \
   -type f \( -name '*.h' -o -name '*.cpp' \) -print)
 ```
 
-CI runs the same formatter in dry-run mode. A different clang-format major
-version is not accepted as a substitute because formatter output is part of the
-review surface.
+CI runs the same formatter in dry-run mode. Another clang-format major is not a
+substitute because formatter output is part of the review surface.

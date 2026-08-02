@@ -1,6 +1,3 @@
-<!-- SPDX-FileCopyrightText: 2026 Alexandr Savca -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
 # History
 
 ## 3.0.0
@@ -20,6 +17,13 @@ Core authority and repository-boundary reset.
 * preserve self-contained reconstruction by embedding only the exact retained
   profile closure required by each source snapshot;
 * publish the normative version-one durable record protocol and golden vectors;
+* isolate the shared SHA-256 provider from identity and record framing;
+* split semantic, codec, provider, public-header, ABI, documentation, and
+  installation tests by purpose;
+* publish exact reviewed ELF manifests for both shared libraries and hide
+  private implementation symbols by default;
+* adopt strict Doxygen, clang-format 17, restricted Markdown manuals, committed
+  canonical roff, installed project documentation, and versioned HTML output;
   and
 * begin `libpkgsource.so.3` with no YAML or planner dependency.
 

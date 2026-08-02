@@ -1,66 +1,61 @@
-<!-- SPDX-FileCopyrightText: 2026 Alexandr Savca -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
 # Testing
 
-The repository suite is offline and model-driven. It opens no package source
-paths, parses no YAML, performs no network access, and executes no recipe
-programs.
+## Purpose
 
-## Core model
+The suite is organized by authority and failure attribution. A failure should
+name the broken contract without requiring inspection of a monolithic test
+program.
 
-The model, profile, and recipe tests cover:
+## Core behavior
 
-- canonical package, profile, architecture, digest, path, and program values;
-- package-release identity vectors;
-- independent build, run, check, and lifecycle requirement scopes;
-- exact package and profile subjects;
-- deterministic profile sealing independent of declaration order;
-- nested expansion, selected build profiles, retained closure, and origin paths;
-- duplicate profile definitions or members, unknown profiles, and cycles;
-- source ordering and duplicate local-name rejection;
-- lifecycle program uniqueness and lifecycle requirement/program closure;
-- optional check program retention and check requirement/program closure;
-- independent build and target architecture sets;
-- source identity stability across declaration order and diagnostic provenance;
-- source identity sensitivity to every semantic field;
-- the first public source-snapshot identity vectors; and
-- independent core public-header compilation.
+`tests/model/` covers canonical values, scopes, subjects, metadata, source
+locations, programs, architectures, and identity validation.
 
-## Durable codec
+`tests/profiles/` covers deterministic expansion, requirement provenance,
+selected profiles, retained closure, identity participation, duplicates,
+unknown profiles, and cycles.
 
-The codec tests cover:
+`tests/recipes/` covers normalized content, declaration-order independence,
+identity participation, check-program authority, program digest vectors, and
+closure failures.
 
-- deterministic profile-catalog bytes independent of declaration insertion
-  order;
-- source records with and without a check program;
-- reconstruction of direct and profile-derived requirement declarations;
-- exact retained profile closure reconstruction;
-- canonical byte-for-byte round trips;
-- fixed profile and source golden vectors;
-- checksum corruption, truncation, bad magic, unsupported version, invalid tag,
-  trailing field, embedded-record corruption, and stored-identity substitution;
-- size and item-count refusal;
-- rejection of noncanonical but checksum-valid encodings;
-- independent codec public-header compilation; and
-- static source checks for resealing, canonical re-encoding, limits, SONAME, and
-  exact core-version coupling.
+## Codec behavior
 
-## Release matrix
+`tests/codec/` separates golden vectors, profile records, source records,
+envelope failures, stored-identity substitution, invalid owner values, and
+noncanonical representations. The fixed schema-one vectors are release
+artifacts. Different bytes require an explicit record-schema decision.
 
-Before release, run clean GCC and Clang configurations for both shared and
-static libraries with warnings as errors. Run ASan and UBSan over every runtime
-test. Render all scdoc pages and lint them with mandoc.
+## Internal provider behavior
 
-Inspect:
+`tests/internal/sha256_test.cpp` binds standard digest vectors and provider
+state transitions. Source contracts prove that OpenSSL vocabulary exists only
+inside the selected provider translation unit.
 
-- `libpkgsource.so.3` and `libpkgsource-codec.so.1` SONAMEs;
-- shared `NEEDED` closure;
-- `libpkgsource.pc` and `libpkgsource-codec.pc` public/private requirements;
-- `pkg-config --static` closure;
-- independently compiled installed consumers for both headers; and
-- exact `git am` replay tree identity.
+## Public and ABI behavior
 
-The codec protocol specification and golden vectors are release artifacts. A
-change to accepted bytes requires an explicit new record schema version; a
-change to source semantics requires an explicit source identity decision.
+Every component header and both umbrella headers compile independently. Shared
+builds compare dynamic exports with the reviewed core and codec manifests.
+Generated metadata tests bind public and private dependency placement without
+duplication. Installed-consumer tests cover shared and static pkg-config
+closures.
+
+## Documentation behavior
+
+Manual source restrictions, Pandoc writer compatibility, canonicalized roff,
+Doxygen completeness, HTML links, and staged `DESTDIR` installation are
+executable contracts. Ordinary builds install committed roff and canonical
+Markdown without requiring documentation generators.
+
+## Release qualification
+
+Before publication:
+
+- run GCC and Clang shared and static configurations with warnings as errors;
+- run ASan and UBSan under both compilers;
+- inspect SONAMEs, `NEEDED` closure, and exact exports;
+- compile installed core and codec consumers through pkg-config;
+- regenerate and lint all manuals;
+- build strict Doxygen and versioned HTML output;
+- stage canonical, man, and HTML installations through `DESTDIR`;
+- replay the complete patch series on the recorded base.

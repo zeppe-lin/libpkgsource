@@ -1,120 +1,123 @@
-<!-- SPDX-FileCopyrightText: 2026 Alexandr Savca -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
 # libpkgsource
 
 `libpkgsource` is the native Zeppe-Lin C++17 package-source authority.
 
-The core library accepts parser-neutral declarations, seals requirement
-profiles, expands exact package requirements, validates complete recipe
-semantics, and returns immutable normalized source snapshots. Input syntax is
-not authority. The sealed `source_snapshot` is.
+The semantic core accepts parser-neutral declarations, validates canonical
+value domains, seals requirement profiles, expands exact package requirements,
+normalizes complete recipe semantics, and returns immutable source snapshots.
+Input syntax is not authority. A declaration becomes authority only through the
+owner sealers.
 
-The repository also owns `libpkgsource-codec`, a separate sibling library that
-encodes and decodes canonical durable records for sealed profile catalogs and
-source snapshots. The codec belongs to the source owner because it knows every
-source field, invariant, identity, and resealing obligation, but it is not part
-of the semantic core ABI.
+The repository also owns `libpkgsource-codec`, a separately linked sibling
+library for canonical durable records. The codec remains beside the semantic
+owner because decoding must reconstruct declarations, invoke the ordinary
+sealers, verify stored identities, and reject noncanonical bytes. It is not part
+of the core ABI.
 
-YAML parsing and planner projection now live in independent repositories:
+YAML parsing and planner projection live in independent repositories:
 
 - `libpkgsource-yaml`: strict YAML bytes to parser-neutral declarations;
-- `libpkgsource-plan`: sealed source snapshot to `libpkgplan` candidate facts.
+- `libpkgsource-plan`: sealed source snapshots to `libpkgplan` candidate facts.
 
-## Core authority
+## Public libraries
 
-The normalized source model distinguishes:
+`libpkgsource.so.3` owns:
 
-- package release and metadata;
-- remote and local source declarations with SHA-256 content requirements;
-- exact build and optional check program bytes;
-- build, run, check, and action-bound lifecycle requirements;
-- exact package and named-profile subjects;
-- selected build profiles and the complete retained profile closure;
-- installation and removal lifecycle programs;
-- independent build and target architecture constraints; and
-- package-release, profile, and source-snapshot identity domains.
+- package, profile, architecture, digest, provenance, and program value domains;
+- package releases, metadata, source inputs, and requirement declarations;
+- deterministic profile sealing and transitive expansion;
+- normalized recipe authority and closure invariants;
+- package-release, profile, and source-snapshot semantic identities.
 
-`profile_catalog::seal()` owns deterministic profile normalization, nested
-expansion, duplicate and cycle rejection, retained expansion provenance, and
-profile identities.
-
-`seal_source()` owns source normalization, profile expansion, duplicate source
-and lifecycle detection, lifecycle requirement/program closure, check
-requirement/program closure, and the source-snapshot identity.
-
-The current complete source model uses the first public
-`libpkgsource/source-snapshot/v1` identity domain. Earlier source-snapshot
-identity generations belonged to the pre-package development line and are not
-accepted as durable evidence by 3.0.
-
-## Durable owner records
-
-`libpkgsource-codec.so.1` provides:
+Use the umbrella header:
 
 ```cpp
-#include <libpkgsource-codec/codec.h>
-
-auto profile_record = pkgsource::codec::encode_profile_catalog(catalog);
-auto source_record = pkgsource::codec::encode_source_snapshot(snapshot);
-
-auto restored_catalog =
-    pkgsource::codec::decode_profile_catalog(profile_record);
-auto restored_snapshot =
-    pkgsource::codec::decode_source_snapshot(source_record);
+#include <libpkgsource/libpkgsource.h>
 ```
 
-Decoding never trusts bytes as authority. It reconstructs declarations, invokes
-the ordinary owner sealers, verifies stored identities, and requires canonical
-byte-for-byte re-encoding. Records are bounded, versioned, big-endian, and
-protected by an internal SHA-256 checksum.
+`libpkgsource-codec.so.1` owns:
 
-A source record embeds only the exact profile closure retained by that snapshot,
-not an acquired global catalog. This keeps the primitive record independently
-reconstructible without duplicating unrelated profile authority.
+- schema-one profile-catalog and source-snapshot records;
+- bounded big-endian framing and intrinsic SHA-256 checksums;
+- reconstruction through core constructors and sealers;
+- stored-identity verification and byte-for-byte canonicality checks.
 
-The normative byte protocol is `docs/protocols/source-records-v1.md`.
+Use its separate umbrella header:
 
-## Boundary
+```cpp
+#include <libpkgsource-codec/libpkgsource-codec.h>
+```
 
-Neither library:
+The normative record protocol is
+`docs/protocols/source-records-v1.md`.
 
-- parses YAML or any other source syntax;
-- opens source paths or discovers package collections;
-- chooses collection precedence;
-- resolves package availability or dependency closure;
-- downloads or verifies source objects;
-- executes build, check, or lifecycle programs;
-- creates package images or archives;
-- installs packages or reads installed state;
-- projects planner facts; or
-- imports Pkgfile or historical package-database state.
+## Authority boundary
 
-Those are separate owners and explicit adapters.
+Neither library parses YAML, opens package-source paths, discovers collections,
+chooses precedence, resolves dependency closure, fetches objects, executes
+programs, creates package images, installs packages, reads installed state,
+projects planner facts, or publishes transaction evidence.
+
+The core has no dependency on the codec. Both libraries use one private
+repository-owned SHA-256 provider boundary; no provider type appears in either
+public API.
 
 ## Build
 
-Shared and static libraries require separate Meson configurations.
-`default_library=both` is rejected and `link_mode` must match the selected
-library kind.
+Shared and static builds use separate Meson configurations. `link_mode` must
+match `default_library`; `default_library=both` is rejected.
 
 ```sh
 meson setup build-shared \
   -Ddefault_library=shared \
   -Dlink_mode=shared \
-  -Dman_pages=enabled
+  -Dtests=enabled \
+  -Dman_pages=enabled \
+  -Dhtml_docs=disabled \
+  -Dwerror=true
 meson compile -C build-shared
 meson test -C build-shared --print-errorlogs
 
 meson setup build-static \
   -Ddefault_library=static \
   -Dlink_mode=static \
-  -Dman_pages=enabled
+  -Dtests=enabled \
+  -Dman_pages=disabled \
+  -Dhtml_docs=disabled \
+  -Dwerror=true
 meson compile -C build-static
 meson test -C build-static --print-errorlogs
 ```
 
-The release installs `libpkgsource.so.3`, `libpkgsource-codec.so.1`, and their
-separate pkg-config modules.
+## Installed documentation
+
+Canonical Markdown and project policy install under:
+
+```text
+${prefix}/share/doc/libpkgsource/
+```
+
+Committed generated manual pages install under the ordinary man hierarchy.
+Normal builds therefore do not require Pandoc or Doxygen.
+
+## HTML documentation
+
+HTML is an explicit versioned artifact:
+
+```sh
+meson setup build-docs \
+  -Dhtml_docs=enabled \
+  -Dman_pages=enabled
+meson compile -C build-docs html-docs
+```
+
+Installation places the generated tree under:
+
+```text
+${prefix}/share/htmldocs/libpkgsource/3.0.0/
+```
+
+The publishing site may copy that tree unchanged. It does not become another
+documentation authority.
 
 GPL-3.0-or-later. See `COPYING` and `COPYRIGHT`.

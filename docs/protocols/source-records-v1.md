@@ -1,6 +1,3 @@
-<!-- SPDX-FileCopyrightText: 2026 Alexandr Savca -->
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
-
 # libpkgsource durable records, schema 1
 
 This document normatively defines the canonical byte representation emitted by
@@ -286,7 +283,7 @@ complete record SHA-256:
   cd221e9527162de41fa23806f2a370e161139cf059c6dc77d08cbfd37b45be35
 ```
 
-`tests/codec_test.cpp` reconstructs these values through the public owner API
+`tests/codec/golden_vectors_test.cpp` reconstructs these values through the public owner API
 and asserts the vectors. A schema implementation that emits different bytes is
 not schema-1 compatible.
 
