@@ -99,15 +99,27 @@ public:
    */
   [[nodiscard]] const declaration_provenance& provenance() const noexcept;
 
-  /** Compare expansion steps for equality. */
+  /** Compare expansion steps for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const profile_expansion_step& lhs,
              const profile_expansion_step& rhs) noexcept;
-  /** Compare expansion steps for inequality. */
+  /** Compare expansion steps for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const profile_expansion_step& lhs,
              const profile_expansion_step& rhs) noexcept;
-  /** Order expansion steps by profile, member, and provenance. */
+  /** Order expansion steps by profile, member, and provenance.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool
   operator<(const profile_expansion_step& lhs,
             const profile_expansion_step& rhs) noexcept;
@@ -140,15 +152,27 @@ public:
   [[nodiscard]] const std::vector<profile_expansion_step>&
   steps() const noexcept;
 
-  /** Compare expansion paths for equality. */
+  /** Compare expansion paths for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const profile_expansion_path& lhs,
              const profile_expansion_path& rhs) noexcept;
-  /** Compare expansion paths for inequality. */
+  /** Compare expansion paths for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const profile_expansion_path& lhs,
              const profile_expansion_path& rhs) noexcept;
-  /** Order expansion paths by package and traversal steps. */
+  /** Order expansion paths by package and traversal steps.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool
   operator<(const profile_expansion_path& lhs,
             const profile_expansion_path& rhs) noexcept;
@@ -265,13 +289,25 @@ public:
   [[nodiscard]] const std::vector<profile_expansion_step>&
   expansion() const noexcept;
 
-  /** Compare requirement origins for equality. */
+  /** Compare requirement origins for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const requirement_origin& lhs,
                                        const requirement_origin& rhs) noexcept;
-  /** Compare requirement origins for inequality. */
+  /** Compare requirement origins for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const requirement_origin& lhs,
                                        const requirement_origin& rhs) noexcept;
-  /** Order requirement origins by declaration and expansion. */
+  /** Order requirement origins by declaration and expansion.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const requirement_origin& lhs,
                                       const requirement_origin& rhs) noexcept;
 
@@ -308,15 +344,27 @@ public:
    */
   [[nodiscard]] const std::vector<requirement_origin>& origins() const noexcept;
 
-  /** Compare resolved requirements for equality. */
+  /** Compare resolved requirements for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const resolved_requirement& lhs,
              const resolved_requirement& rhs) noexcept;
-  /** Compare resolved requirements for inequality. */
+  /** Compare resolved requirements for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const resolved_requirement& lhs,
              const resolved_requirement& rhs) noexcept;
-  /** Order resolved requirements by scope, package, and origins. */
+  /** Order resolved requirements by scope, package, and origins.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const resolved_requirement& lhs,
                                       const resolved_requirement& rhs) noexcept;
 

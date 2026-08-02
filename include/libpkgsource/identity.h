@@ -29,15 +29,27 @@ public:
    */
   [[nodiscard]] const std::string& hex() const noexcept;
 
-  /** Compare package-release identities for equality. */
+  /** Compare package-release identities for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const package_release_identity& lhs,
              const package_release_identity& rhs) noexcept;
-  /** Compare package-release identities for inequality. */
+  /** Compare package-release identities for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const package_release_identity& lhs,
              const package_release_identity& rhs) noexcept;
-  /** Order package-release identities by canonical digest bytes. */
+  /** Order package-release identities by canonical digest bytes.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool
   operator<(const package_release_identity& lhs,
             const package_release_identity& rhs) noexcept;
@@ -64,13 +76,25 @@ public:
    */
   [[nodiscard]] const std::string& hex() const noexcept;
 
-  /** Compare profile identities for equality. */
+  /** Compare profile identities for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const profile_identity& lhs,
                                        const profile_identity& rhs) noexcept;
-  /** Compare profile identities for inequality. */
+  /** Compare profile identities for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const profile_identity& lhs,
                                        const profile_identity& rhs) noexcept;
-  /** Order profile identities by canonical digest bytes. */
+  /** Order profile identities by canonical digest bytes.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const profile_identity& lhs,
                                       const profile_identity& rhs) noexcept;
 
@@ -96,15 +120,27 @@ public:
    */
   [[nodiscard]] const std::string& hex() const noexcept;
 
-  /** Compare source-snapshot identities for equality. */
+  /** Compare source-snapshot identities for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const source_snapshot_identity& lhs,
              const source_snapshot_identity& rhs) noexcept;
-  /** Compare source-snapshot identities for inequality. */
+  /** Compare source-snapshot identities for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const source_snapshot_identity& lhs,
              const source_snapshot_identity& rhs) noexcept;
-  /** Order source-snapshot identities by canonical digest bytes. */
+  /** Order source-snapshot identities by canonical digest bytes.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool
   operator<(const source_snapshot_identity& lhs,
             const source_snapshot_identity& rhs) noexcept;

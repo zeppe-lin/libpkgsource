@@ -46,5 +46,18 @@ for token in \
     fail "missing public documentation token: $token"
 done
 
+
+if grep -R -n -E '/\*\* (Compare|Order).* \*/' \
+    "$root/include/libpkgsource" "$root/include/libpkgsource-codec" >/dev/null; then
+  fail 'public comparison operators use incomplete one-line documentation'
+fi
+
+for header in identity.h model.h profile.h; do
+  grep -F '@param lhs' "$root/include/libpkgsource/$header" >/dev/null ||
+    fail "$header omits left comparison operand documentation"
+  grep -F '@param rhs' "$root/include/libpkgsource/$header" >/dev/null ||
+    fail "$header omits right comparison operand documentation"
+done
+
 ! grep -R -F 'PKGSOURCE_DECLARE_IDENTITY' "$root/include" >/dev/null ||
   fail 'public identity declarations must remain explicit and documentable'

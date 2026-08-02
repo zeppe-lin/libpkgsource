@@ -117,13 +117,25 @@ public:
    */
   [[nodiscard]] const std::string& hex() const noexcept;
 
-  /** Compare complete digest values for equality. */
+  /** Compare complete digest values for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const digest& lhs,
                                        const digest& rhs) noexcept;
-  /** Compare complete digest values for inequality. */
+  /** Compare complete digest values for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const digest& lhs,
                                        const digest& rhs) noexcept;
-  /** Order digest values by algorithm and hexadecimal material. */
+  /** Order digest values by algorithm and hexadecimal material.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const digest& lhs,
                                       const digest& rhs) noexcept;
 
@@ -146,13 +158,25 @@ public:
    */
   [[nodiscard]] const std::string& name() const noexcept;
 
-  /** Compare package references for equality. */
+  /** Compare package references for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const package_reference& lhs,
                                        const package_reference& rhs) noexcept;
-  /** Compare package references for inequality. */
+  /** Compare package references for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const package_reference& lhs,
                                        const package_reference& rhs) noexcept;
-  /** Order package references lexicographically by canonical name. */
+  /** Order package references lexicographically by canonical name.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const package_reference& lhs,
                                       const package_reference& rhs) noexcept;
 
@@ -174,13 +198,25 @@ public:
    */
   [[nodiscard]] const std::string& name() const noexcept;
 
-  /** Compare profile references for equality. */
+  /** Compare profile references for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const profile_reference& lhs,
                                        const profile_reference& rhs) noexcept;
-  /** Compare profile references for inequality. */
+  /** Compare profile references for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const profile_reference& lhs,
                                        const profile_reference& rhs) noexcept;
-  /** Order profile references lexicographically by canonical name. */
+  /** Order profile references lexicographically by canonical name.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const profile_reference& lhs,
                                       const profile_reference& rhs) noexcept;
 
@@ -202,15 +238,27 @@ public:
    */
   [[nodiscard]] const std::string& name() const noexcept;
 
-  /** Compare architecture references for equality. */
+  /** Compare architecture references for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const architecture_reference& lhs,
              const architecture_reference& rhs) noexcept;
-  /** Compare architecture references for inequality. */
+  /** Compare architecture references for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const architecture_reference& lhs,
              const architecture_reference& rhs) noexcept;
-  /** Order architecture references lexicographically by canonical name. */
+  /** Order architecture references lexicographically by canonical name.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool
   operator<(const architecture_reference& lhs,
             const architecture_reference& rhs) noexcept;
@@ -255,15 +303,27 @@ public:
    */
   [[nodiscard]] std::uint32_t column() const noexcept;
 
-  /** Compare complete provenance values for equality. */
+  /** Compare complete provenance values for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool
   operator==(const declaration_provenance& lhs,
              const declaration_provenance& rhs) noexcept;
-  /** Compare complete provenance values for inequality. */
+  /** Compare complete provenance values for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool
   operator!=(const declaration_provenance& lhs,
              const declaration_provenance& rhs) noexcept;
-  /** Order provenance by document, path, line, and column. */
+  /** Order provenance by document, path, line, and column.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool
   operator<(const declaration_provenance& lhs,
             const declaration_provenance& rhs) noexcept;
@@ -309,13 +369,25 @@ public:
    */
   [[nodiscard]] const std::optional<lifecycle_action>& action() const noexcept;
 
-  /** Compare requirement scopes for equality. */
+  /** Compare requirement scopes for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const requirement_scope& lhs,
                                        const requirement_scope& rhs) noexcept;
-  /** Compare requirement scopes for inequality. */
+  /** Compare requirement scopes for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const requirement_scope& lhs,
                                        const requirement_scope& rhs) noexcept;
-  /** Order requirement scopes by kind and lifecycle action. */
+  /** Order requirement scopes by kind and lifecycle action.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const requirement_scope& lhs,
                                       const requirement_scope& rhs) noexcept;
 
@@ -363,13 +435,25 @@ public:
    */
   [[nodiscard]] std::string text() const;
 
-  /** Compare requirement subjects for equality. */
+  /** Compare requirement subjects for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const requirement_subject& lhs,
                                        const requirement_subject& rhs) noexcept;
-  /** Compare requirement subjects for inequality. */
+  /** Compare requirement subjects for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const requirement_subject& lhs,
                                        const requirement_subject& rhs) noexcept;
-  /** Order requirement subjects by kind and canonical text. */
+  /** Order requirement subjects by kind and canonical text.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const requirement_subject& lhs,
                                       const requirement_subject& rhs) noexcept;
 
@@ -544,13 +628,25 @@ public:
    */
   [[nodiscard]] const digest& content_digest() const noexcept;
 
-  /** Compare complete source inputs for equality. */
+  /** Compare complete source inputs for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const source_input& lhs,
                                        const source_input& rhs) noexcept;
-  /** Compare complete source inputs for inequality. */
+  /** Compare complete source inputs for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const source_input& lhs,
                                        const source_input& rhs) noexcept;
-  /** Order source inputs by kind, location, local name, and digest. */
+  /** Order source inputs by kind, location, local name, and digest.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const source_input& lhs,
                                       const source_input& rhs) noexcept;
 
@@ -591,13 +687,25 @@ public:
    */
   [[nodiscard]] const digest& content_digest() const noexcept;
 
-  /** Compare complete program values for equality. */
+  /** Compare complete program values for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const program& lhs,
                                        const program& rhs) noexcept;
-  /** Compare complete program values for inequality. */
+  /** Compare complete program values for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const program& lhs,
                                        const program& rhs) noexcept;
-  /** Order program values by language, material, and digest. */
+  /** Order program values by language, material, and digest.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const program& lhs,
                                       const program& rhs) noexcept;
 
@@ -626,13 +734,25 @@ public:
    */
   [[nodiscard]] const program& value() const noexcept;
 
-  /** Compare lifecycle bindings for equality. */
+  /** Compare lifecycle bindings for equality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when both values are equal.
+   */
   friend PKGSOURCE_API bool operator==(const lifecycle_program& lhs,
                                        const lifecycle_program& rhs) noexcept;
-  /** Compare lifecycle bindings for inequality. */
+  /** Compare lifecycle bindings for inequality.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when the values differ.
+   */
   friend PKGSOURCE_API bool operator!=(const lifecycle_program& lhs,
                                        const lifecycle_program& rhs) noexcept;
-  /** Order lifecycle bindings by action and program. */
+  /** Order lifecycle bindings by action and program.
+   * @param lhs Left comparison operand.
+   * @param rhs Right comparison operand.
+   * @return `true` when @p lhs precedes @p rhs in canonical order.
+   */
   friend PKGSOURCE_API bool operator<(const lifecycle_program& lhs,
                                       const lifecycle_program& rhs) noexcept;
 
