@@ -5,17 +5,16 @@
 
 #include <libpkgsource/error.h>
 
-#include <openssl/evp.h>
-
 #include <algorithm>
 #include <array>
 #include <limits>
 #include <map>
-#include <memory>
 #include <optional>
 #include <string>
 #include <string_view>
 #include <tuple>
+
+#include "internal/record_checksum.h"
 #include <utility>
 #include <vector>
 
@@ -33,24 +32,6 @@ constexpr std::size_t checksum_size = 32U;
 [[noreturn]] void fail(codec_error_code code, std::string message)
 {
   throw codec_error(code, std::move(message));
-}
-
-std::array<std::uint8_t, checksum_size> checksum(
-    const std::uint8_t* data, std::size_t size)
-{
-  using context_pointer =
-      std::unique_ptr<EVP_MD_CTX, decltype(&EVP_MD_CTX_free)>;
-  context_pointer context(EVP_MD_CTX_new(), EVP_MD_CTX_free);
-  std::array<std::uint8_t, checksum_size> result{};
-  unsigned int result_size = 0;
-  if (!context ||
-      EVP_DigestInit_ex(context.get(), EVP_sha256(), nullptr) != 1 ||
-      EVP_DigestUpdate(context.get(), data, size) != 1 ||
-      EVP_DigestFinal_ex(context.get(), result.data(), &result_size) != 1 ||
-      result_size != result.size())
-    fail(codec_error_code::invalid_record,
-         "failed to compute package-source record checksum");
-  return result;
 }
 
 class writer final {
@@ -112,7 +93,7 @@ public:
 
   std::vector<std::uint8_t> finish()
   {
-    const auto digest = checksum(bytes_.data(), bytes_.size());
+    const auto digest = internal::record_checksum(bytes_.data(), bytes_.size());
     raw(digest);
     return std::move(bytes_);
   }
@@ -142,7 +123,7 @@ public:
     if (bytes.size() < checksum_size)
       fail(codec_error_code::truncated,
            "package-source record is shorter than its checksum");
-    const auto actual = checksum(bytes.data(), limit_);
+    const auto actual = internal::record_checksum(bytes.data(), limit_);
     if (!std::equal(actual.begin(), actual.end(), bytes.begin() + limit_))
       fail(codec_error_code::checksum_mismatch,
            "package-source record checksum mismatch");

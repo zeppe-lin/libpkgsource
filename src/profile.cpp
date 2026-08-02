@@ -4,7 +4,7 @@
 
 #include <libpkgsource/error.h>
 
-#include "identity_support.h"
+#include "internal/identity_writer.h"
 
 #include <algorithm>
 #include <map>

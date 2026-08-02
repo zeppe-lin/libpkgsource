@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include <libpkgsource/identity.h>
 
-#include "identity_support.h"
+#include "internal/identity_hex.h"
 
 #include <utility>
 

@@ -19,3 +19,11 @@ option(
   value: 'auto',
   description: 'Build manual pages with scdoc',
 )
+
+option(
+  'sha256_provider',
+  type: 'combo',
+  choices: ['openssl'],
+  value: 'openssl',
+  description: 'Qualified SHA-256 implementation provider',
+)

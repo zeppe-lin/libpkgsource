@@ -4,9 +4,12 @@ codec_inc = include_directories('../include')
 
 libpkgsource_codec = library(
   'pkgsource-codec',
-  'codec.cpp',
+  [
+    'codec.cpp',
+    'internal/record_checksum.cpp',
+  ],
   include_directories: codec_inc,
-  dependencies: [libpkgsource_dep, libcrypto_dep],
+  dependencies: [libpkgsource_dep, libpkgsource_sha256_provider_dep],
   install: true,
   version: meson.project_version(),
   soversion: '1',
@@ -15,7 +18,7 @@ libpkgsource_codec = library(
 libpkgsource_codec_dep = declare_dependency(
   link_with: libpkgsource_codec,
   include_directories: codec_inc,
-  dependencies: [libpkgsource_dep, libcrypto_dep],
+  dependencies: [libpkgsource_dep, libpkgsource_sha256_provider_dep],
 )
 meson.override_dependency('libpkgsource-codec', libpkgsource_codec_dep)
 

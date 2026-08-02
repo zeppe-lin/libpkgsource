@@ -8,14 +8,15 @@ libpkgsource = library(
   [
     'error.cpp',
     'identity.cpp',
-    'identity_support.cpp',
+    'internal/identity_hex.cpp',
+    'internal/identity_writer.cpp',
     'model.cpp',
     'profile.cpp',
     'recipe.cpp',
     'snapshot.cpp',
   ],
   include_directories: [public_inc, private_inc],
-  dependencies: libcrypto_dep,
+  dependencies: libpkgsource_sha256_provider_dep,
   install: true,
   version: meson.project_version(),
   soversion: '3',
@@ -24,7 +25,7 @@ libpkgsource = library(
 libpkgsource_dep = declare_dependency(
   link_with: libpkgsource,
   include_directories: public_inc,
-  dependencies: libcrypto_dep,
+  dependencies: libpkgsource_sha256_provider_dep,
 )
 meson.override_dependency('libpkgsource', libpkgsource_dep)
 
