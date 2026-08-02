@@ -20,5 +20,6 @@ for file in \
 do
   [ -s "$root/$file" ] || fail "missing installed HTML artifact: $file"
 done
-find "$root" -type f -name '*.md' | grep . >/dev/null &&
+if find "$root" -type f -name '*.md' | grep . >/dev/null; then
   fail 'canonical Markdown escaped into the rendered HTML tree'
+fi
