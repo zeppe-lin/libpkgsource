@@ -5,106 +5,92 @@
 
 `libpkgsource` is the native Zeppe-Lin C++17 package-source authority.
 
-It validates parser-neutral declarations, seals authoritative requirement
-profiles, expands exact package requirements, and returns immutable normalized
-recipe and source-snapshot values.  Input syntax is provenance.  The sealed
-`source_snapshot` is authority.
+The core library accepts parser-neutral declarations, seals requirement
+profiles, expands exact package requirements, validates complete recipe
+semantics, and returns immutable normalized source snapshots. Input syntax is
+not authority. The sealed `source_snapshot` is.
 
-The native reset is intentionally incompatible with the historical
-implementation.  It contains no Pkgfile backend, no CRUX package-source
-compatibility model, no MD5 source declarations, no sidecar semantics, and no
-combined `build_and_run` requirement scope.  Historical conversion belongs to a
-separate migration tool.
+The repository also owns `libpkgsource-codec`, a separate sibling library that
+encodes and decodes canonical durable records for sealed profile catalogs and
+source snapshots. The codec belongs to the source owner because it knows every
+source field, invariant, identity, and resealing obligation, but it is not part
+of the semantic core ABI.
 
-Version 2 adds explicit check-program authority.  Because the public C++ value
-layouts change, the core, YAML adapter, and planner adapter all begin SONAME 2.
+YAML parsing and planner projection now live in independent repositories:
 
-## Native model
+- `libpkgsource-yaml`: strict YAML bytes to parser-neutral declarations;
+- `libpkgsource-plan`: sealed source snapshot to `libpkgplan` candidate facts.
 
-The normalized snapshot distinguishes:
+## Core authority
 
-* package release and package metadata;
-* remote and local source input declarations with SHA-256 identities;
-* exact build program material and optional check program material;
-* build, run, check, and action-bound lifecycle requirements;
-* exact package and named profile subjects;
-* sealed selected build profiles and their complete transitive closure;
-* installation and removal lifecycle programs;
-* independent build and target architecture requirements; and
-* profile, package-release, recipe, and source-snapshot identity domains.
+The normalized source model distinguishes:
 
-Profiles are authoritative values rather than parser aliases.  Their names,
-direct members, declaration provenance, deterministic expansion paths, nested
-profile identities, and semantic identities remain available after sealing.
-Unknown profiles, duplicate definitions or members, and cycles are rejected.
+- package release and metadata;
+- remote and local source declarations with SHA-256 content requirements;
+- exact build and optional check program bytes;
+- build, run, check, and action-bound lifecycle requirements;
+- exact package and named-profile subjects;
+- selected build profiles and the complete retained profile closure;
+- installation and removal lifecycle programs;
+- independent build and target architecture constraints; and
+- package-release, profile, and source-snapshot identity domains.
 
-`check` is a native typed requirement scope.  `recipe.yml/1` retains that
-scope as reserved non-executable metadata.  `recipe.yml/2` may bind it to one
-exact optional check program.  Neither form adds test execution to the library.
+`profile_catalog::seal()` owns deterministic profile normalization, nested
+expansion, duplicate and cycle rejection, retained expansion provenance, and
+profile identities.
 
-## Durable source evidence
+`seal_source()` owns source normalization, profile expansion, duplicate source
+and lifecycle detection, lifecycle requirement/program closure, check
+requirement/program closure, and the source-snapshot identity.
 
-The core library provides canonical owner-level encodings for a complete
-*profile_catalog* and one sealed *source_snapshot*.  The records use the fixed
-eight-byte house magics `ZLPSPCAT` and `ZLPSSNAP`, a big-endian schema version,
-explicit collection bounds, and a whole-record SHA-256 checksum.
+The current complete source model uses the first public
+`libpkgsource/source-snapshot/v1` identity domain. Earlier source-snapshot
+identity generations belonged to the pre-package development line and are not
+accepted as durable evidence by 3.0.
 
-Decoding does not trust stored sealed identities.  Profile records are rebuilt
-from retained declarations through `profile_catalog::seal()`.  Source records
-reconstruct the retained profile closure and original requirement declarations,
-then pass the result through `seal_source()`.  The recomputed profile, recipe,
-and source-snapshot identities and canonical re-encoding must match the record.
+## Durable owner records
 
-The codecs perform no YAML parsing, collection discovery, path access, source
-fetching, build execution, or policy selection.  Syntax and document origin
-remain checksum-protected diagnostics rather than package semantics.
+`libpkgsource-codec.so.1` provides:
 
-## Input syntax
+```cpp
+#include <libpkgsource-codec/codec.h>
 
-The native syntax contracts are [PROFILES-YAML-1.md](PROFILES-YAML-1.md),
-[RECIPE-YAML-1.md](RECIPE-YAML-1.md), and
-[RECIPE-YAML-2.md](RECIPE-YAML-2.md).  The optional `libpkgsource-yaml` adapter
-parses raw document bytes into parser-neutral declarations.  It never opens
-paths or scans collections.  Only the existing profile and source sealers cross
-the authority boundary.
+auto profile_record = pkgsource::codec::encode_profile_catalog(catalog);
+auto source_record = pkgsource::codec::encode_source_snapshot(snapshot);
 
-`recipe.yml/1` uses explicit requirement mappings:
-
-```yaml
-requirements:
-  build:
-    - profile: "@toolchain"
-    - package: pkg-config
-  run:
-    - package: libfoo
-  lifecycle:
-    post-install:
-      - package: desktop-file-utils
+auto restored_catalog =
+    pkgsource::codec::decode_profile_catalog(profile_record);
+auto restored_snapshot =
+    pkgsource::codec::decode_source_snapshot(source_record);
 ```
 
-There is no scalar shorthand and recipes cannot define or override profiles.
-Version two adds one optional top-level `check` program with the same exact
-`language` and `script` shape as build and lifecycle programs.  Check
-requirements in version two require that program; the program itself needs no
-additional requirements.
+Decoding never trusts bytes as authority. It reconstructs declarations, invokes
+the ordinary owner sealers, verifies stored identities, and requires canonical
+byte-for-byte re-encoding. Records are bounded, versioned, big-endian, and
+protected by an internal SHA-256 checksum.
+
+A source record embeds only the exact profile closure retained by that snapshot,
+not an acquired global catalog. This keeps the primitive record independently
+reconstructible without duplicating unrelated profile authority.
+
+The normative byte protocol is `SOURCE-RECORDS-1.md`.
 
 ## Boundary
 
-The library does not:
+Neither library:
 
-* scan collections or choose repository precedence;
-* resolve package availability or dependency closure;
-* download, copy, or verify source objects;
-* execute build, check, or lifecycle programs;
-* provide namespaces, Landlock, cgroups, or fakeroot behavior;
-* create package images or archives;
-* install packages or read installed state; or
-* import Pkgfile/0 or historical package database records.
+- parses YAML or any other source syntax;
+- opens source paths or discovers package collections;
+- chooses collection precedence;
+- resolves package availability or dependency closure;
+- downloads or verifies source objects;
+- executes build, check, or lifecycle programs;
+- creates package images or archives;
+- installs packages or reads installed state;
+- projects planner facts; or
+- imports Pkgfile or historical package-database state.
 
-Those are separate architecture stages and migration programs.
-
-See [DESIGN.md](DESIGN.md) for the authority model and [MIGRATION.md](MIGRATION.md)
-for the compatibility boundary.
+Those are separate owners and explicit adapters.
 
 ## Build
 
@@ -115,55 +101,20 @@ library kind.
 ```sh
 meson setup build-shared \
   -Ddefault_library=shared \
-  -Dlink_mode=shared
+  -Dlink_mode=shared \
+  -Dman_pages=enabled
 meson compile -C build-shared
 meson test -C build-shared --print-errorlogs
 
 meson setup build-static \
   -Ddefault_library=static \
-  -Dlink_mode=static
+  -Dlink_mode=static \
+  -Dman_pages=enabled
 meson compile -C build-static
 meson test -C build-static --print-errorlogs
 ```
 
-Tests are enabled by default.  Manual pages are built when `scdoc` is available
-or can be required with `-Dman_pages=enabled`.
+The release installs `libpkgsource.so.3`, `libpkgsource-codec.so.1`, and their
+separate pkg-config modules.
 
-## Optional YAML adapter
-
-`libpkgsource-yaml` is enabled with `-Dyaml_adapter=enabled` and requires
-libyaml 0.2.5 or later.  It provides strict `profiles.yml/1`, `recipe.yml/1`,
-and `recipe.yml/2` parsers, structured syntax diagnostics,
-parser-neutral declarations, and convenience functions that invoke the native
-sealers.  The adapter rejects
-duplicate keys, unknown fields, multiple documents, anchors, aliases, merge
-keys, unsupported tags, scalar requirement shorthand, and schema/type drift.
-
-The adapter is syntax only.  It does not discover collections, combine profile
-documents, choose precedence, resolve requirements, fetch sources, or execute
-programs.
-
-## Optional planner adapter
-
-`libpkgsource-plan` is now built and released from its own repository.  It projects one
-sealed source snapshot into a `libpkgplan` candidate package fact while retaining
-the issuing source snapshot.
-
-The adapter projects only exact run requirements, durable pre-remove and
-post-remove program bytes, target architecture requirements, and package release
-control.  It does not reinterpret syntax or profiles.  Build requirements,
-check requirements, lifecycle requirements, selected build profiles, build
-architecture requirements, install lifecycle programs, sources, build
-programs, and check programs remain outside planner candidate control.
-
-The supplied `libpkgplan` 0.2 API already provides the required value domains;
-no downstream planner API change is required for this projection.
-
-## ABI and license
-
-The core library, optional planner adapter, and optional YAML adapter use
-SONAME 2.  Consumers must rebuild atomically; public C++ recipe and snapshot
-value layouts changed when check-program authority was added.  No binary bridge
-is provided.
-
-GPL-3.0-or-later.  See `COPYING` and `COPYRIGHT`.
+GPL-3.0-or-later. See `COPYING` and `COPYRIGHT`.

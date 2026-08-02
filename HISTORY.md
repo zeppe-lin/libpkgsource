@@ -3,6 +3,30 @@
 
 # History
 
+## 3.0.0 — unreleased
+
+Core authority and repository-boundary reset.
+
+* extract the YAML frontend and planner projection into independent repositories
+  with their own documentation, tests, ABI, and release lifecycle;
+* remove source syntax generations and recipe identity from semantic core
+  authority;
+* make check requirement/program closure an unconditional source invariant;
+* reset the complete current source model to the first public
+  `libpkgsource/source-snapshot/v1` identity contract;
+* isolate durable owner records in `libpkgsource-codec.so.1` while keeping codec
+  ownership beside the semantic model;
+* remove syntax and recipe identity fields from source records;
+* preserve self-contained reconstruction by embedding only the exact retained
+  profile closure required by each source snapshot;
+* publish the normative version-one durable record protocol and golden vectors;
+  and
+* begin `libpkgsource.so.3` with no YAML or planner dependency.
+
+The 1.x and 2.x sections below describe published development boundaries. They
+do not impose compatibility on the first packaged 3.0 authority and are not
+accepted as durable 3.0 evidence.
+
 ## 2.1.0
 
 Durable sealed source authority.

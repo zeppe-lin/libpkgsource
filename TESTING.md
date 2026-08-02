@@ -3,95 +3,64 @@
 
 # Testing
 
-The suite is offline and model-driven.  When the optional YAML adapter is
-enabled it parses in-memory documents through libyaml; it does not open files,
-inspect package collections, execute recipe programs, or access installed
-state.
+The repository suite is offline and model-driven. It opens no package source
+paths, parses no YAML, performs no network access, and executes no recipe
+programs.
 
-Coverage includes:
+## Core model
 
-* canonical package, profile, and architecture identity rejection;
-* package-release and raw program SHA-256 identity vectors;
-* independent build, run, check, and lifecycle requirement scopes;
-* exact package and profile requirement subjects;
-* action binding for lifecycle requirements;
-* deterministic profile sealing independent of declaration insertion order;
-* nested profile expansion and retained edge provenance;
-* unknown-profile, duplicate-definition, duplicate-member, and cycle rejection;
-* selected build-profile roots and complete transitive profile closure;
-* exact requirement origin aggregation across profile paths;
-* source input normalization, safe local paths, SHA-256-only content identity,
-  and duplicate local-name rejection;
-* separate build and target architecture requirements;
-* lifecycle program uniqueness and lifecycle-requirement/program closure;
-* optional exact check-program retention and check-requirement/program closure;
-* version-one recipe and source-snapshot identity-vector preservation;
-* check-program identity sensitivity and syntax-provenance separation;
-* recipe identity stability across non-semantic source order and provenance;
-* recipe identity change sensitivity to program and profile semantics;
-* source snapshot identity and syntax-provenance separation;
-* deterministic profile-catalog encoding independent of declaration order;
-* canonical source-snapshot round trips for recipe syntax versions one and two;
-* reconstruction of one profile declaration that expands into multiple package
-  requirements;
-* retention of direct and profile-derived origins for the same package;
-* fixed house record magics, whole-record checksum validation, truncation and
-  unsupported-version refusal, and stored-identity substitution refusal;
-* independent public-header compilation;
-* native source-to-planner candidate projection;
-* exclusion of build, check, and lifecycle requirements from planner runtime
-  control;
-* exclusion of installation lifecycle programs from durable removal control;
-* target architecture projection; and
-* independent `libpkgsource-plan` public-header compilation;
-* strict one-document YAML parsing and structured syntax provenance;
-* duplicate/unknown key, alias, anchor, merge-key, directive, tag, and type
-  rejection;
-* exact `profiles.yml/1` declarations and deterministic profile sealing;
-* exact `recipe.yml/1` declarations and identity-equivalent reordered input;
-* exact `recipe.yml/2` check programs and version-two closure refusal;
-* version-one rejection of the version-two check-program field;
-* syntax-versus-semantic error-domain separation;
-* independent `libpkgsource-yaml` public-header compilation; and
-* generated `libpkgsource-yaml.pc` dependency metadata.
+The model, profile, and recipe tests cover:
 
-Run the core shared configuration:
+- canonical package, profile, architecture, digest, path, and program values;
+- package-release identity vectors;
+- independent build, run, check, and lifecycle requirement scopes;
+- exact package and profile subjects;
+- deterministic profile sealing independent of declaration order;
+- nested expansion, selected build profiles, retained closure, and origin paths;
+- duplicate profile definitions or members, unknown profiles, and cycles;
+- source ordering and duplicate local-name rejection;
+- lifecycle program uniqueness and lifecycle requirement/program closure;
+- optional check program retention and check requirement/program closure;
+- independent build and target architecture sets;
+- source identity stability across declaration order and diagnostic provenance;
+- source identity sensitivity to every semantic field;
+- the first public source-snapshot identity vectors; and
+- independent core public-header compilation.
 
-```sh
-meson setup build-shared \
-  -Ddefault_library=shared \
-  -Dlink_mode=shared
-meson compile -C build-shared
-meson test -C build-shared --print-errorlogs
-```
+## Durable codec
 
-Run the optional adapter against an installed `libpkgplan`:
+The codec tests cover:
 
-```sh
-PKG_CONFIG_PATH=/path/to/dependencies/lib/pkgconfig \
-meson setup build-plan \
-  -Ddefault_library=shared \
-  -Dlink_mode=shared \
-  -Dplanner_adapter=enabled
-meson compile -C build-plan
-meson test -C build-plan --print-errorlogs
-```
+- deterministic profile-catalog bytes independent of declaration insertion
+  order;
+- source records with and without a check program;
+- reconstruction of direct and profile-derived requirement declarations;
+- exact retained profile closure reconstruction;
+- canonical byte-for-byte round trips;
+- fixed profile and source golden vectors;
+- checksum corruption, truncation, bad magic, unsupported version, invalid tag,
+  trailing field, embedded-record corruption, and stored-identity substitution;
+- size and item-count refusal;
+- rejection of noncanonical but checksum-valid encodings;
+- independent codec public-header compilation; and
+- static source checks for resealing, canonical re-encoding, limits, SONAME, and
+  exact core-version coupling.
 
-Repeat with `default_library=static` and `link_mode=static` for the supported
-static closure.  `default_library=both` is deliberately invalid.
+## Release matrix
 
-The release metadata test binds project version, SONAMEs, dependency floor,
-history heading, README version contract, and installed public headers.  It is
-part of the normal suite.
+Before release, run clean GCC and Clang configurations for both shared and
+static libraries with warnings as errors. Run ASan and UBSan over every runtime
+test. Render all scdoc pages and lint them with mandoc.
 
+Inspect:
 
-Run the YAML adapter:
+- `libpkgsource.so.3` and `libpkgsource-codec.so.1` SONAMEs;
+- shared `NEEDED` closure;
+- `libpkgsource.pc` and `libpkgsource-codec.pc` public/private requirements;
+- `pkg-config --static` closure;
+- independently compiled installed consumers for both headers; and
+- exact `git am` replay tree identity.
 
-```sh
-meson setup build-yaml \
-  -Ddefault_library=shared \
-  -Dlink_mode=shared \
-  -Dyaml_adapter=enabled
-meson compile -C build-yaml
-meson test -C build-yaml --print-errorlogs
-```
+The codec protocol specification and golden vectors are release artifacts. A
+change to accepted bytes requires an explicit new record schema version; a
+change to source semantics requires an explicit source identity decision.

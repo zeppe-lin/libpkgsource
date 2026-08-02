@@ -11,34 +11,34 @@ pkgsource_recipe - normalized native recipe authority
 # DESCRIPTION
 
 *recipe_declaration* is parser-neutral input.  It contains package release,
-metadata, source inputs, a build program, an optional check program, requirement
-declarations, lifecycle programs, architecture requirements, and top-level
-provenance.
+metadata, source inputs, one exact build program, an optional exact check
+program, requirement declarations, lifecycle programs, architecture
+requirements, and declaration provenance.
 
-The original constructor without a check-program argument remains available and
-constructs a declaration with no check program.  *check_program()* returns the
-optional exact program value.
+The constructor without a check-program argument creates a declaration with no
+check program.  *check_program()* returns the optional value.
 
-*seal_recipe()* resolves all profile subjects through a sealed
-*profile_catalog*, sorts source and lifecycle domains, rejects duplicate source
-names and lifecycle programs, and rejects lifecycle requirements whose action
-has no lifecycle program.
+*seal_recipe()*:
 
-The returned *sealed_recipe* distinguishes build, run, check, and action-bound
-lifecycle requirements.  It retains the optional check program, selected
-build-profile roots, and the exact profile closure used during sealing.
+- sorts source and lifecycle domains deterministically;
+- rejects duplicate source local names and lifecycle actions;
+- expands package and profile requirements through one sealed profile catalog;
+- rejects lifecycle requirements without a program for the same action; and
+- rejects check requirements without a check program.
 
-Source-syntax closure is enforced by *seal_source()*.  *recipe.yml/1* cannot
-carry a check program.  Under *recipe.yml/2*, check requirements require a check
-program; a check program with no additional check requirements is valid.
+A check program with no additional check requirements is valid.
 
-The recipe identity is a domain-separated SHA-256 value over normalized semantic
-content.  Declaration order and provenance do not change it.  Version-one
-identity encoding remains unchanged when no check program is present.  A check
-program selects the version-two recipe identity domain and contributes its
-language and exact bytes.
+The returned *sealed_recipe* retains normalized semantic fields, selected build
+profiles, the exact profile closure, all resolved requirement origins, and
+diagnostic provenance.  It has no independent recipe identity; the complete
+normalized recipe contributes directly to *source_snapshot_identity*.
+
+# BOUNDARY
+
+Recipe declarations and sealed recipes contain no parser generation or input
+syntax tag.  Parsing, collection acquisition, resolution, source fetching,
+execution, and planning are outside the core.
 
 # SEE ALSO
 
-*libpkgsource*(3), *pkgsource_profile*(3), *pkgsource_snapshot*(3),
-*pkgsource_recipe_yaml*(5)
+*libpkgsource*(3), *pkgsource_profile*(3), *pkgsource_snapshot*(3)

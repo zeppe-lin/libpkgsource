@@ -3,161 +3,130 @@
 
 # Design
 
-## Authority reset
+## Owner model
 
-`libpkgsource` is the authority for the native Zeppe-Lin package-source model.
-It does not preserve the CRUX package-source protocol and does not expose a
-compatibility interpretation of `Pkgfile`, its comments, or its sidecars.
-Compatibility belongs in explicit migration programs outside this library.
-
-The reset is intentionally incompatible.  Native source truth is defined from
-package semantics needed by later architecture stages, not from the subset of
-meaning recoverable from a historical source directory.
-
-## Authority boundary
-
-A syntax reader may parse `recipe.yml` or another future input syntax into
-unsealed declarations.  Parsed declarations are not authority.  They may retain
-spelling, order, and source positions for diagnostics, but no later stage may
-consume them as package truth.
-
-The semantic boundary is sealing:
+`libpkgsource` owns native package-source semantics. A parser may construct
+unsealed declarations, but only the core sealers may turn those declarations
+into authority.
 
 ```text
-input syntax + sealed profile catalog
-                |
-                v
-        native source sealer
-                |
-                v
-       immutable source snapshot
+syntax adapter                 semantic owner
+--------------                 --------------
+bytes -> declarations  ----->  profile_catalog::seal()
+                               seal_source()
+                                      |
+                                      v
+                            immutable owner values
 ```
 
-The sealed snapshot owns normalized package release, metadata, source inputs,
-build program, optional check program, requirements, lifecycle programs,
-lifecycle requirements, architecture requirements, selected build profiles,
-the exact profile closure used for expansion, and domain-separated identities.
+The core has no YAML, collection, planner, execution, or storage dependency.
 
-The library does not scan collections, select precedence, resolve available
-packages, download or verify source objects, execute programs, construct package
-images, inspect archives, install packages, or read installed state.
+## Core boundary
 
-## YAML syntax adapter
+The core owns:
 
-`libpkgsource-yaml` is a separate syntax-boundary repository.  It depends on libyaml and
-translates raw `profiles.yml/1`, `recipe.yml/1`, and `recipe.yml/2` bytes into
-the same parser-neutral declarations accepted by the core.  The core library has no YAML
-dependency, and parsed documents never become an alternative authority model.
+- canonical package, profile, and architecture value domains;
+- package release and metadata values;
+- exact source declarations and program material;
+- typed requirement scope and subject domains;
+- profile declarations, deterministic expansion, and profile identities;
+- parser-neutral recipe declarations;
+- source normalization, closure invariants, and source-snapshot identity.
 
-The adapter is deliberately strict: one document, exact field sets, duplicate
-key rejection, explicit package/profile subject mappings, and no anchors,
-aliases, merge keys, custom tags, or directives.  It retains document, schema
-path, line, and column for diagnostics while leaving those values outside
-semantic identities.
+It does not own input grammar, collection acquisition, dependency resolution,
+source materialization, build/check/lifecycle execution, transaction planning,
+state publication, or evidence-store layout.
 
-Profile syntax and recipe syntax remain separate.  Profiles are parsed and
-sealed before recipes so a recipe can only select already authoritative profile
-values.  Collection acquisition, document discovery, and cross-collection
-profile policy belong to `libpkgcatalog` acquisition tooling, not to this
-adapter.
+## Profiles and requirements
 
-## Requirement model
+Profiles are sealed values, not parser aliases. A sealed profile retains its
+canonical name, direct members, transitive expansion paths, edge provenance,
+and identity. Nested profile identity contributes to parent identity.
 
-Requirement scope and requirement subject are independent typed domains.
+Recipe requirements retain independent build, run, check, and exact lifecycle
+action scopes. Package and profile subjects are separate domains. Expansion
+produces exact package requirements while retaining every direct or profile
+origin, selected build-profile roots, and the complete profile closure used by
+the source snapshot.
 
-Scopes are:
+Lifecycle requirements require a program for the same action. Check
+requirements require a check program. A check program without additional check
+requirements is valid.
 
-* build;
-* run;
-* lifecycle, bound to exactly one lifecycle action; and
-* check, retained as a first-class domain for later check execution.
+## Source identity
 
-`recipe.yml/1` reserves check requirements without executable check authority.
-`recipe.yml/2` may bind them to one exact optional check program.  The source
-sealer rejects version-two check requirements when that program is absent.  A
-check program without additional requirements is valid.
+A `source_snapshot` contains diagnostic `source_origin`, one complete
+`sealed_recipe`, and one domain-separated source identity. Origin and
+provenance do not contribute to semantic identity.
 
-Subjects are:
+Version 3 resets the complete current model to the first public
+`libpkgsource/source-snapshot/v1` domain. This is intentional: the earlier
+recipe/syntax generations were published repository experiments but had not
+been admitted as package-system evidence. Preserving them would manufacture a
+compatibility obligation before the evidence store existed.
 
-* exact package references; and
-* exact profile references.
+Package-release and profile identity domains remain at version one because
+their semantic contracts did not split into competing pre-release generations.
 
-There is no native `build_and_run` scope.  A package required in both domains is
-represented by two declarations and remains distinguishable after sealing.
+## Codec ownership
 
-## Profiles
+Durable source records belong to the source owner. A generic store may retain,
+address, index, or garbage-collect them, but it must not define source schemas or
+reconstruct source semantics itself.
 
-Profiles are authoritative package-set values, not parser macros or aliases.
-A profile has a normalized name, a retained declaration site, direct package or
-profile members, a deterministic transitive expansion, and a semantic identity.
+The codec therefore remains in this repository while being isolated as a
+separate library:
 
-The profile catalog is sealed before recipes are sealed.  Sealing rejects
-unknown references, duplicate definitions, duplicate direct members, and every
-cycle.  Definitions and expansions are normalized independently of caller
-insertion order.  A nested profile identity contributes to its parent's
-identity, so changing a nested definition changes every enclosing semantic
-value.
+```text
+libpkgsource.so.3
+    semantic declarations, sealing, identities
 
-A source snapshot retains the selected build-profile roots and the complete
-transitive profile closure used to expand its requirements.  Later stages do
-not need to reopen a mutable profile database to understand the snapshot.
+libpkgsource-codec.so.1
+    canonical records, bounded decoding, resealing verification
+```
 
-## Identity domains
+The codec depends on the exact matching `libpkgsource` project version. The core
+has no reverse dependency on the codec.
 
-Package names, profile names, and architecture names use strict canonical ASCII
-identities.  Non-canonical spellings are rejected rather than treated as
-aliases.
+## Self-contained source records
 
-Semantic SHA-256 identities are domain-separated and versioned.  At minimum the
-library distinguishes profile definition identity, package release identity,
-normalized recipe identity, and source snapshot identity.  Declaration
-provenance does not change semantic identity, but it is retained for diagnostics
-and audit.
+A source record embeds the exact retained profile closure needed to reconstruct
+that snapshot. It does not embed the complete acquired profile universe and it
+does not depend on an external store lookup.
 
-Version-one recipe identity encoding remains unchanged.  A recipe with an exact
-check program uses the version-two recipe identity domain and includes the
-program language and exact bytes.  Source syntax remains diagnostic provenance;
-a version-two document with no added check semantics may therefore share the
-same semantic identities as an equivalent version-one declaration.
+This is deliberate for the first owner protocol:
 
-## Planner projection
+- decoding is independently deterministic;
+- transport outside `pkgctl` remains possible;
+- missing external references cannot silently change reconstruction;
+- no store-level graph protocol is invented before the store owns one.
 
-`libpkgsource-plan` is a separate composition-boundary repository.  It may
-project only facts already sealed by `libpkgsource` into `libpkgplan` values.
-It must not resolve profiles, reinterpret syntax, reopen a collection, or infer
-runtime semantics from build declarations.
+A future store may deduplicate complete owner records by content address. That
+is a storage optimization, not a reason to weaken the primitive owner record.
 
-The native projection sends exact run requirements, durable removal lifecycle
-programs, and normalized target-architecture requirements to `libpkgplan`.
-Build requirements, check requirements, lifecycle requirements, selected build
-profiles, build architecture requirements, source inputs, build programs, and
-check programs remain upstream execution or resolution inputs.
+## Decode path
 
-The current `libpkgplan` candidate-control API already has the required runtime
-dependency, removal lifecycle, and target-profile value domains.  No planner API
-change is required for this reset.  Future dependency resolution in `pkgctl`
-will consume the remaining source requirement domains before invoking package
-planning.
+Profile decoding reconstructs direct profile declarations and calls
+`profile_catalog::seal()`. Source decoding reconstructs the retained closure and
+recipe declaration and calls `seal_source()`.
 
-## Durable representation boundary
+A record is accepted only when:
 
-A sealed profile catalog and source snapshot are long-lived semantic authority,
-not merely products of one parser process.  Their durable representation is
-owned by `libpkgsource`.
+1. size, magic, schema version, structure, tags, and checksum are valid;
+2. owner constructors and sealers accept every reconstructed value;
+3. stored identities equal recomputed identities; and
+4. canonical re-encoding exactly reproduces the input bytes.
 
-The profile-catalog record stores declaration-level profile definitions and
-expected profile identities.  Decode invokes `profile_catalog::seal()` and
-refuses any identity or canonical-byte disagreement.
+The last check rejects alternate field ordering, redundant encodings, trailing
+fields, or any other byte representation that maps to the same semantic value.
 
-The source-snapshot record stores diagnostic origin and syntax, the exact recipe
-declaration fields, and a nested canonical encoding of the snapshot's retained
-profile closure.  Original requirement declarations are reconstructed from the
-sealed requirement origins: direct requirements retain an empty expansion path,
-while profile requirements retain the selected root as the first expansion
-step.  Decode invokes `seal_source()` and refuses any recipe or source identity
-change.
+## Record checksum versus store address
 
-The records deliberately do not embed YAML documents, collection precedence,
-fetch material, execution results, or downstream planning state.  Reopening a
-source snapshot is semantic reconstruction through the owner sealers, not input
-reacquisition and not deserialization of private object layout.
+The record checksum is intrinsic owner-level corruption detection. A future
+content-addressed store may also hash the complete record to name or verify the
+stored object. These protections are intentionally distinct:
+
+- the codec checksum makes the record independently verifiable in transit;
+- the store digest binds storage coordinates and store policy.
+
+Neither digest substitutes for semantic resealing and identity verification.
