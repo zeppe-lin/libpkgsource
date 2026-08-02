@@ -2,9 +2,11 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 codec_inc = include_directories('../include')
 
+codec_export_script_name = 'libpkgsource-codec.exports.map'
+codec_export_script_path = meson.current_build_dir() / codec_export_script_name
 codec_export_script = configure_file(
   input: '../abi/libpkgsource-codec.exports',
-  output: 'libpkgsource-codec.exports.map',
+  output: codec_export_script_name,
   command: [elf_export_generator, '@INPUT@'],
   capture: true,
 )
@@ -24,7 +26,7 @@ libpkgsource_codec = library(
   dependencies: [libpkgsource_dep, libpkgsource_sha256_provider_dep],
   cpp_args: visibility_cpp_args + ['-DPKGSOURCE_CODEC_BUILDING_LIBRARY'],
   gnu_symbol_visibility: 'hidden',
-  link_args: ['-Wl,--version-script=' + codec_export_script.full_path()],
+  link_args: ['-Wl,--version-script=' + codec_export_script_path],
   link_depends: [codec_export_script],
   install: true,
   version: meson.project_version(),

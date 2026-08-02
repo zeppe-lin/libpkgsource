@@ -32,6 +32,12 @@ require "$root/include/libpkgsource/recipe.h" 'check_program() const noexcept'
 require "$root/src/meson.build" 'version: meson.project_version()'
 require "$root/codec/meson.build" "codec_core_requirement = 'libpkgsource = ' + meson.project_version()"
 require "$root/codec/meson.build" 'requires: [codec_core_requirement]'
+require "$root/src/meson.build" "core_export_script_path = meson.current_build_dir() / core_export_script_name"
+require "$root/codec/meson.build" "codec_export_script_path = meson.current_build_dir() / codec_export_script_name"
+
+if grep -R -F '.full_path()' "$root/src/meson.build" "$root/codec/meson.build" >/dev/null; then
+  fail 'generated export-script paths exceed the declared Meson feature floor'
+fi
 require "$root/src/snapshot.cpp" 'libpkgsource/source-snapshot/v1'
 require "$root/docs/protocols/source-records-v1.md" 'schema 1'
 require "$root/abi/libpkgsource.exports" '_ZN9pkgsource11seal_source'

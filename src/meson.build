@@ -6,9 +6,11 @@ private_inc = include_directories('.')
 elf_export_generator = find_program(
   meson.project_source_root() / 'tools/generate-elf-export-script.sh',
 )
+core_export_script_name = 'libpkgsource.exports.map'
+core_export_script_path = meson.current_build_dir() / core_export_script_name
 core_export_script = configure_file(
   input: '../abi/libpkgsource.exports',
-  output: 'libpkgsource.exports.map',
+  output: core_export_script_name,
   command: [elf_export_generator, '@INPUT@'],
   capture: true,
 )
@@ -30,7 +32,7 @@ libpkgsource = library(
   dependencies: libpkgsource_sha256_provider_dep,
   cpp_args: visibility_cpp_args + ['-DPKGSOURCE_BUILDING_LIBRARY'],
   gnu_symbol_visibility: 'hidden',
-  link_args: ['-Wl,--version-script=' + core_export_script.full_path()],
+  link_args: ['-Wl,--version-script=' + core_export_script_path],
   link_depends: [core_export_script],
   install: true,
   version: meson.project_version(),
