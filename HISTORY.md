@@ -22,6 +22,8 @@ Core authority and repository-boundary reset.
   installation tests by purpose;
 * publish exact reviewed ELF manifests for both shared libraries and hide
   private implementation symbols by default;
+* bind codec pkg-config metadata to the exact matching core version while
+  retaining `libcrypto` as private linkage metadata;
 * adopt strict Doxygen, clang-format 17, restricted Markdown manuals, committed
   canonical roff, installed project documentation, and versioned HTML output;
   and

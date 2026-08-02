@@ -31,6 +31,27 @@ count_token()
   ' "$file"
 }
 
+count_requirement()
+{
+  field=$1
+  module=$2
+  file=$3
+  awk -v field="$field" -v module="$module" '
+    $1 == field {
+      line = $0
+      sub(/^[^:]+:[[:space:]]*/, "", line)
+      requirement_count = split(line, requirements, /,[[:space:]]*/)
+      for (item = 1; item <= requirement_count; ++item) {
+        requirement = requirements[item]
+        sub(/^[[:space:]]*/, "", requirement)
+        if (requirement ~ ("^" module "([[:space:]]|$)"))
+          ++matches
+      }
+    }
+    END { print matches + 0 }
+  ' "$file"
+}
+
 core=$(find_pc libpkgsource)
 codec=$(find_pc libpkgsource-codec)
 
@@ -46,9 +67,16 @@ fi
 grep -F 'Name: libpkgsource-codec' "$codec" >/dev/null
 grep -F "Version: $project_version" "$codec" >/dev/null
 grep -E 'Libs:.*-lpkgsource-codec([[:space:]]|$)' "$codec" >/dev/null
-count=$(grep '^Requires:' "$codec" | grep -oE 'libpkgsource[[:space:]]*=[[:space:]]*[^,[:space:]]+' | wc -l)
-[ "$count" -eq 1 ] || fail "codec metadata must contain one exact core requirement, found $count"
+public_core_count=$(count_requirement Requires: libpkgsource "$codec")
+[ "$public_core_count" -eq 1 ] ||
+  fail "codec metadata must contain one public core requirement, found $public_core_count"
 grep -E "^Requires:.*libpkgsource[[:space:]]*=[[:space:]]*$project_version([,[:space:]]|$)" \
   "$codec" >/dev/null || fail 'codec metadata does not require the exact core version'
+private_core_count=$(count_requirement Requires.private: libpkgsource "$codec")
+[ "$private_core_count" -eq 0 ] ||
+  fail "codec metadata must not repeat core privately, found $private_core_count"
+if grep -E '^Libs.private:.*-lpkgsource([[:space:]]|$)' "$codec" >/dev/null; then
+  fail 'codec metadata must not repeat core in Libs.private'
+fi
 [ "$(count_token Requires.private: libcrypto "$codec")" -eq 1 ] ||
   fail 'codec metadata must contain one private libcrypto requirement'

@@ -45,13 +45,16 @@ install_headers(
   subdir: 'libpkgsource-codec',
 )
 
+codec_core_requirement = 'libpkgsource = ' + meson.project_version()
+
 pkgconf.generate(
   libpkgsource_codec,
   name: 'libpkgsource-codec',
   filebase: 'libpkgsource-codec',
   description: 'Canonical durable records for libpkgsource authority',
   subdirs: '.',
-  # Promote the versioned semantic owner from the target's private closure.
-  # Reusing the dependency object prevents duplicate Requires entries.
-  requires: [libpkgsource_dep],
+  # Meson promotes an in-project dependency by module name but does not carry
+  # the version stored in declare_dependency(). Spell the owner requirement
+  # explicitly; target-derived metadata for the same module is de-duplicated.
+  requires: [codec_core_requirement],
 )

@@ -44,7 +44,8 @@ require "$snapshot_source" 'seal_source('
 require "$snapshot_source" 'encode_source_snapshot(result) != encoding'
 require "$record_source" 'checksum_mismatch'
 require "$root/codec/meson.build" "soversion: '1'"
-require "$root/codec/meson.build" "requires: [libpkgsource_dep]"
+require "$root/codec/meson.build" "codec_core_requirement = 'libpkgsource = ' + meson.project_version()"
+require "$root/codec/meson.build" "requires: [codec_core_requirement]"
 require "$spec" 'byte[8] magic = "ZLPSPCAT"'
 require "$spec" 'byte[8] magic = "ZLPSSNAP"'
 

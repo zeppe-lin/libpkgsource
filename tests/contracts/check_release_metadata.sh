@@ -20,7 +20,7 @@ require()
 }
 
 require "$root/meson.build" "  version: '3.0.0',"
-require "$root/meson.build" "  meson_version: '>=1.9.0',"
+require "$root/meson.build" "  meson_version: '>=1.2.0',"
 require "$root/src/meson.build" "  soversion: '3',"
 require "$root/codec/meson.build" "  soversion: '1',"
 require "$root/HISTORY.md" '## 3.0.0'
@@ -30,7 +30,8 @@ require "$root/src/meson.build" "'../include/libpkgsource/snapshot.h'"
 require "$root/codec/meson.build" "'../include/libpkgsource-codec/libpkgsource-codec.h'"
 require "$root/include/libpkgsource/recipe.h" 'check_program() const noexcept'
 require "$root/src/meson.build" 'version: meson.project_version()'
-require "$root/codec/meson.build" 'requires: [libpkgsource_dep]'
+require "$root/codec/meson.build" "codec_core_requirement = 'libpkgsource = ' + meson.project_version()"
+require "$root/codec/meson.build" 'requires: [codec_core_requirement]'
 require "$root/src/snapshot.cpp" 'libpkgsource/source-snapshot/v1'
 require "$root/docs/protocols/source-records-v1.md" 'schema 1'
 require "$root/abi/libpkgsource.exports" '_ZN9pkgsource11seal_source'
