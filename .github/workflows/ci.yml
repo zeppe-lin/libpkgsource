@@ -64,10 +64,13 @@ jobs:
             doxygen \
             libssl-dev \
             mandoc \
-            meson \
             ninja-build \
             pandoc \
-            pkg-config
+            pkg-config \
+            python3-venv
+          python3 -m venv "$RUNNER_TEMP/meson-venv"
+          "$RUNNER_TEMP/meson-venv/bin/pip" install 'meson==1.10.2'
+          echo "$RUNNER_TEMP/meson-venv/bin" >> "$GITHUB_PATH"
 
       - name: Configure, build, and test
         run: |
@@ -183,9 +186,12 @@ jobs:
           sudo apt-get install --yes --no-install-recommends \
             clang \
             libssl-dev \
-            meson \
             ninja-build \
-            pkg-config
+            pkg-config \
+            python3-venv
+          python3 -m venv "$RUNNER_TEMP/meson-venv"
+          "$RUNNER_TEMP/meson-venv/bin/pip" install 'meson==1.10.2'
+          echo "$RUNNER_TEMP/meson-venv/bin" >> "$GITHUB_PATH"
 
       - name: Configure, build, and test
         run: |

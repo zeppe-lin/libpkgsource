@@ -6,6 +6,9 @@ A release is defined by one signed repository tag. `libpkgsource` and
 `libpkgsource-codec` share the project version because the durable codec knows
 the exact owner model. Their SONAMEs and pkg-config modules remain independent.
 
+The build requires Meson 1.9 or newer because generated codec metadata promotes
+the versioned in-project core dependency through `pkgconfig.generate()`.
+
 The release candidate must pass GCC and Clang shared and static builds, warnings
 as errors, ASan and UBSan, generated metadata checks, installed consumers,
 manual regeneration and lint, Doxygen, HTML validation, staged installation,

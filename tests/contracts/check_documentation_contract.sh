@@ -41,6 +41,8 @@ require_heading "$root/README.md" '## Public libraries'
 require_heading "$root/README.md" '## Authority boundary'
 require_heading "$root/README.md" '## Installed documentation'
 require_heading "$root/README.md" '## HTML documentation'
+grep -F 'Meson 1.9 or newer is required' "$root/README.md" >/dev/null ||
+  fail 'README omits the actual Meson feature floor'
 require_heading "$root/docs/architecture.md" '## Authority boundary'
 require_heading "$root/docs/architecture.md" '## Repository layout'
 require_heading "$root/docs/architecture.md" '## Semantic pipeline'

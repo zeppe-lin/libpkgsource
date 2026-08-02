@@ -64,7 +64,8 @@ public API.
 
 ## Build
 
-Shared and static builds use separate Meson configurations. `link_mode` must
+Meson 1.9 or newer is required. Shared and static builds use separate Meson
+configurations. `link_mode` must
 match `default_library`; `default_library=both` is rejected.
 
 ```sh
