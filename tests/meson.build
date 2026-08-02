@@ -56,6 +56,28 @@ if get_option('tests').enabled()
     args: [meson.project_source_root()],
   )
 
+
+  core_boundary = find_program('check_core_boundary.sh')
+  test(
+    'core-boundary',
+    core_boundary,
+    args: [meson.project_source_root()],
+  )
+
+  documentation_contract = find_program('check_documentation_contract.sh')
+  test(
+    'documentation-contract',
+    documentation_contract,
+    args: [meson.project_source_root()],
+  )
+
+  pkgconfig_metadata = find_program('pkgconfig_metadata_test.sh')
+  test(
+    'pkgconfig-metadata',
+    pkgconfig_metadata,
+    args: [meson.project_build_root(), meson.project_version()],
+  )
+
   release_metadata = find_program('check_release_metadata.sh')
   test(
     'release-metadata',
