@@ -8,9 +8,8 @@
 
 namespace pkgsource::codec::internal {
 
-pkgsource::internal::sha256_digest record_checksum(
-    const std::uint8_t* data,
-    std::size_t size)
+pkgsource::internal::sha256_digest record_checksum(const std::uint8_t* data,
+                                                   std::size_t size)
 {
   try {
     return pkgsource::internal::sha256(data, size);

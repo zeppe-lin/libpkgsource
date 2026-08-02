@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #pragma once
 
-#include "record_io.h"
-
 #include <libpkgsource/libpkgsource.h>
+
+#include "record_io.h"
 
 namespace pkgsource::codec::internal {
 
@@ -33,7 +33,7 @@ void encode_lifecycle_program(record_writer& output,
 
 void encode_architectures(record_writer& output,
                           const architecture_requirements& value);
-[[nodiscard]] architecture_requirements decode_architectures(
-    record_reader& input);
+[[nodiscard]] architecture_requirements
+decode_architectures(record_reader& input);
 
 } // namespace pkgsource::codec::internal

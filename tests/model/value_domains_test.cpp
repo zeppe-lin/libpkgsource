@@ -11,8 +11,7 @@ using namespace pkgsource;
 
 namespace {
 
-template <typename Function>
-void expect(error_code code, Function&& function)
+template <typename Function> void expect(error_code code, Function&& function)
 {
   try {
     function();
@@ -31,9 +30,15 @@ void test_identity_domains()
   assert(profile.name() == "@toolchain");
   assert(architecture.name() == "x86_64");
 
-  expect(error_code::invalid_identity, [] { package_reference value("Pkg"); });
-  expect(error_code::invalid_identity, [] { profile_reference value("toolchain"); });
-  expect(error_code::invalid_identity, [] { architecture_reference value("x86/64"); });
+  expect(error_code::invalid_identity, [] {
+    package_reference value("Pkg");
+  });
+  expect(error_code::invalid_identity, [] {
+    profile_reference value("toolchain");
+  });
+  expect(error_code::invalid_identity, [] {
+    architecture_reference value("x86/64");
+  });
 }
 
 void test_scopes_and_subjects()
@@ -55,7 +60,9 @@ void test_scopes_and_subjects()
   assert(exact.package().name() == "libfoo");
   assert(group.kind() == requirement_subject_kind::profile);
   assert(group.profile().name() == "@build-base");
-  expect(error_code::invalid_request, [&] { (void)exact.profile(); });
+  expect(error_code::invalid_request, [&] {
+    (void)exact.profile();
+  });
 }
 
 void test_values()
@@ -67,17 +74,21 @@ void test_values()
   assert(first.identity() != next.identity());
   assert(first.version_release() == "1.2.3-1");
 
-  package_metadata metadata("Example package", "Long\ndescription",
-                            "https://example.invalid", {"MIT", "BSD-2-Clause"});
+  package_metadata metadata("Example package",
+                            "Long\ndescription",
+                            "https://example.invalid",
+                            {"MIT", "BSD-2-Clause"});
   assert(metadata.licenses().front() == "BSD-2-Clause");
 
   const std::string hash(64, 'a');
-  source_input remote = source_input::remote(
-      "https://example.invalid/example.tar.xz", "example.tar.xz",
-      digest(digest_algorithm::sha256, hash));
-  source_input local = source_input::local(
-      "files/example.conf", "example.conf",
-      digest(digest_algorithm::sha256, hash));
+  source_input remote =
+      source_input::remote("https://example.invalid/example.tar.xz",
+                           "example.tar.xz",
+                           digest(digest_algorithm::sha256, hash));
+  source_input local =
+      source_input::local("files/example.conf",
+                          "example.conf",
+                          digest(digest_algorithm::sha256, hash));
   assert(remote.kind() == source_input_kind::remote);
   assert(local.kind() == source_input_kind::local);
 
@@ -93,10 +104,12 @@ void test_values()
 
   expect(error_code::duplicate_declaration, [] {
     architecture_requirements value(
-        {architecture_reference("x86_64"), architecture_reference("x86_64")}, {});
+        {architecture_reference("x86_64"), architecture_reference("x86_64")},
+        {});
   });
   expect(error_code::invalid_source, [&] {
-    (void)source_input::local("../escape", "escape", digest(digest_algorithm::sha256, hash));
+    (void)source_input::local(
+        "../escape", "escape", digest(digest_algorithm::sha256, hash));
   });
 }
 

@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <libpkgsource-codec/codec.h>
+
 #include "record_io.h"
 #include "value_codec.h"
-
-#include <libpkgsource-codec/codec.h>
 
 #include <array>
 #include <exception>
@@ -18,11 +18,18 @@ namespace pkgsource::codec {
 namespace {
 
 constexpr std::array<std::uint8_t, 8> source_snapshot_magic = {
-    'Z', 'L', 'P', 'S', 'S', 'N', 'A', 'P',
+    'Z',
+    'L',
+    'P',
+    'S',
+    'S',
+    'N',
+    'A',
+    'P',
 };
 
-[[nodiscard]] profile_catalog catalog_from_profiles(
-    const std::vector<sealed_profile>& profiles)
+[[nodiscard]] profile_catalog
+catalog_from_profiles(const std::vector<sealed_profile>& profiles)
 {
   std::vector<profile_declaration> declarations;
   declarations.reserve(profiles.size());
@@ -36,20 +43,19 @@ constexpr std::array<std::uint8_t, 8> source_snapshot_magic = {
 [[nodiscard]] std::vector<requirement_declaration>
 declarations_from_recipe(const sealed_recipe& recipe)
 {
-  using declaration_key =
-      std::pair<requirement_scope, requirement_subject>;
+  using declaration_key = std::pair<requirement_scope, requirement_subject>;
   std::map<declaration_key, declaration_provenance> declarations;
 
   for (const auto& requirement : recipe.requirements().requirements()) {
     for (const auto& origin : requirement.origins()) {
-      requirement_subject subject = origin.expansion().empty()
-          ? requirement_subject(requirement.package())
-          : requirement_subject(origin.expansion().front().profile());
+      requirement_subject subject =
+          origin.expansion().empty()
+              ? requirement_subject(requirement.package())
+              : requirement_subject(origin.expansion().front().profile());
       declaration_key key(requirement.scope(), subject);
       const auto inserted =
           declarations.emplace(std::move(key), origin.declaration());
-      if (!inserted.second &&
-          inserted.first->second != origin.declaration()) {
+      if (!inserted.second && inserted.first->second != origin.declaration()) {
         internal::fail(
             codec_error_code::invalid_record,
             "sealed requirement has contradictory declaration provenance");
@@ -60,16 +66,14 @@ declarations_from_recipe(const sealed_recipe& recipe)
   std::vector<requirement_declaration> result;
   result.reserve(declarations.size());
   for (const auto& entry : declarations) {
-    result.emplace_back(
-        entry.first.first, entry.first.second, entry.second);
+    result.emplace_back(entry.first.first, entry.first.second, entry.second);
   }
   return result;
 }
 
 } // namespace
 
-source_snapshot_encoding encode_source_snapshot(
-    const source_snapshot& snapshot)
+source_snapshot_encoding encode_source_snapshot(const source_snapshot& snapshot)
 {
   const auto catalog =
       catalog_from_profiles(snapshot.recipe().profile_closure());
@@ -116,12 +120,11 @@ source_snapshot_encoding encode_source_snapshot(
   return output.finish();
 }
 
-source_snapshot decode_source_snapshot(
-    const source_snapshot_encoding& encoding)
+source_snapshot decode_source_snapshot(const source_snapshot_encoding& encoding)
 {
   try {
-    internal::record_reader input(
-        encoding, maximum_source_snapshot_encoding_size);
+    internal::record_reader input(encoding,
+                                  maximum_source_snapshot_encoding_size);
     input.expect(source_snapshot_magic, "source snapshot");
     if (input.u16() != source_snapshot_encoding_version) {
       internal::fail(codec_error_code::unsupported_version,
@@ -151,9 +154,8 @@ source_snapshot decode_source_snapshot(
     if (check_present == 1U) {
       check_program = internal::decode_program(input);
     } else if (check_present != 0U) {
-      internal::fail(
-          codec_error_code::invalid_record,
-          "invalid source snapshot check-program presence flag");
+      internal::fail(codec_error_code::invalid_record,
+                     "invalid source snapshot check-program presence flag");
     }
 
     std::vector<requirement_declaration> requirements;
@@ -177,30 +179,27 @@ source_snapshot decode_source_snapshot(
     auto provenance = internal::decode_provenance(input);
     input.finish();
 
-    package_release release(
-        package_reference(std::move(package)),
-        std::move(version),
-        release_number);
-    recipe_declaration declaration = check_program
-        ? recipe_declaration(
-              std::move(release),
-              std::move(metadata),
-              std::move(sources),
-              std::move(build_program),
-              std::move(requirements),
-              std::move(lifecycle),
-              std::move(architectures),
-              std::move(provenance),
-              std::move(check_program))
-        : recipe_declaration(
-              std::move(release),
-              std::move(metadata),
-              std::move(sources),
-              std::move(build_program),
-              std::move(requirements),
-              std::move(lifecycle),
-              std::move(architectures),
-              std::move(provenance));
+    package_release release(package_reference(std::move(package)),
+                            std::move(version),
+                            release_number);
+    recipe_declaration declaration =
+        check_program ? recipe_declaration(std::move(release),
+                                           std::move(metadata),
+                                           std::move(sources),
+                                           std::move(build_program),
+                                           std::move(requirements),
+                                           std::move(lifecycle),
+                                           std::move(architectures),
+                                           std::move(provenance),
+                                           std::move(check_program))
+                      : recipe_declaration(std::move(release),
+                                           std::move(metadata),
+                                           std::move(sources),
+                                           std::move(build_program),
+                                           std::move(requirements),
+                                           std::move(lifecycle),
+                                           std::move(architectures),
+                                           std::move(provenance));
 
     auto result = seal_source(
         source_origin(std::move(origin)), std::move(declaration), catalog);
@@ -218,9 +217,9 @@ source_snapshot decode_source_snapshot(
   } catch (const error& failure) {
     internal::translate_model_failure(failure);
   } catch (const std::exception& failure) {
-    internal::fail(
-        codec_error_code::invalid_record,
-        std::string("invalid source snapshot record: ") + failure.what());
+    internal::fail(codec_error_code::invalid_record,
+                   std::string("invalid source snapshot record: ") +
+                       failure.what());
   }
 }
 

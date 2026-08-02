@@ -88,13 +88,11 @@ void record_writer::check_size() const
   }
 }
 
-record_reader::record_reader(
-    const std::vector<std::uint8_t>& bytes,
-    std::size_t maximum)
-    : bytes_(bytes),
-      limit_(bytes.size() >= record_checksum_size
-                 ? bytes.size() - record_checksum_size
-                 : 0U)
+record_reader::record_reader(const std::vector<std::uint8_t>& bytes,
+                             std::size_t maximum)
+    : bytes_(bytes), limit_(bytes.size() >= record_checksum_size
+                                ? bytes.size() - record_checksum_size
+                                : 0U)
 {
   if (bytes.size() > maximum) {
     fail(codec_error_code::size_limit,
@@ -145,8 +143,8 @@ std::string record_reader::text()
 {
   const auto size = u32();
   require(size);
-  std::string result(
-      reinterpret_cast<const char*>(bytes_.data() + offset_), size);
+  std::string result(reinterpret_cast<const char*>(bytes_.data() + offset_),
+                     size);
   offset_ += size;
   return result;
 }

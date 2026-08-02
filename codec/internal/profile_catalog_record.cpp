@@ -1,9 +1,9 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
+#include <libpkgsource-codec/codec.h>
+
 #include "record_io.h"
 #include "value_codec.h"
-
-#include <libpkgsource-codec/codec.h>
 
 #include <array>
 #include <exception>
@@ -15,7 +15,14 @@ namespace pkgsource::codec {
 namespace {
 
 constexpr std::array<std::uint8_t, 8> profile_catalog_magic = {
-    'Z', 'L', 'P', 'S', 'P', 'C', 'A', 'T',
+    'Z',
+    'L',
+    'P',
+    'S',
+    'P',
+    'C',
+    'A',
+    'T',
 };
 
 struct decoded_profile final {
@@ -23,9 +30,8 @@ struct decoded_profile final {
   std::string identity;
 };
 
-void encode_profile_declaration(
-    internal::record_writer& output,
-    const sealed_profile& profile)
+void encode_profile_declaration(internal::record_writer& output,
+                                const sealed_profile& profile)
 {
   output.text(profile.name().name());
   output.text(profile.identity().hex());
@@ -37,8 +43,8 @@ void encode_profile_declaration(
   }
 }
 
-[[nodiscard]] decoded_profile decode_profile_declaration(
-    internal::record_reader& input)
+[[nodiscard]] decoded_profile
+decode_profile_declaration(internal::record_reader& input)
 {
   auto name = input.text();
   auto identity = input.text();
@@ -49,14 +55,12 @@ void encode_profile_declaration(
   for (std::uint32_t index = 0; index != member_count; ++index) {
     auto subject = internal::decode_subject(input);
     auto member_provenance = internal::decode_provenance(input);
-    members.emplace_back(
-        std::move(subject), std::move(member_provenance));
+    members.emplace_back(std::move(subject), std::move(member_provenance));
   }
   return decoded_profile{
-      profile_declaration(
-          profile_reference(std::move(name)),
-          std::move(provenance),
-          std::move(members)),
+      profile_declaration(profile_reference(std::move(name)),
+                          std::move(provenance),
+                          std::move(members)),
       std::move(identity),
   };
 }
@@ -75,12 +79,11 @@ profile_catalog_encoding encode_profile_catalog(const profile_catalog& catalog)
   return output.finish();
 }
 
-profile_catalog decode_profile_catalog(
-    const profile_catalog_encoding& encoding)
+profile_catalog decode_profile_catalog(const profile_catalog_encoding& encoding)
 {
   try {
-    internal::record_reader input(
-        encoding, maximum_profile_catalog_encoding_size);
+    internal::record_reader input(encoding,
+                                  maximum_profile_catalog_encoding_size);
     input.expect(profile_catalog_magic, "profile catalog");
     if (input.u16() != profile_catalog_encoding_version) {
       internal::fail(codec_error_code::unsupported_version,
@@ -123,9 +126,9 @@ profile_catalog decode_profile_catalog(
   } catch (const error& failure) {
     internal::translate_model_failure(failure);
   } catch (const std::exception& failure) {
-    internal::fail(
-        codec_error_code::invalid_record,
-        std::string("invalid profile catalog record: ") + failure.what());
+    internal::fail(codec_error_code::invalid_record,
+                   std::string("invalid profile catalog record: ") +
+                       failure.what());
   }
 }
 

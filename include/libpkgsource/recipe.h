@@ -6,10 +6,10 @@
  */
 #pragma once
 
+#include <libpkgsource/profile.h>
+
 #include <optional>
 #include <vector>
-
-#include <libpkgsource/profile.h>
 
 namespace pkgsource {
 
@@ -38,10 +38,13 @@ public:
   [[nodiscard]] const std::vector<source_input>& sources() const noexcept;
   [[nodiscard]] const program& build_program() const noexcept;
   [[nodiscard]] const std::optional<program>& check_program() const noexcept;
-  [[nodiscard]] const std::vector<requirement_declaration>& requirements() const noexcept;
-  [[nodiscard]] const std::vector<lifecycle_program>& lifecycle_programs() const noexcept;
+  [[nodiscard]] const std::vector<requirement_declaration>&
+  requirements() const noexcept;
+  [[nodiscard]] const std::vector<lifecycle_program>&
+  lifecycle_programs() const noexcept;
   [[nodiscard]] const architecture_requirements& architectures() const noexcept;
   [[nodiscard]] const declaration_provenance& provenance() const noexcept;
+
 private:
   package_release release_;
   package_metadata metadata_;
@@ -83,15 +86,19 @@ public:
   [[nodiscard]] std::vector<resolved_requirement> build_requirements() const;
   [[nodiscard]] std::vector<resolved_requirement> run_requirements() const;
   [[nodiscard]] std::vector<resolved_requirement> check_requirements() const;
-  [[nodiscard]] std::vector<resolved_requirement> lifecycle_requirements(
-      lifecycle_action action) const;
-  [[nodiscard]] const std::vector<selected_profile>& selected_build_profiles() const noexcept;
-  [[nodiscard]] const std::vector<sealed_profile>& profile_closure() const noexcept;
-  [[nodiscard]] const std::vector<lifecycle_program>& lifecycle_programs() const noexcept;
-  [[nodiscard]] const lifecycle_program* lifecycle(
-      lifecycle_action action) const noexcept;
+  [[nodiscard]] std::vector<resolved_requirement>
+  lifecycle_requirements(lifecycle_action action) const;
+  [[nodiscard]] const std::vector<selected_profile>&
+  selected_build_profiles() const noexcept;
+  [[nodiscard]] const std::vector<sealed_profile>&
+  profile_closure() const noexcept;
+  [[nodiscard]] const std::vector<lifecycle_program>&
+  lifecycle_programs() const noexcept;
+  [[nodiscard]] const lifecycle_program*
+  lifecycle(lifecycle_action action) const noexcept;
   [[nodiscard]] const architecture_requirements& architectures() const noexcept;
   [[nodiscard]] const declaration_provenance& provenance() const noexcept;
+
 private:
   package_release release_;
   package_metadata metadata_;

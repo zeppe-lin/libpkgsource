@@ -9,8 +9,7 @@
 
 namespace pkgsource::codec::internal {
 
-[[nodiscard]] pkgsource::internal::sha256_digest record_checksum(
-    const std::uint8_t* data,
-    std::size_t size);
+[[nodiscard]] pkgsource::internal::sha256_digest
+record_checksum(const std::uint8_t* data, std::size_t size);
 
 } // namespace pkgsource::codec::internal

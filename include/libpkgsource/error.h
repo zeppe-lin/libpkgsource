@@ -33,6 +33,7 @@ class error : public std::runtime_error {
 public:
   error(error_code code, std::string message);
   [[nodiscard]] error_code code() const noexcept;
+
 private:
   error_code code_;
 };

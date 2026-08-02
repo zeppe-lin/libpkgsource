@@ -2,9 +2,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 #include "identity_hex.h"
 
-#include "../../internal/sha256.h"
-
 #include <libpkgsource/error.h>
+
+#include "../../internal/sha256.h"
 
 namespace pkgsource::detail {
 

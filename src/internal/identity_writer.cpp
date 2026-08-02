@@ -9,8 +9,8 @@
 namespace pkgsource::detail {
 namespace {
 
-[[noreturn]] void translate_provider_failure(
-    const internal::sha256_error& failure)
+[[noreturn]] void
+translate_provider_failure(const internal::sha256_error& failure)
 {
   throw error(error_code::identity_failed, failure.what());
 }

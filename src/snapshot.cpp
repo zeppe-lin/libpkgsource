@@ -1,8 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Alexandr Savca
 // SPDX-License-Identifier: GPL-3.0-or-later
-#include <libpkgsource/snapshot.h>
-
 #include <libpkgsource/error.h>
+#include <libpkgsource/snapshot.h>
 
 #include "internal/identity_writer.h"
 
@@ -15,11 +14,14 @@ namespace {
 
 bool line_safe(std::string_view value)
 {
-  if (value.empty())
+  if (value.empty()) {
     return false;
-  for (unsigned char c : value)
-    if (c == 0 || c == '\n' || c == '\r' || c < 0x20 || c == 0x7f)
+  }
+  for (unsigned char c : value) {
+    if (c == 0 || c == '\n' || c == '\r' || c < 0x20 || c == 0x7f) {
       return false;
+    }
+  }
   return true;
 }
 
@@ -27,16 +29,18 @@ void write_optional(detail::identity_writer& writer,
                     const std::optional<std::string>& value)
 {
   writer.number(value.has_value() ? 1 : 0);
-  if (value)
+  if (value) {
     writer.text(*value);
+  }
 }
 
 void write_scope(detail::identity_writer& writer,
                  const requirement_scope& scope)
 {
   writer.text(to_string(scope.kind()));
-  if (scope.action())
+  if (scope.action()) {
     writer.text(to_string(*scope.action()));
+  }
 }
 
 source_snapshot_identity make_snapshot_identity(const sealed_recipe& recipe)
@@ -48,8 +52,9 @@ source_snapshot_identity make_snapshot_identity(const sealed_recipe& recipe)
   write_optional(writer, recipe.metadata().description());
   write_optional(writer, recipe.metadata().homepage());
   writer.number(recipe.metadata().licenses().size());
-  for (const std::string& license : recipe.metadata().licenses())
+  for (const std::string& license : recipe.metadata().licenses()) {
     writer.text(license);
+  }
 
   writer.number(recipe.sources().size());
   for (const source_input& source : recipe.sources()) {
@@ -99,12 +104,14 @@ source_snapshot_identity make_snapshot_identity(const sealed_recipe& recipe)
 
   writer.number(recipe.architectures().build().size());
   for (const architecture_reference& architecture :
-       recipe.architectures().build())
+       recipe.architectures().build()) {
     writer.text(architecture.name());
+  }
   writer.number(recipe.architectures().target().size());
   for (const architecture_reference& architecture :
-       recipe.architectures().target())
+       recipe.architectures().target()) {
     writer.text(architecture.name());
+  }
 
   return source_snapshot_identity::from_sha256(writer.finish());
 }
@@ -114,19 +121,30 @@ source_snapshot_identity make_snapshot_identity(const sealed_recipe& recipe)
 source_origin::source_origin(std::string document)
     : document_(std::move(document))
 {
-  if (!line_safe(document_))
+  if (!line_safe(document_)) {
     throw error(error_code::invalid_request, "invalid source document origin");
+  }
 }
-const std::string& source_origin::document() const noexcept { return document_; }
+const std::string& source_origin::document() const noexcept
+{
+  return document_;
+}
 
-source_snapshot::source_snapshot(source_origin origin, sealed_recipe recipe,
+source_snapshot::source_snapshot(source_origin origin,
+                                 sealed_recipe recipe,
                                  source_snapshot_identity identity)
     : origin_(std::move(origin)), recipe_(std::move(recipe)),
       identity_(std::move(identity))
 {
 }
-const source_origin& source_snapshot::origin() const noexcept { return origin_; }
-const sealed_recipe& source_snapshot::recipe() const noexcept { return recipe_; }
+const source_origin& source_snapshot::origin() const noexcept
+{
+  return origin_;
+}
+const sealed_recipe& source_snapshot::recipe() const noexcept
+{
+  return recipe_;
+}
 const source_snapshot_identity& source_snapshot::identity() const noexcept
 {
   return identity_;

@@ -6,13 +6,13 @@
  */
 #pragma once
 
+#include <libpkgsource/snapshot.h>
+
 #include <cstddef>
 #include <cstdint>
 #include <stdexcept>
 #include <string>
 #include <vector>
-
-#include <libpkgsource/snapshot.h>
 
 namespace pkgsource::codec {
 
@@ -40,6 +40,7 @@ public:
   codec_error(codec_error_code code, std::string message);
   ~codec_error() override;
   [[nodiscard]] codec_error_code code() const noexcept;
+
 private:
   codec_error_code code_;
 };
@@ -48,19 +49,21 @@ using profile_catalog_encoding = std::vector<std::uint8_t>;
 using source_snapshot_encoding = std::vector<std::uint8_t>;
 
 /*! \brief Encode one complete sealed profile universe canonically. */
-[[nodiscard]] profile_catalog_encoding encode_profile_catalog(
-    const profile_catalog& catalog);
+[[nodiscard]] profile_catalog_encoding
+encode_profile_catalog(const profile_catalog& catalog);
 
 /*! \brief Decode only through profile declaration sealing. */
-[[nodiscard]] profile_catalog decode_profile_catalog(
-    const profile_catalog_encoding& encoding);
+[[nodiscard]] profile_catalog
+decode_profile_catalog(const profile_catalog_encoding& encoding);
 
-/*! \brief Encode one sealed source snapshot and its exact retained profile closure. */
-[[nodiscard]] source_snapshot_encoding encode_source_snapshot(
-    const source_snapshot& snapshot);
+/*! \brief Encode one sealed source snapshot and its exact retained profile
+ * closure. */
+[[nodiscard]] source_snapshot_encoding
+encode_source_snapshot(const source_snapshot& snapshot);
 
-/*! \brief Decode only through profile and source sealing; syntax is never recorded. */
-[[nodiscard]] source_snapshot decode_source_snapshot(
-    const source_snapshot_encoding& encoding);
+/*! \brief Decode only through profile and source sealing; syntax is never
+ * recorded. */
+[[nodiscard]] source_snapshot
+decode_source_snapshot(const source_snapshot_encoding& encoding);
 
 } // namespace pkgsource::codec

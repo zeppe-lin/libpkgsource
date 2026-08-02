@@ -9,9 +9,8 @@
 
 namespace pkgsource::codec::internal {
 
-void encode_provenance(
-    record_writer& output,
-    const declaration_provenance& value)
+void encode_provenance(record_writer& output,
+                       const declaration_provenance& value)
 {
   output.text(value.document());
   output.text(value.path());
@@ -184,11 +183,10 @@ package_metadata decode_metadata(record_reader& input)
     licenses.push_back(input.text());
   }
 
-  return package_metadata(
-      std::move(summary),
-      std::move(description),
-      std::move(homepage),
-      std::move(licenses));
+  return package_metadata(std::move(summary),
+                          std::move(description),
+                          std::move(homepage),
+                          std::move(licenses));
 }
 
 void encode_source_input(record_writer& output, const source_input& value)
@@ -218,13 +216,11 @@ source_input decode_source_input(record_reader& input)
     return source_input::local(
         std::move(location), std::move(local_name), std::move(content));
   }
-  fail(codec_error_code::invalid_record,
-       "invalid package-source input kind");
+  fail(codec_error_code::invalid_record, "invalid package-source input kind");
 }
 
-void encode_lifecycle_program(
-    record_writer& output,
-    const lifecycle_program& value)
+void encode_lifecycle_program(record_writer& output,
+                              const lifecycle_program& value)
 {
   switch (value.action()) {
   case lifecycle_action::pre_install:
@@ -266,9 +262,8 @@ lifecycle_program decode_lifecycle_program(record_reader& input)
   return lifecycle_program(action, decode_program(input));
 }
 
-void encode_architectures(
-    record_writer& output,
-    const architecture_requirements& value)
+void encode_architectures(record_writer& output,
+                          const architecture_requirements& value)
 {
   output.u32(record_count(value.build().size()));
   for (const auto& architecture : value.build()) {
