@@ -6,7 +6,11 @@ libpkgsource_codec = library(
   'pkgsource-codec',
   [
     'codec.cpp',
+    'internal/profile_catalog_record.cpp',
     'internal/record_checksum.cpp',
+    'internal/record_io.cpp',
+    'internal/source_snapshot_record.cpp',
+    'internal/value_codec.cpp',
   ],
   include_directories: codec_inc,
   dependencies: [libpkgsource_dep, libpkgsource_sha256_provider_dep],

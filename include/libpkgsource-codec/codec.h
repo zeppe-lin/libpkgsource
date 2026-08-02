@@ -38,6 +38,7 @@ enum class codec_error_code : std::uint8_t {
 class codec_error final : public std::invalid_argument {
 public:
   codec_error(codec_error_code code, std::string message);
+  ~codec_error() override;
   [[nodiscard]] codec_error_code code() const noexcept;
 private:
   codec_error_code code_;
