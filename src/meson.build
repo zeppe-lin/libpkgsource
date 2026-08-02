@@ -41,6 +41,7 @@ libpkgsource_dep = declare_dependency(
   link_with: libpkgsource,
   include_directories: public_inc,
   dependencies: libpkgsource_sha256_provider_dep,
+  version: meson.project_version(),
 )
 meson.override_dependency('libpkgsource', libpkgsource_dep)
 

@@ -40,7 +40,7 @@ if get_option('tests').enabled()
     executable_target = executable(
       test_name,
       source_file,
-      dependencies: [libpkgsource_codec_dep, libcrypto_dep],
+      dependencies: libpkgsource_codec_dep,
       install: false,
     )
     test(test_name, executable_target)
@@ -52,6 +52,7 @@ if get_option('tests').enabled()
       'internal/sha256_test.cpp',
       '../internal/sha256_openssl.cpp',
     ],
+    include_directories: repository_internal_inc,
     dependencies: libcrypto_dep,
     install: false,
   )
@@ -90,18 +91,48 @@ if get_option('tests').enabled()
     test(test_name, executable_target)
   endforeach
 
-  source_contracts = {
-    'codec-contract': 'contracts/check_codec_contract.sh',
-    'core-boundary': 'contracts/check_core_boundary.sh',
-    'doxygen-contract': 'contracts/check_doxygen_contract.sh',
-    'documentation-contract': 'contracts/check_documentation_contract.sh',
-    'provider-boundary': 'contracts/check_provider_boundary.sh',
-    'release-metadata': 'contracts/check_release_metadata.sh',
-    'test-structure': 'contracts/check_test_structure.sh',
-  }
-  foreach test_name, program_path : source_contracts
-    contract = find_program(program_path)
-    test(test_name, contract, args: [meson.project_source_root()])
+  sh = find_program('sh')
+  if library_kind == 'shared'
+    nm = find_program('nm')
+    foreach abi_spec : [
+      ['core-abi-surface', libpkgsource, meson.project_source_root() / 'abi/libpkgsource.exports'],
+      ['codec-abi-surface', libpkgsource_codec, meson.project_source_root() / 'abi/libpkgsource-codec.exports'],
+    ]
+      test(
+        abi_spec[0],
+        sh,
+        args: [
+          meson.current_source_dir() / 'contracts/check_abi_surface.sh',
+          nm.full_path(),
+          abi_spec[1].full_path(),
+          abi_spec[2],
+        ],
+      )
+    endforeach
+  endif
+
+  foreach contract : [
+    'codec-contract',
+    'core-boundary',
+    'documentation-contract',
+    'documentation-install-contract',
+    'doxygen-contract',
+    'html-docs-contract',
+    'provider-boundary',
+    'release-metadata',
+    'style-contract',
+    'test-structure',
+    'manpage-source',
+    'manpage-normalizer',
+  ]
+    test(
+      contract,
+      sh,
+      args: [
+        meson.current_source_dir() / ('contracts/check_' + contract.replace('-', '_') + '.sh'),
+        meson.project_source_root(),
+      ],
+    )
   endforeach
 
   pkgconfig_metadata = find_program('contracts/pkgconfig_metadata_test.sh')
@@ -110,4 +141,46 @@ if get_option('tests').enabled()
     pkgconfig_metadata,
     args: [meson.project_build_root(), meson.project_version()],
   )
+
+  pandoc = find_program('pandoc', required: false)
+  if pandoc.found()
+    test(
+      'manpage-generated',
+      sh,
+      args: [
+        meson.current_source_dir() / 'contracts/check_manpage_generated.sh',
+        meson.project_source_root(),
+        pandoc.full_path(),
+      ],
+    )
+  endif
+
+  clang_format = find_program('clang-format-17', required: false)
+  if clang_format.found()
+    test(
+      'format',
+      sh,
+      args: [
+        meson.current_source_dir() / 'contracts/check_format.sh',
+        clang_format.full_path(),
+        meson.project_source_root(),
+      ],
+    )
+  endif
+
+  if html_docs_enabled
+    html_docs_checker = find_program(
+      meson.project_source_root() / 'tools/check-html-docs.py',
+    )
+    test(
+      'html-docs',
+      html_docs_checker,
+      args: [
+        html_docs_output_dir,
+        '--forbid-path', meson.project_source_root(),
+        '--forbid-path', meson.project_build_root(),
+      ],
+      depends: [html_docs_target],
+    )
+  endif
 endif
