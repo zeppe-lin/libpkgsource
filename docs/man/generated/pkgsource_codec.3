@@ -1,0 +1,46 @@
+.\" Generated from docs/man/pkgsource_codec.3.md; do not edit.
+.\"
+.TH "PKGSOURCE_CODEC" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.SH NAME
+pkgsource_codec \- encode canonical durable source\-authority records
+.SH SYNOPSIS
+.IP
+.EX
+#include <libpkgsource\-codec/libpkgsource\-codec.h>
+
+pkgsource::codec::profile_catalog_encoding
+pkgsource::codec::encode_profile_catalog(
+    const pkgsource::profile_catalog& catalog);
+
+pkgsource::profile_catalog pkgsource::codec::decode_profile_catalog(
+    const pkgsource::codec::profile_catalog_encoding& encoding);
+
+pkgsource::codec::source_snapshot_encoding
+pkgsource::codec::encode_source_snapshot(
+    const pkgsource::source_snapshot& snapshot);
+
+pkgsource::source_snapshot pkgsource::codec::decode_source_snapshot(
+    const pkgsource::codec::source_snapshot_encoding& encoding);
+.EE
+.SH DESCRIPTION
+\f[CR]libpkgsource\-codec\f[R] is the durable\-record sibling of \f[CR]libpkgsource\f[R].
+It owns canonical schema\-one encodings for complete sealed profile catalogs and source snapshots.
+.PP
+Records use fixed eight\-byte magics, big\-endian integers, bounded length\-prefixed fields, explicit tags, and a final SHA\-256 checksum.
+Profile records are limited to 64 MiB, source records to 128 MiB, and each encoded collection to 1,000,000 items.
+.PP
+\f[CR]decode_profile_catalog()\f[R] reconstructs direct profile declarations and invokes \f[CR]pkgsource::profile_catalog::seal()\f[R].
+Stored profile identities must match recomputed identities.
+.PP
+\f[CR]decode_source_snapshot()\f[R] reconstructs the exact retained profile closure and one complete recipe declaration, then invokes \f[CR]pkgsource::seal_source()\f[R].
+The stored source identity must match the recomputed identity.
+.PP
+Both decoders require canonical byte\-for\-byte re\-encoding.
+A checksum\-valid alternate representation, trailing field, or reordered record is rejected.
+.SH ERRORS
+\f[CR]pkgsource::codec::codec_error\f[R] reports stable \f[CR]pkgsource::codec::codec_error_code\f[R] values for size refusal, truncation, invalid magic, unsupported version, checksum mismatch, invalid record material, identity mismatch, and noncanonical input.
+.SH ABI AND PROTOCOL
+The codec ABI is \f[CR]libpkgsource\-codec.so.1\f[R].
+The normative byte protocol is \f[CR]docs/protocols/source\-records\-v1.md\f[R].
+.SH SEE ALSO
+\f[CR]libpkgsource(3)\f[R], \f[CR]pkgsource_profile(3)\f[R], \f[CR]pkgsource_recipe(3)\f[R], \f[CR]pkgsource_snapshot(3)\f[R]

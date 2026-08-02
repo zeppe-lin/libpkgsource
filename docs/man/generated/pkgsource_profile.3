@@ -1,0 +1,27 @@
+.\" Generated from docs/man/pkgsource_profile.3.md; do not edit.
+.\"
+.TH "PKGSOURCE_PROFILE" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.SH NAME
+pkgsource_profile \- seal authoritative requirement profiles
+.SH SYNOPSIS
+.IP
+.EX
+#include <libpkgsource/profile.h>
+.EE
+.SH DESCRIPTION
+\f[CR]pkgsource::profile_declaration\f[R] is parser\-neutral input.
+It contains one canonical profile name, declaration provenance, and direct exact package or profile members.
+.PP
+\f[CR]pkgsource::profile_catalog::seal()\f[R] sorts definitions and members deterministically and rejects duplicate definitions, duplicate direct members, unknown nested references, and cycles.
+The returned catalog contains immutable \f[CR]pkgsource::sealed_profile\f[R] values.
+.PP
+A sealed profile retains its direct members, exact transitive expansion paths, all declaration provenance on those paths, and a semantic identity.
+Nested profile identity contributes to parent identity.
+.PP
+\f[CR]pkgsource::sealed_requirement_set::seal()\f[R] expands recipe requirement declarations into exact package requirements.
+It retains every direct or profile expansion origin, selected build\-profile roots, and the complete transitive profile closure used by the recipe.
+.PP
+Profiles are authority values.
+They are not parser aliases, and recipes cannot redefine them.
+.SH SEE ALSO
+\f[CR]libpkgsource(3)\f[R], \f[CR]pkgsource_model(3)\f[R], \f[CR]pkgsource_recipe(3)\f[R]

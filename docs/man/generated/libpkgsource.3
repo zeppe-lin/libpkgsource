@@ -1,0 +1,38 @@
+.\" Generated from docs/man/libpkgsource.3.md; do not edit.
+.\"
+.TH "LIBPKGSOURCE" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.SH NAME
+libpkgsource \- seal parser\-neutral package\-source authority
+.SH SYNOPSIS
+.IP
+.EX
+#include <libpkgsource/libpkgsource.h>
+.EE
+.SH DESCRIPTION
+\f[CR]libpkgsource\f[R] validates parser\-neutral declarations, seals requirement profiles, expands exact package requirements, and returns immutable \f[CR]pkgsource::source_snapshot\f[R] values.
+.PP
+Input syntax is not authority.
+A profile declaration becomes authority only through \f[CR]pkgsource::profile_catalog::seal()\f[R].
+A recipe declaration becomes authority only through \f[CR]pkgsource::seal_source()\f[R] with one explicit sealed profile catalog.
+.PP
+The normalized source authority distinguishes package release, metadata, source inputs, exact build and optional check programs, build, run, check, and action\-bound lifecycle requirements, lifecycle programs, independent build and target architecture constraints, selected build profiles, and the complete retained profile closure.
+.PP
+Check requirements require a check program.
+Lifecycle requirements require a program for the same action.
+The library retains exact program bytes but never executes them.
+.SH IDENTITIES
+Package releases and profiles use domain\-separated SHA\-256 identities.
+The complete source model uses the \f[CR]libpkgsource/source\-snapshot/v1\f[R] domain.
+Diagnostic source origin and declaration provenance do not contribute to semantic identity.
+.SH BOUNDARY
+The core does not parse YAML, open paths, discover collections, choose precedence, resolve packages, fetch objects, execute programs, create images, install packages, publish state, or project planner facts.
+.PP
+The separate \f[CR]libpkgsource\-codec\f[R] library owns canonical durable records.
+The separate \f[CR]libpkgsource\-yaml\f[R] and \f[CR]libpkgsource\-plan\f[R] repositories own syntax parsing and planner projection.
+.SH ERRORS
+Contract failures throw \f[CR]pkgsource::error\f[R].
+Consumers should branch on \f[CR]pkgsource::error_code\f[R], not diagnostic text.
+.SH ABI
+The core ABI is \f[CR]libpkgsource.so.3\f[R].
+.SH SEE ALSO
+\f[CR]pkgsource_model(3)\f[R], \f[CR]pkgsource_profile(3)\f[R], \f[CR]pkgsource_recipe(3)\f[R], \f[CR]pkgsource_snapshot(3)\f[R], \f[CR]pkgsource_codec(3)\f[R]

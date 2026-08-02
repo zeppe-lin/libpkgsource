@@ -1,0 +1,28 @@
+.\" Generated from docs/man/pkgsource_snapshot.3.md; do not edit.
+.\"
+.TH "PKGSOURCE_SNAPSHOT" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.SH NAME
+pkgsource_snapshot \- seal immutable package\-source authority
+.SH SYNOPSIS
+.IP
+.EX
+#include <libpkgsource/snapshot.h>
+
+pkgsource::source_snapshot pkgsource::seal_source(
+    pkgsource::source_origin origin,
+    pkgsource::recipe_declaration declaration,
+    const pkgsource::profile_catalog& profiles);
+.EE
+.SH DESCRIPTION
+\f[CR]pkgsource::seal_source()\f[R] passes the parser\-neutral declaration through \f[CR]pkgsource::seal_recipe()\f[R] and returns one immutable \f[CR]pkgsource::source_snapshot\f[R].
+.PP
+The snapshot retains diagnostic \f[CR]pkgsource::source_origin\f[R], the complete \f[CR]pkgsource::sealed_recipe\f[R], and a distinct \f[CR]pkgsource::source_snapshot_identity\f[R].
+Origin and declaration provenance do not contribute to semantic identity.
+.PP
+The source identity is SHA\-256 over the complete normalized source model under the domain \f[CR]libpkgsource/source\-snapshot/v1\f[R].
+It includes package release and metadata, source inputs, build and optional check programs, resolved requirements and profile expansion paths, retained profile identities, lifecycle programs, and build and target architecture constraints.
+.PP
+There is no source\-syntax value and no recipe\-format generation in core authority.
+Equivalent declarations produced by different frontends or at different document locations seal to the same source identity.
+.SH SEE ALSO
+\f[CR]libpkgsource(3)\f[R], \f[CR]pkgsource_recipe(3)\f[R], \f[CR]pkgsource_codec(3)\f[R]

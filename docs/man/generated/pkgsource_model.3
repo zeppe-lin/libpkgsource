@@ -1,0 +1,36 @@
+.\" Generated from docs/man/pkgsource_model.3.md; do not edit.
+.\"
+.TH "PKGSOURCE_MODEL" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.SH NAME
+pkgsource_model \- describe parser\-neutral package\-source value domains
+.SH SYNOPSIS
+.IP
+.EX
+#include <libpkgsource/model.h>
+.EE
+.SH DESCRIPTION
+\f[CR]pkgsource::package_reference\f[R], \f[CR]pkgsource::profile_reference\f[R], and \f[CR]pkgsource::architecture_reference\f[R] are strict canonical ASCII identities.
+Non\-canonical spelling is rejected rather than treated as an alias.
+.PP
+\f[CR]pkgsource::requirement_scope\f[R] represents build, run, check, or one exact lifecycle action.
+\f[CR]pkgsource::requirement_subject\f[R] represents an exact package or profile reference.
+A package needed for build and runtime is represented by two declarations; there is no combined build\-and\-run scope.
+.PP
+\f[CR]pkgsource::package_release\f[R] stores exact package coordinates and a semantic identity.
+\f[CR]pkgsource::package_metadata\f[R] stores summary, optional description and homepage, and a normalized non\-empty license set.
+.PP
+\f[CR]pkgsource::source_input\f[R] represents an exact remote URL or safe relative local path, an explicit local name, and a SHA\-256 content requirement.
+Local names are never derived from locators.
+MD5 is not accepted.
+.PP
+\f[CR]pkgsource::program\f[R] retains exact non\-empty POSIX\-shell material and its raw SHA\-256 content digest.
+\f[CR]pkgsource::lifecycle_program\f[R] binds one program to one exact lifecycle action.
+The library never executes either value.
+.PP
+\f[CR]pkgsource::architecture_requirements\f[R] keeps independent normalized build and target architecture sets.
+An empty set means unrestricted.
+.PP
+\f[CR]pkgsource::declaration_provenance\f[R] retains document, semantic path, line, and column.
+Provenance is diagnostic and is excluded from semantic identities.
+.SH SEE ALSO
+\f[CR]libpkgsource(3)\f[R], \f[CR]pkgsource_profile(3)\f[R], \f[CR]pkgsource_recipe(3)\f[R]
