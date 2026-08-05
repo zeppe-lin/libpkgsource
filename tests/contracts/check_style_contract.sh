@@ -4,6 +4,7 @@
 set -eu
 
 root=$1
+build_root=$2
 
 fail()
 {
@@ -15,7 +16,7 @@ for file in .clang-format .editorconfig docs/code-style.md docs/manpage-markdown
   [ -s "$root/$file" ] || fail "$file is missing or empty"
 done
 
-markdown=$(find "$root" -path "$root/.git" -prune -o -type f -name '*.md' -print)
+markdown=$(find "$root" -path "$root/.git" -prune -o -path "$build_root" -prune -o -type f -name '*.md' -print)
 
 if grep -n -E 'SPDX-(FileCopyrightText|License-Identifier)' $markdown >/dev/null; then
   fail 'Markdown contains SPDX comments; use COPYING and COPYRIGHT'

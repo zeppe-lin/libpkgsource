@@ -131,7 +131,7 @@ if get_option('tests').enabled()
       args: [
         meson.current_source_dir() / ('contracts/check_' + contract.replace('-', '_') + '.sh'),
         meson.project_source_root(),
-      ],
+      ] + (contract == 'style-contract' ? [meson.project_build_root()] : []),
     )
   endforeach
 
