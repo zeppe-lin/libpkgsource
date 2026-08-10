@@ -1,4 +1,4 @@
-% LIBPKGSOURCE(3) libpkgsource 3.0.0 | libpkgsource
+% LIBPKGSOURCE(3) libpkgsource 3.0.1 | libpkgsource
 
 # NAME
 

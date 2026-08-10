@@ -35,6 +35,175 @@ struct computed_profile final {
   std::vector<profile_expansion_path> expansion;
 };
 
+struct reconstructed_profile final {
+  profile_reference name;
+  std::map<requirement_subject, declaration_provenance> members;
+};
+
+class sealed_profile_validator final {
+public:
+  sealed_profile_validator(
+      const profile_reference& name,
+      const std::vector<profile_member_declaration>& direct_members,
+      const std::vector<profile_expansion_path>& expansion)
+      : root_(name.name())
+  {
+    records_.emplace(root_, reconstructed_profile{name, {}});
+    reconstructed_profile& root = records_.at(root_);
+    for (const profile_member_declaration& member : direct_members) {
+      const auto inserted =
+          root.members.emplace(member.subject(), member.provenance());
+      if (!inserted.second) {
+        throw error(error_code::duplicate_declaration,
+                    "duplicate sealed profile member: " +
+                        member.subject().text());
+      }
+    }
+
+    for (const profile_expansion_path& path : expansion) {
+      std::string expected = root_;
+      const auto& steps = path.steps();
+      for (std::size_t index = 0; index < steps.size(); ++index) {
+        const profile_expansion_step& step = steps[index];
+        if (step.profile().name() != expected) {
+          throw error(error_code::invalid_profile,
+                      "sealed profile expansion is not contiguous");
+        }
+
+        auto found = records_.find(expected);
+        if (found == records_.end()) {
+          found = records_
+                      .emplace(expected,
+                               reconstructed_profile{step.profile(), {}})
+                      .first;
+        }
+        const auto inserted =
+            found->second.members.emplace(step.member(), step.provenance());
+        if (!inserted.second &&
+            inserted.first->second != step.provenance()) {
+          throw error(error_code::invalid_profile,
+                      "sealed profile expansion has contradictory provenance");
+        }
+
+        if (step.member().kind() == requirement_subject_kind::profile) {
+          if (index + 1 == steps.size()) {
+            throw error(error_code::invalid_profile,
+                        "sealed profile expansion terminates at a profile");
+          }
+          expected = step.member().profile().name();
+          continue;
+        }
+        if (index + 1 != steps.size() ||
+            step.member().package() != path.package()) {
+          throw error(error_code::invalid_profile,
+                      "sealed profile expansion terminates at the wrong package");
+        }
+      }
+    }
+
+    if (!matches_direct_members(records_.at(root_), direct_members)) {
+      throw error(error_code::invalid_profile,
+                  "sealed profile direct members are not canonical");
+    }
+  }
+
+  void verify(const profile_identity& identity,
+              const std::vector<profile_expansion_path>& expansion)
+  {
+    const computed_profile& computed = compute(root_);
+    if (computed.identity != identity) {
+      throw error(error_code::invalid_identity,
+                  "sealed profile identity does not match its members");
+    }
+    if (computed.expansion != expansion) {
+      throw error(error_code::invalid_profile,
+                  "sealed profile expansion is not canonical");
+    }
+  }
+
+private:
+  static bool matches_direct_members(
+      const reconstructed_profile& record,
+      const std::vector<profile_member_declaration>& members)
+  {
+    if (record.members.size() != members.size()) {
+      return false;
+    }
+    auto expected = record.members.begin();
+    for (const profile_member_declaration& member : members) {
+      if (expected->first != member.subject() ||
+          expected->second != member.provenance()) {
+        return false;
+      }
+      ++expected;
+    }
+    return true;
+  }
+
+  const computed_profile& compute(const std::string& name)
+  {
+    const auto existing = computed_.find(name);
+    if (existing != computed_.end()) {
+      return existing->second;
+    }
+    if (!active_.insert(name).second) {
+      throw error(error_code::profile_cycle,
+                  "sealed profile expansion contains a cycle");
+    }
+
+    const auto record = records_.find(name);
+    if (record == records_.end() || record->second.members.empty()) {
+      throw error(error_code::invalid_profile,
+                  "sealed profile expansion omits a referenced profile");
+    }
+
+    detail::identity_writer writer;
+    writer.text("libpkgsource/profile/v1");
+    writer.text(record->second.name.name());
+    writer.number(record->second.members.size());
+    std::vector<profile_expansion_path> expansion;
+
+    for (const auto& entry : record->second.members) {
+      writer.text(to_string(entry.first.kind()));
+      writer.text(entry.first.text());
+      const profile_expansion_step root_step(
+          record->second.name, entry.first, entry.second);
+      if (entry.first.kind() == requirement_subject_kind::package) {
+        expansion.emplace_back(
+            entry.first.package(),
+            std::vector<profile_expansion_step>{root_step});
+        continue;
+      }
+
+      const computed_profile& nested =
+          compute(entry.first.profile().name());
+      writer.text(nested.identity.hex());
+      for (const profile_expansion_path& nested_path : nested.expansion) {
+        std::vector<profile_expansion_step> steps;
+        steps.reserve(nested_path.steps().size() + 1);
+        steps.push_back(root_step);
+        steps.insert(steps.end(),
+                     nested_path.steps().begin(),
+                     nested_path.steps().end());
+        expansion.emplace_back(nested_path.package(), std::move(steps));
+      }
+    }
+
+    sort_unique(expansion, "sealed profile expansion path");
+    active_.erase(name);
+    auto inserted = computed_.emplace(
+        name,
+        computed_profile{profile_identity::from_sha256(writer.finish()),
+                         std::move(expansion)});
+    return inserted.first->second;
+  }
+
+  std::string root_;
+  std::map<std::string, reconstructed_profile> records_;
+  std::map<std::string, computed_profile> computed_;
+  std::set<std::string> active_;
+};
+
 class catalog_builder final {
 public:
   explicit catalog_builder(std::vector<profile_declaration> declarations)
@@ -321,6 +490,8 @@ sealed_profile::sealed_profile(
       direct_members_(std::move(direct_members)),
       expansion_(std::move(expansion))
 {
+  sealed_profile_validator validator(name_, direct_members_, expansion_);
+  validator.verify(identity_, expansion_);
 }
 const profile_reference& sealed_profile::name() const noexcept
 {

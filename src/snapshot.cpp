@@ -136,6 +136,10 @@ source_snapshot::source_snapshot(source_origin origin,
     : origin_(std::move(origin)), recipe_(std::move(recipe)),
       identity_(std::move(identity))
 {
+  if (make_snapshot_identity(recipe_) != identity_) {
+    throw error(error_code::invalid_identity,
+                "source snapshot identity does not match its recipe");
+  }
 }
 const source_origin& source_snapshot::origin() const noexcept
 {

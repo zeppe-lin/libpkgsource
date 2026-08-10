@@ -1,4 +1,4 @@
-% PKGSOURCE_MODEL(3) libpkgsource 3.0.0 | libpkgsource
+% PKGSOURCE_MODEL(3) libpkgsource 3.0.1 | libpkgsource
 
 # NAME
 
@@ -31,7 +31,9 @@ never derived from locators. MD5 is not accepted.
 
 `pkgsource::program` retains exact non-empty POSIX-shell material and its raw
 SHA-256 content digest. `pkgsource::lifecycle_program` binds one program to one
-exact lifecycle action. The library never executes either value.
+exact lifecycle action. Unsupported C++ enum values are rejected at these value
+boundaries rather than canonicalized as a supported protocol value. The library
+never executes either value.
 
 `pkgsource::architecture_requirements` keeps independent normalized build and
 target architecture sets. An empty set means unrestricted.

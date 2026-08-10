@@ -6,7 +6,9 @@ The semantic core accepts parser-neutral declarations, validates canonical
 value domains, seals requirement profiles, expands exact package requirements,
 normalizes complete recipe semantics, and returns immutable source snapshots.
 Input syntax is not authority. A declaration becomes authority only through the
-owner sealers.
+owner sealers. Public reconstruction constructors authenticate the canonical
+sealed authority supplied to them; they do not permit callers to mint arbitrary
+"sealed" identities or noncanonical recipe state.
 
 The repository also owns `libpkgsource-codec`, a separately linked sibling
 library for canonical durable records. The codec remains beside the semantic
@@ -115,7 +117,7 @@ meson compile -C build-docs html-docs
 Installation places the generated tree under:
 
 ```text
-${prefix}/share/htmldocs/libpkgsource/3.0.0/
+${prefix}/share/htmldocs/libpkgsource/3.0.1/
 ```
 
 The publishing site may copy that tree unchanged. It does not become another

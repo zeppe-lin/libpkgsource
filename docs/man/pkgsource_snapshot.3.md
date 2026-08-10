@@ -1,4 +1,4 @@
-% PKGSOURCE_SNAPSHOT(3) libpkgsource 3.0.0 | libpkgsource
+% PKGSOURCE_SNAPSHOT(3) libpkgsource 3.0.1 | libpkgsource
 
 # NAME
 
@@ -23,8 +23,10 @@ pkgsource::source_snapshot pkgsource::seal_source(
 
 The snapshot retains diagnostic `pkgsource::source_origin`, the complete
 `pkgsource::sealed_recipe`, and a distinct
-`pkgsource::source_snapshot_identity`. Origin and declaration provenance do not
-contribute to semantic identity.
+`pkgsource::source_snapshot_identity`. The public reconstruction constructor
+recomputes that identity from the supplied recipe and rejects a mismatched
+claim. Origin and declaration provenance do not contribute to semantic
+identity.
 
 The source identity is SHA-256 over the complete normalized source model under
 the domain `libpkgsource/source-snapshot/v1`. It includes package release and

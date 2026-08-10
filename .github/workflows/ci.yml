@@ -108,7 +108,7 @@ jobs:
           rm -rf "$stage"
           meson install -C build --destdir "$stage"
           tests/contracts/check_installed_docs.sh "$stage$PREFIX"
-          tests/contracts/check_installed_html_docs.sh "$stage$PREFIX" 3.0.0
+          tests/contracts/check_installed_html_docs.sh "$stage$PREFIX" 3.0.1
 
       - name: Install libraries and metadata
         run: meson install -C build
@@ -123,19 +123,19 @@ jobs:
           fi
 
           "$CXX" -std=c++17 -Wall -Wextra -Wpedantic -Werror \
-            tests/public/core_umbrella_header_test.cpp \
+            tests/installed/core_consumer.cpp \
             $(pkg-config "${flags[@]}" --cflags --libs libpkgsource) \
             -o core-consumer
 
           "$CXX" -std=c++17 -Wall -Wextra -Wpedantic -Werror \
-            tests/public/codec_umbrella_header_test.cpp \
+            tests/installed/codec_consumer.cpp \
             $(pkg-config "${flags[@]}" --cflags --libs libpkgsource-codec) \
             -o codec-consumer
 
           ./core-consumer
           ./codec-consumer
-          test "$(pkg-config --modversion libpkgsource)" = 3.0.0
-          test "$(pkg-config --modversion libpkgsource-codec)" = 3.0.0
+          test "$(pkg-config --modversion libpkgsource)" = 3.0.1
+          test "$(pkg-config --modversion libpkgsource-codec)" = 3.0.1
 
       - name: Audit shared-library closure
         if: matrix.mode == 'shared'

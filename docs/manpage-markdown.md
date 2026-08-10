@@ -25,7 +25,7 @@ Configured Meson trees expose equivalent targets when Pandoc is available.
 Each source starts with one Pandoc title block:
 
 ```text
-% PAGE_NAME(SECTION) libpkgsource 3.0.0 | libpkgsource
+% PAGE_NAME(SECTION) libpkgsource 3.0.1 | libpkgsource
 ```
 
 The `NAME` section carries the lowercase installed name and one concise purpose

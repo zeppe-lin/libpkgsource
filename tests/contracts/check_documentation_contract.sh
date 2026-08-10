@@ -64,6 +64,7 @@ require_heading "$root/docs/html.md" '## Validation'
 require_heading "$root/CONTRIBUTING.md" '## Boundary first'
 require_heading "$root/CONTRIBUTING.md" '## Identity and record changes'
 require_heading "$root/MAINTAINING.md" '## Release checklist'
+require_heading "$root/HISTORY.md" '## 3.0.1'
 require_heading "$root/HISTORY.md" '## 3.0.0'
 
 for manual in \
@@ -86,7 +87,7 @@ grep -F 'abi/libpkgsource.exports' "$root/docs/abi.md" >/dev/null ||
   fail 'ABI policy omits the core manifest'
 grep -F 'abi/libpkgsource-codec.exports' "$root/docs/abi.md" >/dev/null ||
   fail 'ABI policy omits the codec manifest'
-grep -F 'tests/codec/golden_vectors_test.cpp' \
+grep -F 'tests/protocol/golden_vectors_test.cpp' \
   "$root/docs/protocols/source-records-v1.md" >/dev/null ||
   fail 'record protocol omits its executable vector owner'
 

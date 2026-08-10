@@ -1,5 +1,28 @@
 # History
 
+## 3.0.1
+
+Testing-foundation and reconstruction-authority hardening.
+
+* reject unsupported digest, program-language, and lifecycle enumerators at
+  their parser-neutral value boundaries rather than canonicalizing them as a
+  supported value or admitting them into sealed authority;
+* validate package-release and program material before invoking the identity
+  provider, preserving semantic failure ownership for malformed caller input;
+* make public `sealed_profile`, `sealed_recipe`, and `source_snapshot`
+  reconstruction constructors authenticate the identity, canonical ordering,
+  expansion topology, retained provenance, and closure invariants their types
+  claim to carry;
+* retain source origin and declaration provenance as diagnostic-only material;
+  reconstruction validation does not add either to semantic identity;
+* organize tests by unit, integration, protocol, mechanism, header, installed,
+  support, and contract ownership;
+* make installed shared/static consumers execute real sealing and codec
+  operations so pkg-config qualification exercises the private cryptographic
+  closure and exact core/codec dependency; and
+* retain schema-one record bytes, version-one semantic identity domains,
+  `libpkgsource.so.3`, and `libpkgsource-codec.so.1`.
+
 ## 3.0.0
 
 Core authority and repository-boundary reset.

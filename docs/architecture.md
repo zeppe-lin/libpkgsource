@@ -57,6 +57,15 @@ source-snapshot identity
 Profiles are sealed values, not parser aliases. A sealed profile retains direct
 members, exact transitive expansion paths, declaration provenance, and a
 semantic identity. Nested profile identity contributes to parent identity.
+Public reconstruction of a sealed profile re-derives its nested identity and
+canonical expansion from the supplied retained topology; it does not trust a
+claimed identity or path ordering.
+
+Public sealed-recipe reconstruction verifies canonical source and lifecycle
+order plus the same lifecycle/check closure invariants enforced by
+`seal_recipe()`. Public source-snapshot reconstruction recomputes the source
+identity from the supplied sealed recipe. These constructors are owner
+reconstruction boundaries, not shortcuts around sealing.
 
 Requirements preserve independent build, run, check, and exact lifecycle-action
 scopes. Lifecycle requirements require a program for the same action. Check

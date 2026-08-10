@@ -1,4 +1,4 @@
-% PKGSOURCE_CODEC(3) libpkgsource 3.0.0 | libpkgsource
+% PKGSOURCE_CODEC(3) libpkgsource 3.0.1 | libpkgsource
 
 # NAME
 

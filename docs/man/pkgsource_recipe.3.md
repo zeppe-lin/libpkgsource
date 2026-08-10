@@ -1,4 +1,4 @@
-% PKGSOURCE_RECIPE(3) libpkgsource 3.0.0 | libpkgsource
+% PKGSOURCE_RECIPE(3) libpkgsource 3.0.1 | libpkgsource
 
 # NAME
 
@@ -27,8 +27,10 @@ A check program with no additional check requirements is valid.
 
 The returned `pkgsource::sealed_recipe` retains normalized semantic fields,
 selected build profiles, the exact profile closure, all resolved requirement
-origins, and diagnostic provenance. It has no independent recipe identity; the
-complete normalized recipe contributes directly to
+origins, and diagnostic provenance. Its public reconstruction constructors
+verify canonical source/lifecycle ordering and the same lifecycle/check closure
+invariants before admitting the value. It has no independent recipe identity;
+the complete normalized recipe contributes directly to
 `pkgsource::source_snapshot_identity`.
 
 # BOUNDARY

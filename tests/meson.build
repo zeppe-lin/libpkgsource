@@ -1,71 +1,87 @@
 # SPDX-FileCopyrightText: 2026 Alexandr Savca
 # SPDX-License-Identifier: GPL-3.0-or-later
 if get_option('tests').enabled()
-  core_behavior_tests = {
-    'model-identity': 'model/identity_test.cpp',
-    'model-requirements': 'model/requirements_test.cpp',
-    'model-values': 'model/values_test.cpp',
-    'profile-expansion': 'profiles/expansion_test.cpp',
-    'profile-requirements': 'profiles/requirements_test.cpp',
-    'profile-identity': 'profiles/identity_test.cpp',
-    'profile-duplicates': 'profiles/duplicate_test.cpp',
-    'profile-failures': 'profiles/failures_test.cpp',
-    'recipe-content': 'recipes/content_test.cpp',
-    'recipe-normalization': 'recipes/normalization_test.cpp',
-    'recipe-identity': 'recipes/identity_test.cpp',
-    'recipe-check-program': 'recipes/check_program_test.cpp',
-    'recipe-program-digest': 'recipes/program_digest_test.cpp',
-    'recipe-failures': 'recipes/failures_test.cpp',
+  unit_tests = {
+    'model-identity': 'unit/model_identity_test.cpp',
+    'model-requirements': 'unit/model_requirements_test.cpp',
+    'model-values': 'unit/model_values_test.cpp',
+    'value-admission': 'unit/value_admission_test.cpp',
+    'profile-expansion': 'unit/profile_expansion_test.cpp',
+    'profile-requirements': 'unit/profile_requirements_test.cpp',
+    'profile-identity': 'unit/profile_identity_test.cpp',
+    'profile-duplicates': 'unit/profile_duplicate_test.cpp',
+    'profile-failures': 'unit/profile_failures_test.cpp',
+    'sealed-profile': 'unit/sealed_profile_test.cpp',
+    'recipe-content': 'unit/recipe_content_test.cpp',
+    'recipe-normalization': 'unit/recipe_normalization_test.cpp',
+    'recipe-check-program': 'unit/recipe_check_program_test.cpp',
+    'recipe-program-digest': 'unit/recipe_program_digest_test.cpp',
+    'recipe-failures': 'unit/recipe_failures_test.cpp',
+    'sealed-recipe': 'unit/sealed_recipe_test.cpp',
   }
-  foreach test_name, source_file : core_behavior_tests
+  foreach test_name, source_file : unit_tests
     executable_target = executable(
       test_name,
       source_file,
       dependencies: libpkgsource_dep,
       install: false,
     )
-    test(test_name, executable_target)
+    test(test_name, executable_target, suite: 'unit')
   endforeach
 
-  codec_behavior_tests = {
-    'codec-golden-vectors': 'codec/golden_vectors_test.cpp',
-    'codec-profile-catalog': 'codec/profile_catalog_test.cpp',
-    'codec-source-snapshot': 'codec/source_snapshot_test.cpp',
-    'codec-envelope-failures': 'codec/envelope_failures_test.cpp',
-    'codec-identity-failures': 'codec/identity_failures_test.cpp',
-    'codec-value-failures': 'codec/value_failures_test.cpp',
-    'codec-canonicality': 'codec/canonicality_test.cpp',
+  integration_tests = {
+    'source-identity': 'integration/source_identity_test.cpp',
+    'source-authority': 'integration/source_authority_test.cpp',
   }
-  foreach test_name, source_file : codec_behavior_tests
+  foreach test_name, source_file : integration_tests
+    executable_target = executable(
+      test_name,
+      source_file,
+      dependencies: libpkgsource_dep,
+      install: false,
+    )
+    test(test_name, executable_target, suite: 'integration')
+  endforeach
+
+  protocol_tests = {
+    'codec-golden-vectors': 'protocol/golden_vectors_test.cpp',
+    'codec-profile-catalog': 'protocol/profile_catalog_test.cpp',
+    'codec-source-snapshot': 'protocol/source_snapshot_test.cpp',
+    'codec-envelope-failures': 'protocol/envelope_failures_test.cpp',
+    'codec-identity-failures': 'protocol/identity_failures_test.cpp',
+    'codec-value-failures': 'protocol/value_failures_test.cpp',
+    'codec-canonicality': 'protocol/canonicality_test.cpp',
+  }
+  foreach test_name, source_file : protocol_tests
     executable_target = executable(
       test_name,
       source_file,
       dependencies: libpkgsource_codec_dep,
       install: false,
     )
-    test(test_name, executable_target)
+    test(test_name, executable_target, suite: 'protocol')
   endforeach
 
   sha256_provider_test = executable(
     'sha256-provider-test',
     [
-      'internal/sha256_test.cpp',
+      'mechanism/sha256_test.cpp',
       '../internal/sha256_openssl.cpp',
     ],
     include_directories: repository_internal_inc,
     dependencies: libcrypto_dep,
     install: false,
   )
-  test('sha256-provider', sha256_provider_test)
+  test('sha256-provider', sha256_provider_test, suite: 'mechanism')
 
   core_public_headers = {
-    'public-core-umbrella': 'public/core_umbrella_header_test.cpp',
-    'public-error-header': 'public/error_header_test.cpp',
-    'public-identity-header': 'public/identity_header_test.cpp',
-    'public-model-header': 'public/model_header_test.cpp',
-    'public-profile-header': 'public/profile_header_test.cpp',
-    'public-recipe-header': 'public/recipe_header_test.cpp',
-    'public-snapshot-header': 'public/snapshot_header_test.cpp',
+    'public-core-umbrella': 'header/core_umbrella_header_test.cpp',
+    'public-error-header': 'header/error_header_test.cpp',
+    'public-identity-header': 'header/identity_header_test.cpp',
+    'public-model-header': 'header/model_header_test.cpp',
+    'public-profile-header': 'header/profile_header_test.cpp',
+    'public-recipe-header': 'header/recipe_header_test.cpp',
+    'public-snapshot-header': 'header/snapshot_header_test.cpp',
   }
   foreach test_name, source_file : core_public_headers
     executable_target = executable(
@@ -74,12 +90,12 @@ if get_option('tests').enabled()
       dependencies: libpkgsource_dep,
       install: false,
     )
-    test(test_name, executable_target)
+    test(test_name, executable_target, suite: 'header')
   endforeach
 
   codec_public_headers = {
-    'public-codec-component': 'public/codec_header_test.cpp',
-    'public-codec-umbrella': 'public/codec_umbrella_header_test.cpp',
+    'public-codec-component': 'header/codec_header_test.cpp',
+    'public-codec-umbrella': 'header/codec_umbrella_header_test.cpp',
   }
   foreach test_name, source_file : codec_public_headers
     executable_target = executable(
@@ -88,7 +104,7 @@ if get_option('tests').enabled()
       dependencies: libpkgsource_codec_dep,
       install: false,
     )
-    test(test_name, executable_target)
+    test(test_name, executable_target, suite: 'header')
   endforeach
 
   sh = find_program('sh')
@@ -107,6 +123,7 @@ if get_option('tests').enabled()
           abi_spec[1].full_path(),
           abi_spec[2],
         ],
+        suite: 'contracts',
       )
     endforeach
   endif
@@ -132,6 +149,7 @@ if get_option('tests').enabled()
         meson.current_source_dir() / ('contracts/check_' + contract.replace('-', '_') + '.sh'),
         meson.project_source_root(),
       ] + (contract == 'style-contract' ? [meson.project_build_root()] : []),
+      suite: 'contracts',
     )
   endforeach
 
@@ -140,6 +158,7 @@ if get_option('tests').enabled()
     'pkgconfig-metadata',
     pkgconfig_metadata,
     args: [meson.project_build_root(), meson.project_version()],
+    suite: 'contracts',
   )
 
   pandoc = find_program('pandoc', required: false)
@@ -152,6 +171,7 @@ if get_option('tests').enabled()
         meson.project_source_root(),
         pandoc.full_path(),
       ],
+      suite: 'contracts',
     )
   endif
 
@@ -165,6 +185,7 @@ if get_option('tests').enabled()
         clang_format.full_path(),
         meson.project_source_root(),
       ],
+      suite: 'contracts',
     )
   endif
 
@@ -181,6 +202,7 @@ if get_option('tests').enabled()
         '--forbid-path', meson.project_build_root(),
       ],
       depends: [html_docs_target],
+      suite: 'contracts',
     )
   endif
 endif

@@ -1,6 +1,6 @@
 .\" Generated from docs/man/pkgsource_model.3.md; do not edit.
 .\"
-.TH "PKGSOURCE_MODEL" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.TH "PKGSOURCE_MODEL" "3" "" "libpkgsource 3.0.1" "libpkgsource"
 .SH NAME
 pkgsource_model \- describe parser\-neutral package\-source value domains
 .SH SYNOPSIS
@@ -25,6 +25,7 @@ MD5 is not accepted.
 .PP
 \f[CR]pkgsource::program\f[R] retains exact non\-empty POSIX\-shell material and its raw SHA\-256 content digest.
 \f[CR]pkgsource::lifecycle_program\f[R] binds one program to one exact lifecycle action.
+Unsupported C++ enum values are rejected at these value boundaries rather than canonicalized as a supported protocol value.
 The library never executes either value.
 .PP
 \f[CR]pkgsource::architecture_requirements\f[R] keeps independent normalized build and target architecture sets.

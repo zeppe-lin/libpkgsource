@@ -1,6 +1,6 @@
 .\" Generated from docs/man/pkgsource_snapshot.3.md; do not edit.
 .\"
-.TH "PKGSOURCE_SNAPSHOT" "3" "" "libpkgsource 3.0.0" "libpkgsource"
+.TH "PKGSOURCE_SNAPSHOT" "3" "" "libpkgsource 3.0.1" "libpkgsource"
 .SH NAME
 pkgsource_snapshot \- seal immutable package\-source authority
 .SH SYNOPSIS
@@ -17,6 +17,7 @@ pkgsource::source_snapshot pkgsource::seal_source(
 \f[CR]pkgsource::seal_source()\f[R] passes the parser\-neutral declaration through \f[CR]pkgsource::seal_recipe()\f[R] and returns one immutable \f[CR]pkgsource::source_snapshot\f[R].
 .PP
 The snapshot retains diagnostic \f[CR]pkgsource::source_origin\f[R], the complete \f[CR]pkgsource::sealed_recipe\f[R], and a distinct \f[CR]pkgsource::source_snapshot_identity\f[R].
+The public reconstruction constructor recomputes that identity from the supplied recipe and rejects a mismatched claim.
 Origin and declaration provenance do not contribute to semantic identity.
 .PP
 The source identity is SHA\-256 over the complete normalized source model under the domain \f[CR]libpkgsource/source\-snapshot/v1\f[R].

@@ -195,6 +195,8 @@ public:
    * @param provenance Exact profile declaration site.
    * @param direct_members Canonical direct member declarations.
    * @param expansion Canonical transitive package expansion.
+   * @throws error when identity, direct-member order, expansion topology, or
+   *         retained member provenance is inconsistent.
    */
   sealed_profile(profile_reference name,
                  profile_identity identity,

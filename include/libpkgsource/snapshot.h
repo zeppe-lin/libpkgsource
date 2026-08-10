@@ -41,7 +41,9 @@ public:
    *
    * @param origin Diagnostic source-document origin.
    * @param recipe Complete normalized recipe authority.
-   * @param identity Verified source-snapshot semantic identity.
+   * @param identity Claimed source-snapshot semantic identity.
+   * @throws error with error_code::invalid_identity when @p identity does not
+   *         match the complete supplied sealed recipe.
    */
   source_snapshot(source_origin origin,
                   sealed_recipe recipe,

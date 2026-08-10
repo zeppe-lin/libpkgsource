@@ -101,9 +101,10 @@ to_string(program_language value) noexcept;
 class PKGSOURCE_API digest final {
 public:
   /** Construct a validated content digest.
-   * @param algorithm Digest algorithm.
+   * @param algorithm Supported digest algorithm.
    * @param hex Exactly 64 lowercase hexadecimal characters for SHA-256.
-   * @throws error with error_code::invalid_identity for malformed material.
+   * @throws error with error_code::invalid_identity for an unsupported
+   *         algorithm or malformed digest material.
    */
   digest(digest_algorithm algorithm, std::string hex);
 
@@ -354,8 +355,10 @@ public:
   [[nodiscard]] static requirement_scope check();
 
   /** Construct an action-bound lifecycle requirement scope.
-   * @param action Exact lifecycle action requiring the package.
+   * @param action Exact supported lifecycle action requiring the package.
    * @return Lifecycle scope bound to @p action.
+   * @throws error with error_code::invalid_requirement when @p action is not
+   *         one of the declared lifecycle actions.
    */
   [[nodiscard]] static requirement_scope lifecycle(lifecycle_action action);
 
@@ -503,7 +506,7 @@ public:
    * @param package Exact package reference.
    * @param version Non-empty single-line version without `/`.
    * @param release Positive distribution release number.
-   * @throws error with error_code::invalid_identity for invalid coordinates.
+   * @throws error with error_code::invalid_metadata for invalid coordinates.
    */
   package_release(package_reference package,
                   std::string version,
@@ -665,10 +668,11 @@ private:
 class PKGSOURCE_API program final {
 public:
   /** Construct a validated program value and compute its content digest.
-   * @param language Declared program language.
+   * @param language Supported declared program language.
    * @param material Non-empty exact text bytes without NUL or forbidden control
    *        characters.
-   * @throws error with error_code::invalid_program for invalid material.
+   * @throws error with error_code::invalid_program for an unsupported language
+   *         or invalid material.
    */
   program(program_language language, std::string material);
 
@@ -719,8 +723,10 @@ private:
 class PKGSOURCE_API lifecycle_program final {
 public:
   /** Construct an action-bound lifecycle program.
-   * @param action Exact lifecycle action.
+   * @param action Exact supported lifecycle action.
    * @param value Exact non-executed program value.
+   * @throws error with error_code::invalid_program when @p action is not one
+   *         of the declared lifecycle actions.
    */
   lifecycle_program(lifecycle_action action, program value);
 

@@ -8,37 +8,40 @@ program.
 
 ## Core behavior
 
-`tests/model/` covers canonical values, scopes, subjects, metadata, source
-locations, programs, architectures, and identity validation.
+`tests/unit/` covers canonical value admission, requirement scopes and subjects,
+profile sealing and expansion, normalized recipe closure, and authentication of
+public sealed-value reconstruction constructors.
 
-`tests/profiles/` covers deterministic expansion, requirement provenance,
-selected profiles, retained closure, identity participation, duplicates,
-unknown profiles, and cycles.
-
-`tests/recipes/` covers normalized content, declaration-order independence,
-identity participation, check-program authority, program digest vectors, and
-closure failures.
+`tests/integration/` composes the complete semantic pipeline. It proves source
+identity field sensitivity and verifies that reconstructed source snapshots
+must carry the identity of their exact sealed recipe while retaining diagnostic
+source origin outside semantic identity.
 
 ## Codec behavior
 
-`tests/codec/` separates golden vectors, profile records, source records,
-envelope failures, stored-identity substitution, invalid owner values, and
-noncanonical representations. The fixed schema-one vectors are release
+`tests/protocol/` owns schema-one golden vectors, profile and source record
+round-trips, envelope refusal, stored-identity substitution, invalid owner
+values, and noncanonical representations. The fixed vectors are release
 artifacts. Different bytes require an explicit record-schema decision.
 
 ## Internal provider behavior
 
-`tests/internal/sha256_test.cpp` binds standard digest vectors and provider
+`tests/mechanism/sha256_test.cpp` binds standard digest vectors and provider
 state transitions. Source contracts prove that OpenSSL vocabulary exists only
 inside the selected provider translation unit.
 
 ## Public and ABI behavior
 
-Every component header and both umbrella headers compile independently. Shared
-builds compare dynamic exports with the reviewed core and codec manifests.
-Generated metadata tests bind public and private dependency placement without
-duplication. Installed-consumer tests cover shared and static pkg-config
-closures.
+`tests/header/` compiles every component header and both umbrella headers
+independently. Shared builds compare dynamic exports with the reviewed core and
+codec manifests. Generated metadata tests bind public and private dependency
+placement without duplication.
+
+`tests/installed/` contains consumers used only after installation. They execute
+real source sealing and codec operations so shared/static pkg-config
+qualification cannot pass by merely including headers; static qualification
+therefore proves the private `libcrypto` closure and the codec's exact core
+requirement.
 
 ## Documentation behavior
 
@@ -54,7 +57,7 @@ Before publication:
 - run GCC and Clang shared and static configurations with warnings as errors;
 - run ASan and UBSan under both compilers;
 - inspect SONAMEs, `NEEDED` closure, and exact exports;
-- compile installed core and codec consumers through pkg-config;
+- compile and execute installed core and codec consumers through pkg-config;
 - regenerate and lint all manuals;
 - build strict Doxygen and versioned HTML output;
 - stage canonical, man, and HTML installations through `DESTDIR`;

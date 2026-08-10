@@ -9,6 +9,81 @@
 #include <utility>
 
 namespace pkgsource {
+namespace {
+
+void validate_canonical_sources(const std::vector<source_input>& sources)
+{
+  if (!std::is_sorted(sources.begin(), sources.end())) {
+    throw error(error_code::invalid_recipe,
+                "sealed recipe sources are not canonical");
+  }
+  for (std::size_t i = 1; i < sources.size(); ++i) {
+    if (sources[i - 1].local_name() == sources[i].local_name()) {
+      throw error(error_code::duplicate_declaration,
+                  "duplicate source local name: " + sources[i].local_name());
+    }
+  }
+}
+
+void validate_canonical_lifecycle(
+    const std::vector<lifecycle_program>& lifecycle_programs)
+{
+  if (!std::is_sorted(lifecycle_programs.begin(), lifecycle_programs.end())) {
+    throw error(error_code::invalid_recipe,
+                "sealed recipe lifecycle programs are not canonical");
+  }
+  for (std::size_t i = 1; i < lifecycle_programs.size(); ++i) {
+    if (lifecycle_programs[i - 1].action() ==
+        lifecycle_programs[i].action()) {
+      throw error(error_code::duplicate_declaration,
+                  "duplicate lifecycle program: " +
+                      std::string(to_string(lifecycle_programs[i].action())));
+    }
+  }
+}
+
+void validate_recipe_closure(
+    const sealed_requirement_set& requirements,
+    const std::vector<lifecycle_program>& lifecycle_programs,
+    const std::optional<program>& check_program)
+{
+  for (const resolved_requirement& requirement : requirements.requirements()) {
+    if (requirement.scope().kind() != requirement_scope_kind::lifecycle) {
+      continue;
+    }
+    const lifecycle_action action = *requirement.scope().action();
+    const bool present = std::any_of(
+        lifecycle_programs.begin(),
+        lifecycle_programs.end(),
+        [action](const lifecycle_program& value) {
+          return value.action() == action;
+        });
+    if (!present) {
+      throw error(error_code::invalid_recipe,
+                  "lifecycle requirements without program: " +
+                      std::string(to_string(action)));
+    }
+  }
+
+  if (!requirements.for_scope(requirement_scope::check()).empty() &&
+      !check_program) {
+    throw error(error_code::invalid_recipe,
+                "check requirements without check program");
+  }
+}
+
+void validate_sealed_recipe(
+    const std::vector<source_input>& sources,
+    const sealed_requirement_set& requirements,
+    const std::vector<lifecycle_program>& lifecycle_programs,
+    const std::optional<program>& check_program)
+{
+  validate_canonical_sources(sources);
+  validate_canonical_lifecycle(lifecycle_programs);
+  validate_recipe_closure(requirements, lifecycle_programs, check_program);
+}
+
+} // namespace
 
 recipe_declaration::recipe_declaration(
     package_release release,
@@ -127,6 +202,8 @@ sealed_recipe::sealed_recipe(package_release release,
       architectures_(std::move(architectures)),
       provenance_(std::move(provenance))
 {
+  validate_sealed_recipe(
+      sources_, requirements_, lifecycle_programs_, check_program_);
 }
 const package_release& sealed_recipe::release() const noexcept
 {
@@ -211,47 +288,14 @@ sealed_recipe seal_recipe(recipe_declaration declaration,
 {
   std::vector<source_input> sources = declaration.sources();
   std::sort(sources.begin(), sources.end());
-  for (std::size_t i = 1; i < sources.size(); ++i) {
-    if (sources[i - 1].local_name() == sources[i].local_name()) {
-      throw error(error_code::duplicate_declaration,
-                  "duplicate source local name: " + sources[i].local_name());
-    }
-  }
+  validate_canonical_sources(sources);
 
   std::vector<lifecycle_program> lifecycle = declaration.lifecycle_programs();
   std::sort(lifecycle.begin(), lifecycle.end());
-  for (std::size_t i = 1; i < lifecycle.size(); ++i) {
-    if (lifecycle[i - 1].action() == lifecycle[i].action()) {
-      throw error(error_code::duplicate_declaration,
-                  "duplicate lifecycle program: " +
-                      std::string(to_string(lifecycle[i].action())));
-    }
-  }
+  validate_canonical_lifecycle(lifecycle);
 
   sealed_requirement_set requirements =
       sealed_requirement_set::seal(declaration.requirements(), profiles);
-  for (const resolved_requirement& requirement : requirements.requirements()) {
-    if (requirement.scope().kind() != requirement_scope_kind::lifecycle) {
-      continue;
-    }
-    const lifecycle_action action = *requirement.scope().action();
-    const bool present = std::any_of(lifecycle.begin(),
-                                     lifecycle.end(),
-                                     [action](const lifecycle_program& value) {
-                                       return value.action() == action;
-                                     });
-    if (!present) {
-      throw error(error_code::invalid_recipe,
-                  "lifecycle requirements without program: " +
-                      std::string(to_string(action)));
-    }
-  }
-
-  if (!requirements.for_scope(requirement_scope::check()).empty() &&
-      !declaration.check_program()) {
-    throw error(error_code::invalid_recipe,
-                "check requirements without check program");
-  }
 
   return sealed_recipe(declaration.release(),
                        declaration.metadata(),

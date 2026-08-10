@@ -1,4 +1,4 @@
-% PKGSOURCE_PROFILE(3) libpkgsource 3.0.0 | libpkgsource
+% PKGSOURCE_PROFILE(3) libpkgsource 3.0.1 | libpkgsource
 
 # NAME
 
@@ -23,7 +23,9 @@ unknown nested references, and cycles. The returned catalog contains immutable
 
 A sealed profile retains its direct members, exact transitive expansion paths,
 all declaration provenance on those paths, and a semantic identity. Nested
-profile identity contributes to parent identity.
+profile identity contributes to parent identity. The public reconstruction
+constructor authenticates canonical direct-member order, expansion continuity,
+retained member provenance, and the claimed semantic identity.
 
 `pkgsource::sealed_requirement_set::seal()` expands recipe requirement
 declarations into exact package requirements. It retains every direct or

@@ -71,6 +71,40 @@ bool text_safe(std::string_view value)
   return true;
 }
 
+bool valid_digest_algorithm(digest_algorithm value) noexcept
+{
+  return value == digest_algorithm::sha256;
+}
+
+bool valid_requirement_scope_kind(requirement_scope_kind value) noexcept
+{
+  switch (value) {
+  case requirement_scope_kind::build:
+  case requirement_scope_kind::run:
+  case requirement_scope_kind::check:
+  case requirement_scope_kind::lifecycle:
+    return true;
+  }
+  return false;
+}
+
+bool valid_lifecycle_action(lifecycle_action value) noexcept
+{
+  switch (value) {
+  case lifecycle_action::pre_install:
+  case lifecycle_action::post_install:
+  case lifecycle_action::pre_remove:
+  case lifecycle_action::post_remove:
+    return true;
+  }
+  return false;
+}
+
+bool valid_program_language(program_language value) noexcept
+{
+  return value == program_language::posix_shell;
+}
+
 bool safe_basename(std::string_view value)
 {
   return line_safe(value) && value != "." && value != ".." &&
@@ -121,11 +155,38 @@ package_release_identity make_release_identity(const package_reference& package,
   return package_release_identity::from_sha256(writer.finish());
 }
 
+package_release_identity
+validated_release_identity(const package_reference& package,
+                           std::string_view version,
+                           std::uint32_t release)
+{
+  if (!line_safe(version) || version.find('/') != std::string_view::npos ||
+      release == 0) {
+    throw error(error_code::invalid_metadata,
+                "invalid package version or release");
+  }
+  return make_release_identity(package, version, release);
+}
+
+digest validated_program_digest(program_language language,
+                                std::string_view material)
+{
+  if (!valid_program_language(language) || !text_safe(material)) {
+    throw error(error_code::invalid_program,
+                "invalid program language or empty/binary material");
+  }
+  return digest(digest_algorithm::sha256, detail::sha256_hex(material));
+}
+
 } // namespace
 
-std::string_view to_string(digest_algorithm) noexcept
+std::string_view to_string(digest_algorithm value) noexcept
 {
-  return "sha256";
+  switch (value) {
+  case digest_algorithm::sha256:
+    return "sha256";
+  }
+  return "unknown";
 }
 std::string_view to_string(requirement_scope_kind value) noexcept
 {
@@ -157,20 +218,39 @@ std::string_view to_string(lifecycle_action value) noexcept
 }
 std::string_view to_string(requirement_subject_kind value) noexcept
 {
-  return value == requirement_subject_kind::package ? "package" : "profile";
+  switch (value) {
+  case requirement_subject_kind::package:
+    return "package";
+  case requirement_subject_kind::profile:
+    return "profile";
+  }
+  return "unknown";
 }
 std::string_view to_string(source_input_kind value) noexcept
 {
-  return value == source_input_kind::remote ? "remote" : "local";
+  switch (value) {
+  case source_input_kind::remote:
+    return "remote";
+  case source_input_kind::local:
+    return "local";
+  }
+  return "unknown";
 }
-std::string_view to_string(program_language) noexcept
+std::string_view to_string(program_language value) noexcept
 {
-  return "posix-shell";
+  switch (value) {
+  case program_language::posix_shell:
+    return "posix-shell";
+  }
+  return "unknown";
 }
 
 digest::digest(digest_algorithm algorithm, std::string hex)
     : algorithm_(algorithm), hex_(std::move(hex))
 {
+  if (!valid_digest_algorithm(algorithm_)) {
+    throw error(error_code::invalid_identity, "invalid digest algorithm");
+  }
   detail::require_sha256_hex(hex_);
 }
 digest_algorithm digest::algorithm() const noexcept
@@ -328,9 +408,11 @@ requirement_scope::requirement_scope(requirement_scope_kind kind,
                                      std::optional<lifecycle_action> action)
     : kind_(kind), action_(action)
 {
-  if ((kind_ == requirement_scope_kind::lifecycle) != action_.has_value()) {
+  if (!valid_requirement_scope_kind(kind_) ||
+      (kind_ == requirement_scope_kind::lifecycle) != action_.has_value() ||
+      (action_ && !valid_lifecycle_action(*action_))) {
     throw error(error_code::invalid_requirement,
-                "lifecycle requirement scope binding mismatch");
+                "invalid lifecycle requirement scope binding");
   }
 }
 requirement_scope requirement_scope::build()
@@ -452,13 +534,8 @@ package_release::package_release(package_reference package,
                                  std::uint32_t release)
     : package_(std::move(package)), version_(std::move(version)),
       release_(release),
-      identity_(make_release_identity(package_, version_, release_))
+      identity_(validated_release_identity(package_, version_, release_))
 {
-  if (!line_safe(version_) || version_.find('/') != std::string::npos ||
-      release_ == 0) {
-    throw error(error_code::invalid_metadata,
-                "invalid package version or release");
-  }
 }
 const package_reference& package_release::package() const noexcept
 {
@@ -590,11 +667,8 @@ bool operator<(const source_input& lhs, const source_input& rhs) noexcept
 
 program::program(program_language language, std::string material)
     : language_(language), material_(std::move(material)),
-      content_digest_(digest_algorithm::sha256, detail::sha256_hex(material_))
+      content_digest_(validated_program_digest(language_, material_))
 {
-  if (!text_safe(material_)) {
-    throw error(error_code::invalid_program, "invalid empty or binary program");
-  }
 }
 program_language program::language() const noexcept
 {
@@ -626,6 +700,9 @@ bool operator<(const program& lhs, const program& rhs) noexcept
 lifecycle_program::lifecycle_program(lifecycle_action action, program value)
     : action_(action), value_(std::move(value))
 {
+  if (!valid_lifecycle_action(action_)) {
+    throw error(error_code::invalid_program, "invalid lifecycle action");
+  }
 }
 lifecycle_action lifecycle_program::action() const noexcept
 {

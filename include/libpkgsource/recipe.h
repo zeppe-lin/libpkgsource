@@ -120,6 +120,8 @@ public:
    * @param lifecycle_programs Canonical action-bound lifecycle programs.
    * @param architectures Build and target architecture constraints.
    * @param provenance Exact recipe declaration site.
+   * @throws error when the supplied reconstruction is not canonical or does
+   *         not satisfy recipe closure invariants.
    */
   sealed_recipe(package_release release,
                 package_metadata metadata,
@@ -140,6 +142,8 @@ public:
    * @param architectures Build and target architecture constraints.
    * @param provenance Exact recipe declaration site.
    * @param check_program Optional exact check program.
+   * @throws error when the supplied reconstruction is not canonical or does
+   *         not satisfy recipe closure invariants.
    */
   sealed_recipe(package_release release,
                 package_metadata metadata,
