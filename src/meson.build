@@ -36,7 +36,7 @@ libpkgsource = library(
   link_depends: [core_export_script],
   install: true,
   version: meson.project_version(),
-  soversion: '3',
+  soversion: '4',
 )
 
 # The version is part of the codec's generated public pkg-config requirement.

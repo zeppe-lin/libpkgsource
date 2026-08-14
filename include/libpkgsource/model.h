@@ -50,6 +50,12 @@ enum class source_input_kind {
   local,  ///< A safe relative path supplied by the package collection.
 };
 
+/** @brief Declared realization applied to one verified source object. */
+enum class source_unpack_kind {
+  none,    ///< Retain the verified raw object only.
+  archive, ///< Retain the raw object and unpack its archive entries.
+};
+
 /** @brief Program languages retained by the source model. */
 enum class program_language {
   posix_shell, ///< Exact POSIX shell program bytes.
@@ -89,6 +95,13 @@ to_string(requirement_subject_kind value) noexcept;
  */
 [[nodiscard]] PKGSOURCE_API std::string_view
 to_string(source_input_kind value) noexcept;
+
+/** Return the canonical protocol spelling of a source unpack policy.
+ * @param value Source unpack policy to render.
+ * @return Static string view with process lifetime.
+ */
+[[nodiscard]] PKGSOURCE_API std::string_view
+to_string(source_unpack_kind value) noexcept;
 
 /** Return the canonical protocol spelling of a program language.
  * @param value Program language to render.
@@ -601,6 +614,11 @@ public:
   [[nodiscard]] static source_input
   remote(std::string url, std::string local_name, digest content_digest);
 
+  /** Construct a remote source input with explicit realization policy. */
+  [[nodiscard]] static source_input
+  remote(std::string url, std::string local_name, digest content_digest,
+         source_unpack_kind unpack);
+
   /** Construct a collection-local source input.
    * @param path Safe non-absolute relative path without `.` or `..` segments.
    * @param local_name Safe destination basename.
@@ -610,6 +628,11 @@ public:
    */
   [[nodiscard]] static source_input
   local(std::string path, std::string local_name, digest content_digest);
+
+  /** Construct a collection-local source input with explicit realization policy. */
+  [[nodiscard]] static source_input
+  local(std::string path, std::string local_name, digest content_digest,
+        source_unpack_kind unpack);
 
   /** Return the source location kind.
    * @return Remote or local.
@@ -630,6 +653,9 @@ public:
    * @return Reference valid for the lifetime of this input.
    */
   [[nodiscard]] const digest& content_digest() const noexcept;
+
+  /** Return the declared source realization policy. */
+  [[nodiscard]] source_unpack_kind unpack_kind() const noexcept;
 
   /** Compare complete source inputs for equality.
    * @param lhs Left comparison operand.
@@ -658,7 +684,13 @@ private:
                std::string location,
                std::string local_name,
                digest content_digest);
+  source_input(source_input_kind kind,
+               std::string location,
+               std::string local_name,
+               digest content_digest,
+               source_unpack_kind unpack);
   source_input_kind kind_;
+  source_unpack_kind unpack_;
   std::string location_;
   std::string local_name_;
   digest content_digest_;

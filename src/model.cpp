@@ -236,6 +236,16 @@ std::string_view to_string(source_input_kind value) noexcept
   }
   return "unknown";
 }
+std::string_view to_string(source_unpack_kind value) noexcept
+{
+  switch (value) {
+  case source_unpack_kind::none:
+    return "none";
+  case source_unpack_kind::archive:
+    return "archive";
+  }
+  return "unknown";
+}
 std::string_view to_string(program_language value) noexcept
 {
   switch (value) {
@@ -597,10 +607,27 @@ source_input::source_input(source_input_kind kind,
                            std::string location,
                            std::string local_name,
                            digest content_digest)
-    : kind_(kind), location_(std::move(location)),
+    : source_input(kind, std::move(location), std::move(local_name),
+                   std::move(content_digest), source_unpack_kind::none)
+{
+}
+source_input::source_input(source_input_kind kind,
+                           std::string location,
+                           std::string local_name,
+                           digest content_digest,
+                           source_unpack_kind unpack)
+    : kind_(kind), unpack_(unpack), location_(std::move(location)),
       local_name_(std::move(local_name)),
       content_digest_(std::move(content_digest))
 {
+  if (kind_ != source_input_kind::remote &&
+      kind_ != source_input_kind::local) {
+    throw error(error_code::invalid_source, "invalid source input kind");
+  }
+  if (unpack_ != source_unpack_kind::none &&
+      unpack_ != source_unpack_kind::archive) {
+    throw error(error_code::invalid_source, "invalid source unpack policy");
+  }
   if (!safe_basename(local_name_)) {
     throw error(error_code::invalid_source, "invalid source local name");
   }
@@ -616,19 +643,31 @@ source_input source_input::remote(std::string url,
                                   std::string local_name,
                                   digest content_digest)
 {
-  return source_input(source_input_kind::remote,
-                      std::move(url),
-                      std::move(local_name),
-                      std::move(content_digest));
+  return remote(std::move(url), std::move(local_name),
+                std::move(content_digest), source_unpack_kind::none);
+}
+source_input source_input::remote(std::string url,
+                                  std::string local_name,
+                                  digest content_digest,
+                                  source_unpack_kind unpack)
+{
+  return source_input(source_input_kind::remote, std::move(url),
+                      std::move(local_name), std::move(content_digest), unpack);
 }
 source_input source_input::local(std::string path,
                                  std::string local_name,
                                  digest content_digest)
 {
-  return source_input(source_input_kind::local,
-                      std::move(path),
-                      std::move(local_name),
-                      std::move(content_digest));
+  return local(std::move(path), std::move(local_name),
+               std::move(content_digest), source_unpack_kind::none);
+}
+source_input source_input::local(std::string path,
+                                 std::string local_name,
+                                 digest content_digest,
+                                 source_unpack_kind unpack)
+{
+  return source_input(source_input_kind::local, std::move(path),
+                      std::move(local_name), std::move(content_digest), unpack);
 }
 source_input_kind source_input::kind() const noexcept
 {
@@ -646,12 +685,16 @@ const digest& source_input::content_digest() const noexcept
 {
   return content_digest_;
 }
+source_unpack_kind source_input::unpack_kind() const noexcept
+{
+  return unpack_;
+}
 bool operator==(const source_input& lhs, const source_input& rhs) noexcept
 {
-  return std::tie(
-             lhs.kind_, lhs.location_, lhs.local_name_, lhs.content_digest_) ==
-         std::tie(
-             rhs.kind_, rhs.location_, rhs.local_name_, rhs.content_digest_);
+  return std::tie(lhs.kind_, lhs.unpack_, lhs.location_, lhs.local_name_,
+                  lhs.content_digest_) ==
+         std::tie(rhs.kind_, rhs.unpack_, rhs.location_, rhs.local_name_,
+                  rhs.content_digest_);
 }
 bool operator!=(const source_input& lhs, const source_input& rhs) noexcept
 {
@@ -659,10 +702,10 @@ bool operator!=(const source_input& lhs, const source_input& rhs) noexcept
 }
 bool operator<(const source_input& lhs, const source_input& rhs) noexcept
 {
-  return std::tie(
-             lhs.local_name_, lhs.kind_, lhs.location_, lhs.content_digest_) <
-         std::tie(
-             rhs.local_name_, rhs.kind_, rhs.location_, rhs.content_digest_);
+  return std::tie(lhs.local_name_, lhs.kind_, lhs.unpack_, lhs.location_,
+                  lhs.content_digest_) <
+         std::tie(rhs.local_name_, rhs.kind_, rhs.unpack_, rhs.location_,
+                  rhs.content_digest_);
 }
 
 program::program(program_language language, std::string material)

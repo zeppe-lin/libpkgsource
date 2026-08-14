@@ -194,6 +194,7 @@ void encode_source_input(record_writer& output, const source_input& value)
   output.u8(value.kind() == source_input_kind::remote ? 1U : 2U);
   output.text(value.location());
   output.text(value.local_name());
+  output.u8(value.unpack_kind() == source_unpack_kind::none ? 1U : 2U);
   output.u8(1U);
   output.text(value.content_digest().hex());
 }
@@ -203,6 +204,15 @@ source_input decode_source_input(record_reader& input)
   const auto kind = input.u8();
   auto location = input.text();
   auto local_name = input.text();
+  const auto unpack_value = input.u8();
+  source_unpack_kind unpack;
+  if (unpack_value == 1U) {
+    unpack = source_unpack_kind::none;
+  } else if (unpack_value == 2U) {
+    unpack = source_unpack_kind::archive;
+  } else {
+    fail(codec_error_code::invalid_record, "invalid package-source unpack policy");
+  }
   if (input.u8() != 1U) {
     fail(codec_error_code::invalid_record,
          "invalid package-source digest algorithm");
@@ -210,11 +220,11 @@ source_input decode_source_input(record_reader& input)
   digest content(digest_algorithm::sha256, input.text());
   if (kind == 1U) {
     return source_input::remote(
-        std::move(location), std::move(local_name), std::move(content));
+        std::move(location), std::move(local_name), std::move(content), unpack);
   }
   if (kind == 2U) {
     return source_input::local(
-        std::move(location), std::move(local_name), std::move(content));
+        std::move(location), std::move(local_name), std::move(content), unpack);
   }
   fail(codec_error_code::invalid_record, "invalid package-source input kind");
 }

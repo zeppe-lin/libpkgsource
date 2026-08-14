@@ -15,7 +15,7 @@ void test_check_program_authority()
          "meson test -C build\n");
   assert(snapshot.recipe().check_requirements().size() == 1);
   assert(snapshot.identity().hex() ==
-         "b1f0b553c0c7dbd1692d6753eedc61708efa733417abec06bdf6d395ad3fa5ef");
+         "12052c8b6bd1cb8ece3cdbf0c625cdcc79db35007386e818b884362eb720739c");
 
   source_snapshot changed =
       seal_source(source_origin("recipe.yml"),

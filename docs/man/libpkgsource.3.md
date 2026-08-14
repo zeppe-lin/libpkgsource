@@ -1,4 +1,4 @@
-% LIBPKGSOURCE(3) libpkgsource 3.0.1 | libpkgsource
+% LIBPKGSOURCE(3) libpkgsource 4.0.0 | libpkgsource
 
 # NAME
 
@@ -55,7 +55,7 @@ Contract failures throw `pkgsource::error`. Consumers should branch on
 
 # ABI
 
-The core ABI is `libpkgsource.so.3`.
+The core ABI is `libpkgsource.so.4`.
 
 # SEE ALSO
 

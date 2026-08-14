@@ -5,7 +5,7 @@
 The repository publishes two independent ELF ABIs:
 
 ```text
-libpkgsource.so.3
+libpkgsource.so.4
 libpkgsource-codec.so.1
 ```
 

@@ -23,10 +23,11 @@ YAML parsing and planner projection live in independent repositories:
 
 ## Public libraries
 
-`libpkgsource.so.3` owns:
+`libpkgsource.so.4` owns:
 
 - package, profile, architecture, digest, provenance, and program value domains;
-- package releases, metadata, source inputs, and requirement declarations;
+- package releases, metadata, source inputs with explicit raw/archive realization,
+  and requirement declarations;
 - deterministic profile sealing and transitive expansion;
 - normalized recipe authority and closure invariants;
 - package-release, profile, and source-snapshot semantic identities.
@@ -117,7 +118,7 @@ meson compile -C build-docs html-docs
 Installation places the generated tree under:
 
 ```text
-${prefix}/share/htmldocs/libpkgsource/3.0.1/
+${prefix}/share/htmldocs/libpkgsource/4.0.0/
 ```
 
 The publishing site may copy that tree unchanged. It does not become another

@@ -31,6 +31,11 @@ void test_values()
                           digest(digest_algorithm::sha256, hash));
   assert(remote.kind() == source_input_kind::remote);
   assert(local.kind() == source_input_kind::local);
+  assert(remote.unpack_kind() == source_unpack_kind::none);
+  const source_input archive = source_input::remote(
+      "https://example.invalid/example.tar.xz", "example.tar.xz",
+      digest(digest_algorithm::sha256, hash), source_unpack_kind::archive);
+  assert(archive.unpack_kind() == source_unpack_kind::archive);
 
   program script(program_language::posix_shell, "echo build\n");
   assert(script.content_digest().hex().size() == 64);

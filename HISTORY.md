@@ -1,5 +1,17 @@
 # History
 
+## 4.0.0
+
+Explicit source realization authority.
+
+* add a source unpack policy whose default is raw bytes and whose archive mode
+  is retained by semantic equality, ordering, source-snapshot identity, and
+  durable source-snapshot records;
+* keep archive format recognition and filesystem realization outside the source
+  authority library; and
+* retain the first native `libpkgsource/source-snapshot/v1` identity and
+  schema-one record domains while incompatible pre-release bytes fail closed.
+
 ## 3.0.1
 
 Testing-foundation and reconstruction-authority hardening.

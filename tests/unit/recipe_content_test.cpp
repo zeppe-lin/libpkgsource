@@ -26,7 +26,7 @@ void test_complete_snapshot()
   assert(recipe.lifecycle(lifecycle_action::pre_remove) == nullptr);
   assert(recipe.architectures().build()[0].name() == "x86_64");
   assert(snapshot.identity().hex() ==
-         "9dcbc183f1b42feaa33152d24eb559d60c2ea80b1f652a79f31e2dab18b99154");
+         "d084ca6953841b9ca1446e5e30328fbe2c8abc54e71212b4ceac72b9c9c4a9cb");
 }
 
 } // namespace test_support::recipe_fixture

@@ -14,7 +14,7 @@ on Pandoc or Doxygen.
 With `-Dhtml_docs=enabled`, the build produces:
 
 ```text
-build/docs/html/libpkgsource/3.0.1/
+build/docs/html/libpkgsource/4.0.0/
 ├── index.html
 ├── architecture.html
 ├── abi.html
@@ -29,7 +29,7 @@ build/docs/html/libpkgsource/3.0.1/
 Installation places the same opaque artifact under:
 
 ```text
-${prefix}/share/htmldocs/libpkgsource/3.0.1/
+${prefix}/share/htmldocs/libpkgsource/4.0.0/
 ```
 
 The website may publish this directory directly. It must not reinterpret the

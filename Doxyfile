@@ -1,5 +1,5 @@
 PROJECT_NAME           = libpkgsource
-PROJECT_NUMBER         = 3.0.1
+PROJECT_NUMBER         = 4.0.0
 OUTPUT_DIRECTORY       = build/doxygen
 INPUT                  = include/libpkgsource include/libpkgsource-codec
 FILE_PATTERNS          = *.h

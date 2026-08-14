@@ -108,7 +108,7 @@ jobs:
           rm -rf "$stage"
           meson install -C build --destdir "$stage"
           tests/contracts/check_installed_docs.sh "$stage$PREFIX"
-          tests/contracts/check_installed_html_docs.sh "$stage$PREFIX" 3.0.1
+          tests/contracts/check_installed_html_docs.sh "$stage$PREFIX" 4.0.0
 
       - name: Install libraries and metadata
         run: meson install -C build
@@ -134,8 +134,8 @@ jobs:
 
           ./core-consumer
           ./codec-consumer
-          test "$(pkg-config --modversion libpkgsource)" = 3.0.1
-          test "$(pkg-config --modversion libpkgsource-codec)" = 3.0.1
+          test "$(pkg-config --modversion libpkgsource)" = 4.0.0
+          test "$(pkg-config --modversion libpkgsource-codec)" = 4.0.0
 
       - name: Audit shared-library closure
         if: matrix.mode == 'shared'
@@ -148,10 +148,10 @@ jobs:
           readelf -d "$core" | tee core.dynamic
           readelf -d "$codec" | tee codec.dynamic
 
-          grep -F 'Library soname: [libpkgsource.so.3]' core.dynamic
+          grep -F 'Library soname: [libpkgsource.so.4]' core.dynamic
           grep -F 'Library soname: [libpkgsource-codec.so.1]' codec.dynamic
           grep -E 'Shared library: \[libcrypto\.so' core.dynamic
-          grep -F 'Shared library: [libpkgsource.so.3]' codec.dynamic
+          grep -F 'Shared library: [libpkgsource.so.4]' codec.dynamic
           grep -E 'Shared library: \[libcrypto\.so' codec.dynamic
 
           ! grep -E 'libyaml|libpkgplan|libpkgsource-codec' core.dynamic

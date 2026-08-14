@@ -1,4 +1,4 @@
-% PKGSOURCE_MODEL(3) libpkgsource 3.0.1 | libpkgsource
+% PKGSOURCE_MODEL(3) libpkgsource 4.0.0 | libpkgsource
 
 # NAME
 

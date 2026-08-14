@@ -61,6 +61,7 @@ source_snapshot_identity make_snapshot_identity(const sealed_recipe& recipe)
     writer.text(to_string(source.kind()));
     writer.text(source.location());
     writer.text(source.local_name());
+    writer.text(to_string(source.unpack_kind()));
     writer.text(to_string(source.content_digest().algorithm()));
     writer.text(source.content_digest().hex());
   }

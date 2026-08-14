@@ -60,6 +60,21 @@ void test_identity_field_sensitivity()
                   catalog);
   assert(changed_source.identity() != baseline);
 
+  auto changed_unpack_sources = base.sources();
+  changed_unpack_sources[0] = source_input::remote(
+      "https://example.invalid/example.tar.xz", "example.tar.xz",
+      digest(digest_algorithm::sha256, std::string(64, 'a')),
+      source_unpack_kind::archive);
+  const auto changed_unpack =
+      seal_source(source_origin("recipe.yml"),
+                  recipe_declaration(base.release(), base.metadata(),
+                                     std::move(changed_unpack_sources),
+                                     base.build_program(), base.requirements(),
+                                     base.lifecycle_programs(), base.architectures(),
+                                     base.provenance()),
+                  catalog);
+  assert(changed_unpack.identity() != baseline);
+
   auto changed_requirements = base.requirements();
   changed_requirements.emplace_back(
       requirement_scope::run(),

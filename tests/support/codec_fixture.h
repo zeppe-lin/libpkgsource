@@ -234,7 +234,9 @@ void skip_source_input(const std::vector<std::uint8_t>& bytes,
   skip_text(bytes, offset);
   skip_text(bytes, offset);
   assert(offset < bytes.size());
-  ++offset;
+  ++offset; // unpack policy
+  assert(offset < bytes.size());
+  ++offset; // digest algorithm
   skip_text(bytes, offset);
 }
 

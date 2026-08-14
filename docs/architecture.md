@@ -103,7 +103,7 @@ retain, address, index, or garbage-collect the bytes, but it does not define
 source schemas or reconstruct source semantics.
 
 ```text
-libpkgsource.so.3
+libpkgsource.so.4
     semantic declarations, sealing, identities
 
 libpkgsource-codec.so.1
