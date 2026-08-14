@@ -1,4 +1,4 @@
-% PKGSOURCE_CODEC(3) libpkgsource 4.0.0 | libpkgsource
+% PKGSOURCE_CODEC(3) libpkgsource 4.1.0 | libpkgsource
 
 # NAME
 
@@ -55,7 +55,7 @@ identity mismatch, and noncanonical input.
 
 # ABI AND PROTOCOL
 
-The codec ABI is `libpkgsource-codec.so.1`. The normative byte protocol is
+The codec ABI is `libpkgsource-codec.so.2`. The normative byte protocol is
 `docs/protocols/source-records-v1.md`.
 
 # SEE ALSO

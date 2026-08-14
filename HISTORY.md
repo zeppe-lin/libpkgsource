@@ -1,5 +1,17 @@
 # History
 
+## 4.1.0
+
+Codec ABI closure for source generation 4.
+
+* advance `libpkgsource-codec` to SONAME 2 because its public decoder returns
+  `source_snapshot` by value and source generation 4 changed the nested
+  `source_input` object layout;
+* keep `libpkgsource.so.4`, source identity domains, and schema-one durable
+  record bytes unchanged;
+* require codec consumers to rebuild instead of loading a source-3-era
+  `libpkgsource-codec.so.1` beside source generation 4.
+
 ## 4.0.0
 
 Explicit source realization authority.

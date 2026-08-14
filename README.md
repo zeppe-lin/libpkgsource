@@ -38,7 +38,7 @@ Use the umbrella header:
 #include <libpkgsource/libpkgsource.h>
 ```
 
-`libpkgsource-codec.so.1` owns:
+`libpkgsource-codec.so.2` owns:
 
 - schema-one profile-catalog and source-snapshot records;
 - bounded big-endian framing and intrinsic SHA-256 checksums;
@@ -118,7 +118,7 @@ meson compile -C build-docs html-docs
 Installation places the generated tree under:
 
 ```text
-${prefix}/share/htmldocs/libpkgsource/4.0.0/
+${prefix}/share/htmldocs/libpkgsource/4.1.0/
 ```
 
 The publishing site may copy that tree unchanged. It does not become another

@@ -1,5 +1,6 @@
-# SPDX-FileCopyrightText: 2026 Alexandr Savca
+# SPDX-FileCopyrightText: 2026 Alexandr Savca <alexandr.savca89@gmail.com>
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 codec_inc = include_directories('../include')
 
 codec_export_script_name = 'libpkgsource-codec.exports.map'
@@ -30,7 +31,7 @@ libpkgsource_codec = library(
   link_depends: [codec_export_script],
   install: true,
   version: meson.project_version(),
-  soversion: '1',
+  soversion: '2',
 )
 
 libpkgsource_codec_dep = declare_dependency(

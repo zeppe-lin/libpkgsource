@@ -30,18 +30,18 @@ for header in "$root"/include/libpkgsource/*.h \
       continue
       ;;
   esac
-  grep -F '@file' "$header" >/dev/null ||
+  grep -F '\file' "$header" >/dev/null ||
     fail "missing file documentation: ${header#$root/}"
 done
 
 for token in \
   'namespace pkgsource' \
   'namespace pkgsource::codec' \
-  '@param code' \
-  '@param document' \
-  '@param declaration' \
-  '@param encoding' \
-  '@return'; do
+  '\param code' \
+  '\param document' \
+  '\param declaration' \
+  '\param encoding' \
+  '\return'; do
   grep -R -F "$token" "$root/include" >/dev/null ||
     fail "missing public documentation token: $token"
 done
@@ -53,9 +53,9 @@ if grep -R -n -E '/\*\* (Compare|Order).* \*/' \
 fi
 
 for header in identity.h model.h profile.h; do
-  grep -F '@param lhs' "$root/include/libpkgsource/$header" >/dev/null ||
+  grep -F '\param lhs' "$root/include/libpkgsource/$header" >/dev/null ||
     fail "$header omits left comparison operand documentation"
-  grep -F '@param rhs' "$root/include/libpkgsource/$header" >/dev/null ||
+  grep -F '\param rhs' "$root/include/libpkgsource/$header" >/dev/null ||
     fail "$header omits right comparison operand documentation"
 done
 

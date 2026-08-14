@@ -44,22 +44,22 @@ check_page()
 }
 
 check_page libpkgsource.3 \
-  '% LIBPKGSOURCE(3) libpkgsource 4.0.0 | libpkgsource' \
+  '% LIBPKGSOURCE(3) libpkgsource 4.1.0 | libpkgsource' \
   'libpkgsource - seal parser-neutral package-source authority'
 check_page pkgsource_model.3 \
-  '% PKGSOURCE_MODEL(3) libpkgsource 4.0.0 | libpkgsource' \
+  '% PKGSOURCE_MODEL(3) libpkgsource 4.1.0 | libpkgsource' \
   'pkgsource_model - describe parser-neutral package-source value domains'
 check_page pkgsource_profile.3 \
-  '% PKGSOURCE_PROFILE(3) libpkgsource 4.0.0 | libpkgsource' \
+  '% PKGSOURCE_PROFILE(3) libpkgsource 4.1.0 | libpkgsource' \
   'pkgsource_profile - seal authoritative requirement profiles'
 check_page pkgsource_recipe.3 \
-  '% PKGSOURCE_RECIPE(3) libpkgsource 4.0.0 | libpkgsource' \
+  '% PKGSOURCE_RECIPE(3) libpkgsource 4.1.0 | libpkgsource' \
   'pkgsource_recipe - seal normalized native recipe authority'
 check_page pkgsource_snapshot.3 \
-  '% PKGSOURCE_SNAPSHOT(3) libpkgsource 4.0.0 | libpkgsource' \
+  '% PKGSOURCE_SNAPSHOT(3) libpkgsource 4.1.0 | libpkgsource' \
   'pkgsource_snapshot - seal immutable package-source authority'
 check_page pkgsource_codec.3 \
-  '% PKGSOURCE_CODEC(3) libpkgsource 4.0.0 | libpkgsource' \
+  '% PKGSOURCE_CODEC(3) libpkgsource 4.1.0 | libpkgsource' \
   'pkgsource_codec - encode canonical durable source-authority records'
 
 for page in "$root"/docs/man/*.md; do

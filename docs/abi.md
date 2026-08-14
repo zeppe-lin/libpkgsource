@@ -6,7 +6,7 @@ The repository publishes two independent ELF ABIs:
 
 ```text
 libpkgsource.so.4
-libpkgsource-codec.so.1
+libpkgsource-codec.so.2
 ```
 
 The core does not import the codec. The codec imports the matching core ABI.

@@ -64,6 +64,7 @@ require_heading "$root/docs/html.md" '## Validation'
 require_heading "$root/CONTRIBUTING.md" '## Boundary first'
 require_heading "$root/CONTRIBUTING.md" '## Identity and record changes'
 require_heading "$root/MAINTAINING.md" '## Release checklist'
+require_heading "$root/HISTORY.md" '## 4.1.0'
 require_heading "$root/HISTORY.md" '## 4.0.0'
 require_heading "$root/HISTORY.md" '## 3.0.0'
 

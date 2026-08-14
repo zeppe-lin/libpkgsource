@@ -19,12 +19,12 @@ require()
     fail "${file#$root/} omits: $text"
 }
 
-require "$root/meson.build" "  version: '4.0.0',"
-require "$root/Doxyfile" 'PROJECT_NUMBER         = 4.0.0'
+require "$root/meson.build" "  version: '4.1.0',"
+require "$root/Doxyfile" 'PROJECT_NUMBER         = 4.1.0'
 require "$root/meson.build" "  meson_version: '>=1.2.0',"
 require "$root/src/meson.build" "  soversion: '4',"
-require "$root/codec/meson.build" "  soversion: '1',"
-require "$root/HISTORY.md" '## 4.0.0'
+require "$root/codec/meson.build" "  soversion: '2',"
+require "$root/HISTORY.md" '## 4.1.0'
 require "$root/HISTORY.md" '## 3.0.0'
 require "$root/src/meson.build" "'../include/libpkgsource/profile.h'"
 require "$root/src/meson.build" "'../include/libpkgsource/recipe.h'"

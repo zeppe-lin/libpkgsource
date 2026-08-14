@@ -1,6 +1,6 @@
 .\" Generated from docs/man/pkgsource_codec.3.md; do not edit.
 .\"
-.TH "PKGSOURCE_CODEC" "3" "" "libpkgsource 4.0.0" "libpkgsource"
+.TH "PKGSOURCE_CODEC" "3" "" "libpkgsource 4.1.0" "libpkgsource"
 .SH NAME
 pkgsource_codec \- encode canonical durable source\-authority records
 .SH SYNOPSIS
@@ -40,7 +40,7 @@ A checksum\-valid alternate representation, trailing field, or reordered record 
 .SH ERRORS
 \f[CR]pkgsource::codec::codec_error\f[R] reports stable \f[CR]pkgsource::codec::codec_error_code\f[R] values for size refusal, truncation, invalid magic, unsupported version, checksum mismatch, invalid record material, identity mismatch, and noncanonical input.
 .SH ABI AND PROTOCOL
-The codec ABI is \f[CR]libpkgsource\-codec.so.1\f[R].
+The codec ABI is \f[CR]libpkgsource\-codec.so.2\f[R].
 The normative byte protocol is \f[CR]docs/protocols/source\-records\-v1.md\f[R].
 .SH SEE ALSO
 \f[CR]libpkgsource(3)\f[R], \f[CR]pkgsource_profile(3)\f[R], \f[CR]pkgsource_recipe(3)\f[R], \f[CR]pkgsource_snapshot(3)\f[R]

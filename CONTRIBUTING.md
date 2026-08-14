@@ -20,8 +20,8 @@ without a published consumer that requires it.
 
 ## Code and API changes
 
-Follow `docs/code-style.md`. Every public declaration must be self-contained and
-fully documented for strict Doxygen. Public symbols require explicit export
+Follow `docs/code-style.md`. Every public declaration must be self-contained
+and fully documented for strict Doxygen. Public symbols require explicit export
 annotations and review against the corresponding manifest under `abi/`.
 
 Comments explain invariants, framing, ownership transfer, or failure

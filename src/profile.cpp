@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2026 Alexandr Savca
+// SPDX-FileCopyrightText: 2026 Alexandr Savca <alexandr.savca89@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <libpkgsource/error.h>
 #include <libpkgsource/profile.h>
 
@@ -19,8 +20,9 @@ void sort_unique(std::vector<T>& values, std::string_view field)
 {
   std::sort(values.begin(), values.end());
   if (std::adjacent_find(values.begin(), values.end()) != values.end()) {
-    throw error(error_code::duplicate_declaration,
-                "duplicate " + std::string(field));
+    throw error(
+        error_code::duplicate_declaration,
+        "duplicate " + std::string(field));
   }
 }
 
@@ -54,9 +56,9 @@ public:
       const auto inserted =
           root.members.emplace(member.subject(), member.provenance());
       if (!inserted.second) {
-        throw error(error_code::duplicate_declaration,
-                    "duplicate sealed profile member: " +
-                        member.subject().text());
+        throw error(
+            error_code::duplicate_declaration,
+            "duplicate sealed profile member: " + member.subject().text());
       }
     }
 
@@ -66,58 +68,64 @@ public:
       for (std::size_t index = 0; index < steps.size(); ++index) {
         const profile_expansion_step& step = steps[index];
         if (step.profile().name() != expected) {
-          throw error(error_code::invalid_profile,
-                      "sealed profile expansion is not contiguous");
+          throw error(
+              error_code::invalid_profile,
+              "sealed profile expansion is not contiguous");
         }
 
         auto found = records_.find(expected);
         if (found == records_.end()) {
-          found = records_
-                      .emplace(expected,
-                               reconstructed_profile{step.profile(), {}})
-                      .first;
+          found = records_.emplace(
+              expected, reconstructed_profile{step.profile(), {}}).first;
         }
         const auto inserted =
             found->second.members.emplace(step.member(), step.provenance());
         if (!inserted.second &&
             inserted.first->second != step.provenance()) {
-          throw error(error_code::invalid_profile,
-                      "sealed profile expansion has contradictory provenance");
+          throw error(
+              error_code::invalid_profile,
+              "sealed profile expansion has contradictory provenance");
         }
 
         if (step.member().kind() == requirement_subject_kind::profile) {
           if (index + 1 == steps.size()) {
-            throw error(error_code::invalid_profile,
-                        "sealed profile expansion terminates at a profile");
+            throw error(
+                error_code::invalid_profile,
+                "sealed profile expansion terminates at a profile");
           }
           expected = step.member().profile().name();
           continue;
         }
         if (index + 1 != steps.size() ||
             step.member().package() != path.package()) {
-          throw error(error_code::invalid_profile,
-                      "sealed profile expansion terminates at the wrong package");
+          throw error(
+              error_code::invalid_profile,
+              "sealed profile expansion terminates at the wrong package");
         }
       }
     }
 
     if (!matches_direct_members(records_.at(root_), direct_members)) {
-      throw error(error_code::invalid_profile,
-                  "sealed profile direct members are not canonical");
+      throw error(
+          error_code::invalid_profile,
+          "sealed profile direct members are not canonical");
     }
   }
 
-  void verify(const profile_identity& identity,
-              const std::vector<profile_expansion_path>& expansion)
+  void verify(
+      const profile_identity& identity,
+      const std::vector<profile_expansion_path>& expansion)
   {
     const computed_profile& computed = compute(root_);
     if (computed.identity != identity) {
-      throw error(error_code::invalid_identity,
-                  "sealed profile identity does not match its members");
+      throw error(
+          error_code::invalid_identity,
+          "sealed profile identity does not match its members");
     }
     if (computed.expansion != expansion) {
-      throw error(error_code::invalid_profile,
-                  "sealed profile expansion is not canonical");
+      throw error(
+          error_code::invalid_profile,
+          "sealed profile expansion is not canonical");
     }
   }
 
@@ -147,14 +155,16 @@ private:
       return existing->second;
     }
     if (!active_.insert(name).second) {
-      throw error(error_code::profile_cycle,
-                  "sealed profile expansion contains a cycle");
+      throw error(
+          error_code::profile_cycle,
+          "sealed profile expansion contains a cycle");
     }
 
     const auto record = records_.find(name);
     if (record == records_.end() || record->second.members.empty()) {
-      throw error(error_code::invalid_profile,
-                  "sealed profile expansion omits a referenced profile");
+      throw error(
+          error_code::invalid_profile,
+          "sealed profile expansion omits a referenced profile");
     }
 
     detail::identity_writer writer;
@@ -216,9 +226,9 @@ public:
         });
     for (std::size_t i = 1; i < declarations.size(); ++i) {
       if (declarations[i - 1].name() == declarations[i].name()) {
-        throw error(error_code::duplicate_declaration,
-                    "duplicate profile definition: " +
-                        declarations[i].name().name());
+        throw error(
+            error_code::duplicate_declaration,
+            "duplicate profile definition: " + declarations[i].name().name());
       }
     }
 
@@ -232,15 +242,16 @@ public:
                 });
       for (std::size_t i = 1; i < members.size(); ++i) {
         if (members[i - 1].subject() == members[i].subject()) {
-          throw error(error_code::duplicate_declaration,
-                      "duplicate member in " + declaration.name().name() +
-                          ": " + members[i].subject().text());
+          throw error(
+              error_code::duplicate_declaration,
+              "duplicate member in " + declaration.name().name() +
+                  ": " + members[i].subject().text());
         }
       }
-      records_.emplace(declaration.name().name(),
-                       declaration_record{declaration.name(),
-                                          declaration.provenance(),
-                                          std::move(members)});
+      records_.emplace(
+          declaration.name().name(),
+          declaration_record{declaration.name(),
+              declaration.provenance(), std::move(members)});
     }
 
     for (const auto& entry : records_) {
@@ -248,9 +259,10 @@ public:
         if (member.subject().kind() == requirement_subject_kind::profile &&
             records_.find(member.subject().profile().name()) ==
                 records_.end()) {
-          throw error(error_code::unknown_profile,
-                      "unknown profile " + member.subject().profile().name() +
-                          " in " + entry.first);
+          throw error(
+              error_code::unknown_profile,
+              "unknown profile " + member.subject().profile().name() +
+                  " in " + entry.first);
         }
       }
     }
@@ -262,11 +274,12 @@ public:
     result.reserve(records_.size());
     for (const auto& entry : records_) {
       const computed_profile& computed = compute(entry.first);
-      result.emplace_back(entry.second.name,
-                          computed.identity,
-                          entry.second.provenance,
-                          entry.second.members,
-                          computed.expansion);
+      result.emplace_back(
+          entry.second.name,
+          computed.identity,
+          entry.second.provenance,
+          entry.second.members,
+          computed.expansion);
     }
     return result;
   }
@@ -307,8 +320,9 @@ private:
       const profile_expansion_step root_step(
           record.name, member.subject(), member.provenance());
       if (member.subject().kind() == requirement_subject_kind::package) {
-        expansion.emplace_back(member.subject().package(),
-                               std::vector<profile_expansion_step>{root_step});
+        expansion.emplace_back(
+            member.subject().package(),
+            std::vector<profile_expansion_step>{root_step});
       } else {
         const computed_profile& nested =
             compute(member.subject().profile().name());
@@ -317,9 +331,10 @@ private:
           std::vector<profile_expansion_step> steps;
           steps.reserve(nested_path.steps().size() + 1);
           steps.push_back(root_step);
-          steps.insert(steps.end(),
-                       nested_path.steps().begin(),
-                       nested_path.steps().end());
+          steps.insert(
+              steps.end(),
+              nested_path.steps().begin(),
+              nested_path.steps().end());
           expansion.emplace_back(nested_path.package(), std::move(steps));
         }
       }
@@ -341,9 +356,10 @@ private:
   std::vector<std::string> stack_;
 };
 
-void collect_profile_closure(const sealed_profile& profile,
-                             const profile_catalog& catalog,
-                             std::map<std::string, sealed_profile>& closure)
+void collect_profile_closure(
+    const sealed_profile& profile,
+    const profile_catalog& catalog,
+    std::map<std::string, sealed_profile>& closure)
 {
   if (!closure.emplace(profile.name().name(), profile).second) {
     return;
@@ -381,8 +397,9 @@ profile_declaration::profile_declaration(
       members_(std::move(members))
 {
   if (members_.empty()) {
-    throw error(error_code::invalid_profile,
-                "profile has no members: " + name_.name());
+    throw error(
+        error_code::invalid_profile,
+        "profile has no members: " + name_.name());
   }
 }
 const profile_reference& profile_declaration::name() const noexcept

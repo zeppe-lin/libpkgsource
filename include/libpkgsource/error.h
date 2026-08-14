@@ -1,9 +1,10 @@
-// SPDX-FileCopyrightText: 2026 Alexandr Savca
+// SPDX-FileCopyrightText: 2026 Alexandr Savca <alexandr.savca89@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
 
-/** @file error.h
- *  @brief Typed failures reported by the semantic source authority.
+/** \file error.h
+ *  \brief Typed failures reported by the semantic source authority.
  */
+
 #pragma once
 
 #include <libpkgsource/export.h>
@@ -11,10 +12,10 @@
 #include <stdexcept>
 #include <string>
 
-/** @brief Parser-neutral package-source authority. */
+/** \brief Parser-neutral package-source authority. */
 namespace pkgsource {
 
-/** @brief Stable failure categories exposed by libpkgsource. */
+/** \brief Stable failure categories exposed by libpkgsource. */
 enum class error_code {
   invalid_request,       ///< A caller supplied an invalid general request.
   invalid_identity,      ///< A name or identity value is not canonical.
@@ -31,13 +32,13 @@ enum class error_code {
   identity_failed,       ///< Semantic identity construction failed.
 };
 
-/** @brief Exception carrying a stable error category and diagnostic text. */
+/** \brief Exception carrying a stable error category and diagnostic text. */
 class PKGSOURCE_API error : public std::runtime_error {
 public:
   /** Construct a typed semantic-authority failure.
    *
-   * @param code Stable machine-readable failure category.
-   * @param message Human-readable diagnostic text.
+   * \param code Stable machine-readable failure category.
+   * \param message Human-readable diagnostic text.
    */
   error(error_code code, std::string message);
 
@@ -46,7 +47,7 @@ public:
 
   /** Return the stable failure category.
    *
-   * @return Category supplied at construction.
+   * \return Category supplied at construction.
    */
   [[nodiscard]] error_code code() const noexcept;
 

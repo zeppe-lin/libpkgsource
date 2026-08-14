@@ -106,7 +106,7 @@ source schemas or reconstruct source semantics.
 libpkgsource.so.4
     semantic declarations, sealing, identities
 
-libpkgsource-codec.so.1
+libpkgsource-codec.so.2
     canonical records, bounded decoding, resealing verification
 ```
 

@@ -1,7 +1,7 @@
 # libpkgsource durable records, schema 1
 
 This document normatively defines the canonical byte representation emitted by
-`libpkgsource-codec.so.1` for `libpkgsource 4.x` owner authority.
+`libpkgsource-codec.so.2` for `libpkgsource >= 4.1.0, < 5.0.0` owner authority.
 
 Two record types are defined:
 

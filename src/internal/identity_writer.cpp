@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2026 Alexandr Savca
+// SPDX-FileCopyrightText: 2026 Alexandr Savca <alexandr.savca89@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "identity_writer.h"
 
 #include <libpkgsource/error.h>

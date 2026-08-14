@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2026 Alexandr Savca
+// SPDX-FileCopyrightText: 2026 Alexandr Savca <alexandr.savca89@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 #include "identity_hex.h"
 
 #include <libpkgsource/error.h>
@@ -26,8 +27,9 @@ void require_sha256_hex(std::string_view value)
     const bool decimal = character >= '0' && character <= '9';
     const bool hexadecimal = character >= 'a' && character <= 'f';
     if (!decimal && !hexadecimal) {
-      throw error(error_code::invalid_identity,
-                  "SHA-256 value is not canonical lowercase hexadecimal");
+      throw error(
+          error_code::invalid_identity,
+          "SHA-256 value is not canonical lowercase hexadecimal");
     }
   }
 }

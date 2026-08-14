@@ -1,5 +1,6 @@
 # SPDX-FileCopyrightText: 2026 Alexandr Savca
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 option(
   'link_mode',
   type: 'combo',
@@ -7,12 +8,14 @@ option(
   value: 'shared',
   description: 'How libpkgsource links against external dependencies',
 )
+
 option(
   'tests',
   type: 'feature',
   value: 'enabled',
   description: 'Build and run the libpkgsource test suite',
 )
+
 option(
   'man_pages',
   type: 'feature',

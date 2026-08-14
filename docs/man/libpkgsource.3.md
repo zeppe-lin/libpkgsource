@@ -1,4 +1,4 @@
-% LIBPKGSOURCE(3) libpkgsource 4.0.0 | libpkgsource
+% LIBPKGSOURCE(3) libpkgsource 4.1.0 | libpkgsource
 
 # NAME
 

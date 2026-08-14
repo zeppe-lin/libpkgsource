@@ -1,9 +1,10 @@
 # SPDX-FileCopyrightText: 2026 Alexandr Savca
 # SPDX-License-Identifier: GPL-3.0-or-later
+
 project(
   'libpkgsource',
   'cpp',
-  version: '4.0.0',
+  version: '4.1.0',
   license: 'GPL-3.0-or-later',
   meson_version: '>=1.2.0',
   default_options: [
@@ -25,6 +26,7 @@ if (library_kind == 'static') != want_static
 endif
 
 libcrypto_dep = dependency('libcrypto', required: true, static: want_static)
+
 cpp = meson.get_compiler('cpp')
 visibility_cpp_args = []
 if cpp.has_argument('-fvisibility-inlines-hidden')

@@ -1,5 +1,6 @@
-// SPDX-FileCopyrightText: 2026 Alexandr Savca
+// SPDX-FileCopyrightText: 2026 Alexandr Savca <alexandr.savca89@gmail.com>
 // SPDX-License-Identifier: GPL-3.0-or-later
+
 #include <libpkgsource/error.h>
 #include <libpkgsource/snapshot.h>
 
@@ -25,8 +26,9 @@ bool line_safe(std::string_view value)
   return true;
 }
 
-void write_optional(detail::identity_writer& writer,
-                    const std::optional<std::string>& value)
+void write_optional(
+    detail::identity_writer& writer,
+    const std::optional<std::string>& value)
 {
   writer.number(value.has_value() ? 1 : 0);
   if (value) {
@@ -34,8 +36,9 @@ void write_optional(detail::identity_writer& writer,
   }
 }
 
-void write_scope(detail::identity_writer& writer,
-                 const requirement_scope& scope)
+void write_scope(
+    detail::identity_writer& writer,
+    const requirement_scope& scope)
 {
   writer.text(to_string(scope.kind()));
   if (scope.action()) {
